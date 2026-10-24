@@ -287,6 +287,16 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .bud-edit span{display:flex;align-items:center;gap:8px;min-width:0}
 .bud-edit i{width:9px;height:9px;border-radius:50%;flex:none}
 
+/* cloud sync */
+.sync-box{display:grid;gap:10px}
+.sync-box .row{flex-wrap:wrap}
+.sync-box input{font-size:.95rem}
+.sync-box .who{font-size:.9rem}
+.sync-box .err{color:var(--down);font-size:.85rem}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:600;padding:10px;border-radius:10px;width:100%}
+.sync-ind{border:0;background:none;padding:2px 6px;font-size:.8rem;color:var(--muted);border-radius:8px}
+.sync-ind.ok{color:var(--up)}.sync-ind.busy{color:var(--warn)}.sync-ind.bad{color:var(--down)}
+
 /* bank messages waiting to be filed */
 .pend{display:grid;gap:10px;border:1px solid var(--warn);border-radius:14px;padding:14px;background:color-mix(in srgb,var(--warn) 7%,transparent)}
 .pend-item{display:grid;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
@@ -494,6 +504,7 @@ section.card.collapsed{gap:0}
     </div>
     <div class="status">
       <span id="live" class="live"></span><span id="stamp"></span>
+      <button type="button" class="sync-ind" id="sync-ind" hidden data-open-settings="sync"></button>
       <button id="refresh" type="button" data-en="Refresh">تحديث الآن</button>
       <button id="btn-settings" type="button" class="btn-settings" aria-haspopup="dialog">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
@@ -741,6 +752,11 @@ section.card.collapsed{gap:0}
   </div>
 
   <div class="dlg-sec">
+    <h3><span data-en="Cloud sync">المزامنة السحابية</span> <span class="pill idle" id="sync-pill"></span></h3>
+    <div id="sync-box" class="sync-box"></div>
+  </div>
+
+  <div class="dlg-sec">
     <h3><span data-en="App lock">قفل التطبيق</span> <span class="pill idle" id="pin-pill"></span></h3>
     <div class="row">
       <button type="button" id="btn-pin-set"></button>
@@ -929,6 +945,7 @@ const DEFAULT_STATE = {
   goalDate:'', nMonthly:true, monthlySent:'', reports:{}, yearReports:{},
   tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'',
   pending:[], merchantCats:{}, autoKnown:true, budgetTotal:'',
+  deletedTx:[], deletedPending:[], deletedRec:[], _savedAt:0,
   userName:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
 };
 
@@ -956,7 +973,11 @@ function load(){
   try{ const s = JSON.parse(localStorage.getItem('wealth-v1')); if(s && s.gold) return withDefaults(s); }catch(e){}
   return structuredClone(DEFAULT_STATE);
 }
-function save(){ try{ localStorage.setItem('wealth-v1', JSON.stringify(state)); }catch(e){} }
+function save(){
+  state._savedAt = Date.now();
+  try{ localStorage.setItem('wealth-v1', JSON.stringify(state)); }catch(e){}
+  try{ scheduleSync(); }catch(e){}   // the cloud copy follows a few seconds later
+}
 
 /* ---------- language ---------- */
 let LANG = state.lang==='en' ? 'en' : 'ar';
@@ -1550,7 +1571,7 @@ function pricesComplete(){
   if(state.stocks.some(r=>num(r.q)>0 && r.s && !stockPx[r.s.trim().toUpperCase()])) return false;
   return true;
 }
-function saveHistory(){ try{ localStorage.setItem(HKEY, JSON.stringify(history)); }catch(e){} }
+function saveHistory(){ try{ localStorage.setItem(HKEY, JSON.stringify(history)); }catch(e){} try{ scheduleSync(); }catch(e){} }
 function recordSnapshot(){
   if(!pricesComplete()) return;
   const t = totals(), p = {t:Date.now()};
@@ -1815,6 +1836,7 @@ function openSettings(part){
   syncStatic(); renderBackupNote(); renderNotify();
   if(!dlg.open) dlg.showModal();
   if(part==='notify') document.getElementById('notify-box').scrollIntoView({block:'start'});
+  if(part==='sync'){ renderSync(); document.getElementById('sync-box').scrollIntoView({block:'center'}); }
 }
 document.getElementById('btn-settings').addEventListener('click', ()=>openSettings());
 document.getElementById('settings-close').addEventListener('click', ()=>dlg.close());
@@ -2502,8 +2524,9 @@ let moneyMonth = monthKey(Date.now());
 const openDays = {};   // days the viewer opened or closed by hand during this visit
 
 // move the account balance: spending takes from it, income adds to it; sign -1 undoes a transaction
-function applyTx(tx, sign){
-  const row = tx.acct && acctById(tx.acct);
+function applyTx(tx, sign){ applyTxTo(state.cash, tx, sign); }
+function applyTxTo(cash, tx, sign){
+  const row = tx.acct && cash.find(r=>r.id===tx.acct);
   if(!row) return;
   row.a = Math.round((num(row.a) + (tx.type==='exp' ? -1 : 1) * tx.amount * sign) * 100) / 100;
 }
@@ -2521,9 +2544,12 @@ function addTx(t){
 }
 function delTx(id){
   const i = state.tx.findIndex(t=>t.id===id); if(i < 0) return;
-  const [tx] = state.tx.splice(i, 1); applyTx(tx, -1); save(); render(); buzz([10,40,10]);
+  const [tx] = state.tx.splice(i, 1); applyTx(tx, -1);
+  state.deletedTx.push(tx.id);   // remembered so a sync with another device doesn't bring it back
+  save(); render(); buzz([10,40,10]);
   toast(L('اتمسحت العملية ورجع المبلغ للحساب.', 'Deleted, and the amount went back to the account.'),
-    {label: L('تراجع','Undo'), fn: ()=>{ state.tx.splice(Math.min(i, state.tx.length), 0, tx); applyTx(tx, 1); save(); render(); }});
+    {label: L('تراجع','Undo'), fn: ()=>{ state.tx.splice(Math.min(i, state.tx.length), 0, tx); applyTx(tx, 1);
+      state.deletedTx = state.deletedTx.filter(x=>x!==tx.id); save(); render(); }});
 }
 const monthTx = mk => state.tx.filter(t=>monthOf(t.date)===mk);
 const catSpent = (cat, mk) => monthTx(mk).filter(t=>t.type==='exp' && t.cat===cat).reduce((a,t)=>a+txEgp(t),0);
@@ -2661,7 +2687,7 @@ document.getElementById('money-body').addEventListener('click', e=>{
   if(b.dataset.txdel) delTx(b.dataset.txdel);
   else if(b.dataset.txadd) openTx(b.dataset.txadd);
   else if(b.dataset.budedit!==undefined) openBudgets();
-  else if(b.dataset.recdel){ state.recurring = state.recurring.filter(r=>r.id!==b.dataset.recdel); save(); render(); toast(L('اتوقف التكرار. العمليات اللي اتسجّلت قبل كدا فضلت زي ما هي.', 'Repeat stopped. Past transactions stay.')); }
+  else if(b.dataset.recdel){ state.recurring = state.recurring.filter(r=>r.id!==b.dataset.recdel); state.deletedRec.push(b.dataset.recdel); save(); render(); toast(L('اتوقف التكرار. العمليات اللي اتسجّلت قبل كدا فضلت زي ما هي.', 'Repeat stopped. Past transactions stay.')); }
 });
 
 // the add-transaction sheet
@@ -2850,7 +2876,7 @@ function filePending(id){
   const tx = addTx({type:p.type, amount:p.amount, cat:p.cat, acct:p.acct, date:p.date, note:p.merchant || lbl(bankById(p.bank||'OTHER'))});
   tx.sig = p.raw.replace(/\s+/g,' ');
   if(p.merchant) state.merchantCats[merchantKey(p.merchant)] = p.cat;   // learn the shop for next time
-  state.pending.splice(i, 1); save(); render(); buzz();
+  state.pending.splice(i, 1); state.deletedPending.push(p.id); save(); render(); buzz();
 }
 function pendingHtml(){
   if(!state.pending.length) return '';
@@ -2880,7 +2906,7 @@ document.getElementById('money-body').addEventListener('change', e=>{
 document.getElementById('money-body').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.pok) filePending(b.dataset.pok);
-  else if(b.dataset.pdrop){ state.pending = state.pending.filter(p=>p.id!==b.dataset.pdrop); save(); render(); }
+  else if(b.dataset.pdrop){ state.pending = state.pending.filter(p=>p.id!==b.dataset.pdrop); state.deletedPending.push(b.dataset.pdrop); save(); render(); }
   else if(b.dataset.paste!==undefined) openPaste();
 });
 
@@ -2935,6 +2961,286 @@ function takeIncomingSms(){
   const res = parts.map(s => ingestSms(s, from));
   setTab('money'); render(); reportIngest(res);
 }
+
+/* ---------- cloud sync with a shared code ----------
+   One secret code links devices. From it come two separate things:
+   the vault id (a hash, used as the Firestore path) and the AES key (PBKDF2), so the stored id reveals nothing about the key.
+   Firestore only ever holds ciphertext; devices merge on pull, so spending entered on two devices is kept from both. */
+const FB_CONFIG = {
+  apiKey: "AIzaSyDY3epSQ1Kkux3y9hAMgBfNVawXup4ujy0",
+  authDomain: "namaa-2c4c8.firebaseapp.com",
+  projectId: "namaa-2c4c8",
+  storageBucket: "namaa-2c4c8.firebasestorage.app",
+  messagingSenderId: "1007158109866",
+  appId: "1:1007158109866:web:ff6b42418bfc55371752d3",
+};
+const FB_V = '10.12.2', SYNCKEY = 'wealth-sync', CHUNK = 700000;
+const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O or 1/I, so a code reads back without mistakes
+const DEVICE = (()=>{ try{ let d = localStorage.getItem('wealth-device'); if(!d){ d = newId('d'); localStorage.setItem('wealth-device', d); } return d; }catch(e){ return newId('d'); } })();
+let fb = null, vault = null, syncStatus = 'off', syncErr = '', lastSync = 0, remoteSeen = 0, remoteN = 0;
+let pushTimer = null, pushing = false, pulling = false, unsubMeta = null, showCode = false, showQr = false;
+const te = new TextEncoder(), td = new TextDecoder();
+const toB64 = buf => { const a = new Uint8Array(buf); let s = ''; for(let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode(...a.subarray(i, i + 0x8000)); return btoa(s); };
+const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const hex = buf => [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+const cleanCode = s => String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const prettyCode = c => c.match(/.{1,4}/g).join('-');
+function newCode(){ const r = crypto.getRandomValues(new Uint8Array(16)); return [...r].map(b => CODE_ABC[b % 32]).join(''); }
+
+async function vaultFromCode(code){
+  const id = hex(await crypto.subtle.digest('SHA-256', te.encode('namaa-vault:' + code)));
+  const base = await crypto.subtle.importKey('raw', te.encode(code), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt: te.encode('namaa-key-v1'), iterations: 150000, hash:'SHA-256'},
+    base, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
+  return {code, id, key};
+}
+// gzip when the browser can (much smaller documents), then AES-GCM
+async function zip(bytes, mode){
+  if(typeof CompressionStream === 'undefined') return null;
+  const s = new Blob([bytes]).stream().pipeThrough(mode==='c' ? new CompressionStream('gzip') : new DecompressionStream('gzip'));
+  return new Uint8Array(await new Response(s).arrayBuffer());
+}
+async function seal(obj){
+  let bytes = te.encode(JSON.stringify(obj)), z = 0;
+  const packed = await zip(bytes, 'c'); if(packed){ bytes = packed; z = 1; }
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  return `${z}.${toB64(iv)}.${toB64(await crypto.subtle.encrypt({name:'AES-GCM', iv}, vault.key, bytes))}`;
+}
+async function unseal(str){
+  const [z, iv, ct] = str.split('.');
+  let bytes = new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM', iv: fromB64(iv)}, vault.key, fromB64(ct)));
+  if(z==='1') bytes = await zip(bytes, 'd');
+  return JSON.parse(td.decode(bytes));
+}
+
+async function fbInit(){
+  if(fb) return fb;
+  const base = `https://www.gstatic.com/firebasejs/${FB_V}/`;
+  const [A, Au, F] = await Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]);
+  const app = A.initializeApp(FB_CONFIG), auth = Au.getAuth(app);
+  if(!auth.currentUser) await Au.signInAnonymously(auth);
+  fb = {F, db: F.getFirestore(app)};
+  return fb;
+}
+const metaRef = () => fb.F.doc(fb.db, 'vaults', vault.id, 'data', 'meta');
+const chunkRef = i => fb.F.doc(fb.db, 'vaults', vault.id, 'data', 'c' + i);
+
+// what travels between devices: everything but settings that only make sense on one device
+function syncPayload(){
+  const st = structuredClone(state); delete st.notifyOn;
+  return {v:1, savedAt: Date.now(), device: DEVICE, state: st, history};
+}
+function setSync(s, err=''){ syncStatus = s; syncErr = err; if(s==='ok') lastSync = Date.now(); renderSyncInd(); if(dlg.open) renderSync(); }
+
+// merge two copies. "base" is the newer one (or the cloud on a device's first sync); lists that both sides add to are joined,
+// deletions are honoured from either side, and account balances are corrected for transactions only one side had seen
+function mergeData(loc, rem, preferRemote){
+  const remBase = preferRemote || (rem.savedAt||0) >= (loc.state._savedAt||0);
+  const base = remBase ? rem : {state: loc.state, history: loc.history}, other = remBase ? {state: loc.state, history: loc.history} : rem;
+  const st = structuredClone(base.state), os = other.state;
+  const join = (a, b) => [...new Set([...(a||[]), ...(b||[])])].slice(-3000);
+  st.deletedTx = join(st.deletedTx, os.deletedTx); st.deletedPending = join(st.deletedPending, os.deletedPending); st.deletedRec = join(st.deletedRec, os.deletedRec);
+  const deadTx = new Set(st.deletedTx), deadP = new Set(st.deletedPending), deadR = new Set(st.deletedRec);
+  st.tx = st.tx || []; st.cash = st.cash || [];
+  const have = new Set(st.tx.map(t=>t.id));
+  for(const t of os.tx||[]) if(!have.has(t.id) && !deadTx.has(t.id)){ st.tx.push(t); applyTxTo(st.cash, t, 1); }
+  st.tx = st.tx.filter(t => { if(deadTx.has(t.id)){ applyTxTo(st.cash, t, -1); return false; } return true; });
+  st.tx.sort((a,b)=>a.date.localeCompare(b.date));
+  const byId = (a, b, dead) => { const m = new Map(); for(const x of [...(b||[]), ...(a||[])]) if(!dead.has(x.id)) m.set(x.id, x); return [...m.values()]; };
+  st.pending = byId(st.pending, os.pending, deadP);
+  st.recurring = byId(st.recurring, os.recurring, deadR);
+  st.customCats = byId(st.customCats, os.customCats, new Set());
+  st.merchantCats = {...(os.merchantCats||{}), ...(st.merchantCats||{})};
+  st.reports = {...(os.reports||{}), ...(st.reports||{})}; st.yearReports = {...(os.yearReports||{}), ...(st.yearReports||{})};
+  const days = new Map();
+  for(const p of [...(other.history||[]), ...(base.history||[])]){ const k = dayKey(p.t), cur = days.get(k); if(!cur || p.t >= cur.t) days.set(k, p); }
+  const hist = [...days.values()].sort((a,b)=>a.t-b.t);
+  return {state: st, history: hist};
+}
+
+async function pushNow(){
+  if(!vault || pushing) return;
+  pushing = true; setSync('busy');
+  try{
+    await fbInit();
+    // someone else saved since we last looked: fold their copy in before overwriting it
+    const m = await fb.F.getDoc(metaRef());
+    if(m.exists() && m.data().updatedAt > remoteSeen && m.data().device !== DEVICE){ pushing = false; await pullNow(); pushing = true; }
+    const blob = await seal(syncPayload()), n = Math.ceil(blob.length / CHUNK), updatedAt = Date.now();
+    const b = fb.F.writeBatch(fb.db);
+    for(let i = 0; i < n; i++) b.set(chunkRef(i), {d: blob.slice(i*CHUNK, (i+1)*CHUNK)});
+    for(let i = n; i < (m.exists() ? m.data().n : 0); i++) b.delete(chunkRef(i));
+    b.set(metaRef(), {n, updatedAt, device: DEVICE, v: 1});
+    await b.commit();
+    remoteSeen = updatedAt; remoteN = n; setSync('ok');
+  }catch(e){ setSync(navigator.onLine===false ? 'offline' : 'err', e.message || String(e)); }
+  pushing = false;
+}
+// returns 'empty' (nothing stored under this code yet), 'same', 'pulled'; throws 'badcode' when the data won't decrypt
+async function pullNow(opts={}){
+  if(!vault || pulling) return 'busy';
+  pulling = true;
+  try{
+    await fbInit();
+    const m = await fb.F.getDoc(metaRef());
+    if(!m.exists()) return 'empty';
+    const meta = m.data();
+    if(!opts.force && meta.updatedAt <= remoteSeen) return 'same';
+    const parts = await Promise.all([...Array(meta.n)].map((_, i) => fb.F.getDoc(chunkRef(i))));
+    let remote;
+    try{ remote = await unseal(parts.map(p => p.data()?.d || '').join('')); }catch(e){ throw new Error('badcode'); }
+    const keepNotify = state.notifyOn;
+    const merged = mergeData({state, history}, remote, !!opts.first);
+    state = withDefaults(merged.state); state.notifyOn = keepNotify; history = merged.history;
+    try{ localStorage.setItem('wealth-v1', JSON.stringify(state)); localStorage.setItem(HKEY, JSON.stringify(history)); }catch(e){}
+    remoteSeen = meta.updatedAt; remoteN = meta.n;
+    syncStatic(); applyLang(); render();
+    // our copy had things the cloud didn't: send the merged result back
+    if(JSON.stringify({s: merged.state.tx.length, p: merged.state.pending.length, h: merged.history.length})
+       !== JSON.stringify({s: (remote.state.tx||[]).length, p: (remote.state.pending||[]).length, h: (remote.history||[]).length}) || !opts.first && remote.savedAt < (state._savedAt||0))
+      scheduleSync();
+    setSync('ok');
+    return 'pulled';
+  }finally{ pulling = false; }
+}
+function scheduleSync(){
+  if(!vault) return;
+  clearTimeout(pushTimer);
+  if(syncStatus!=='busy') setSync('busy');
+  pushTimer = setTimeout(pushNow, 2500);
+}
+function watchRemote(){
+  if(unsubMeta) unsubMeta();
+  unsubMeta = fb.F.onSnapshot(metaRef(), s => {
+    if(s.exists() && s.data().updatedAt > remoteSeen && s.data().device !== DEVICE) pullNow().catch(e => setSync('err', e.message));
+  }, e => setSync('err', e.message));
+}
+async function startSync(code, how){
+  vault = await vaultFromCode(code);
+  await fbInit();
+  if(how==='create'){ await pushNow(); }
+  else {
+    const r = await pullNow({force:true, first: how==='join'});
+    if(r==='empty' && how==='join'){ vault = null; throw new Error('nodata'); }
+    if(r==='empty') await pushNow();
+  }
+  try{ localStorage.setItem(SYNCKEY, JSON.stringify({code, since: Date.now()})); }catch(e){}
+  watchRemote();
+}
+function stopSync(){
+  if(unsubMeta){ unsubMeta(); unsubMeta = null; }
+  clearTimeout(pushTimer); vault = null; remoteSeen = 0;
+  try{ localStorage.removeItem(SYNCKEY); }catch(e){}
+  setSync('off');
+}
+async function rotateCode(){
+  const old = vault;
+  const code = newCode();
+  stopSync();
+  await startSync(code, 'create');
+  // empty the old vault so the old code no longer opens anything
+  try{ const m = await fb.F.getDoc(fb.F.doc(fb.db, 'vaults', old.id, 'data', 'meta'));
+    const b = fb.F.writeBatch(fb.db); for(let i = 0; i < (m.exists() ? m.data().n : 0); i++) b.delete(fb.F.doc(fb.db, 'vaults', old.id, 'data', 'c' + i));
+    b.delete(fb.F.doc(fb.db, 'vaults', old.id, 'data', 'meta')); await b.commit(); }catch(e){}
+}
+const joinLink = () => `${location.origin}${location.pathname}#join=${vault.code}`;
+
+function renderSyncInd(){
+  const el = document.getElementById('sync-ind'); if(!el) return;
+  el.hidden = syncStatus==='off';
+  el.className = 'sync-ind ' + ({ok:'ok', busy:'busy', offline:'bad', err:'bad'}[syncStatus] || '');
+  el.textContent = {ok: L('☁ متزامن','☁ Synced'), busy: L('☁ بيزامن…','☁ Syncing…'), offline: L('☁ مفيش نت','☁ Offline'), err: L('☁ مشكلة','☁ Problem')}[syncStatus] || '';
+  el.title = syncErr;
+  const pill = document.getElementById('sync-pill');
+  if(pill){ pill.className = 'pill ' + (syncStatus==='off' ? 'idle' : syncStatus==='ok' ? 'ok' : syncStatus==='busy' ? 'warn' : 'due');
+    pill.textContent = syncStatus==='off' ? L('مقفولة','Off') : syncStatus==='ok' ? L('شغالة','On') : syncStatus==='busy' ? L('بتزامن','Syncing') : L('فيه مشكلة','Problem'); }
+}
+let joinPrefill = '';
+function renderSync(){
+  const box = document.getElementById('sync-box'); if(!box) return;
+  renderSyncInd();
+  if(!vault){
+    box.innerHTML = `<div class="note">${L('اربط موبايلك واللاب (أو أي أجهزة) بكود سري واحد، وبياناتك تبقى هي هي على كلهم. البيانات بتتشفّر بالكود قبل ما تطلع من جهازك، ومحدش يقدر يقراها من غيره.',
+        'Link your phone, laptop or any device with one secret code and see the same data on all of them. Data is encrypted with the code before it leaves your device; no one can read it without the code.')}</div>
+      <button type="button" class="go-btn sm" data-sync-create>☁ ${L('فعّل المزامنة (كود جديد)','Turn on sync (new code)')}</button>
+      <div class="field"><span>${L('عندك كود من جهاز تاني؟','Have a code from another device?')}</span>
+        <div class="row" style="flex-wrap:nowrap"><input id="sync-code" type="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX" value="${esc(joinPrefill)}" style="direction:ltr;text-align:center;letter-spacing:.08em">
+        <button type="button" data-sync-join>${L('اربط','Link')}</button></div></div>
+      ${syncErr && syncStatus==='err' ? `<div class="err">${esc(syncErr)}</div>` : ''}`;
+    return;
+  }
+  const masked = vault.code.replace(/./g, (c, i) => i < 4 ? c : '•');
+  box.innerHTML = `<div class="who">${syncStatus==='ok' ? L(`متزامن ✓ · آخر مزامنة ${new Date(lastSync).toLocaleTimeString(LOC())}`, `Synced ✓ · last at ${new Date(lastSync).toLocaleTimeString(LOC())}`)
+      : syncStatus==='busy' ? L('بيزامن…','Syncing…') : syncStatus==='offline' ? L('مفيش نت دلوقتي، هيزامن أول ما يرجع.','Offline now; will sync when back online.') : `<span class="err">${L('حصلت مشكلة في المزامنة','Sync problem')}: ${esc(syncErr)}</span>`}</div>
+    <div class="field"><span>${L('كود المزامنة','Sync code')}</span>
+      <div class="row" style="flex-wrap:nowrap"><input type="text" readonly value="${showCode ? prettyCode(vault.code) : prettyCode(masked)}" style="direction:ltr;text-align:center;letter-spacing:.08em;font-weight:600">
+      <button type="button" data-sync-show>${showCode ? L('إخفاء','Hide') : L('إظهار','Show')}</button></div></div>
+    <div class="row">
+      <button type="button" data-sync-copy>${L('نسخ الكود','Copy code')}</button>
+      <button type="button" data-sync-link>${L('نسخ رابط الربط','Copy link')}</button>
+      <button type="button" data-sync-qr>${L('QR للموبايل','QR for phone')}</button>
+      <button type="button" data-sync-now>${L('زامن دلوقتي','Sync now')}</button>
+    </div>
+    <div id="sync-qr" style="justify-self:center;background:#fff;padding:10px;border-radius:12px" hidden></div>
+    <div class="note">${L('احفظ الكود في مكان آمن ومتديهوش لحد. لو ضاع، بياناتك على أجهزتك هتفضل، بس اللي على السحابة مش هتتفتح غير بيه.',
+      "Keep the code somewhere safe and don't share it. If it's lost, data on your devices stays, but the cloud copy only opens with it.")}</div>
+    <div class="row"><button type="button" class="x" data-sync-rotate>${L('تغيير الكود','Change code')}</button><button type="button" class="x" data-sync-stop>${L('إيقاف على الجهاز دا','Stop on this device')}</button></div>
+    <span id="sync-confirm"></span>`;
+  // the QR stays drawn through re-renders while it's switched on
+  const q = document.getElementById('sync-qr');
+  if(showQr && window.QRCode){ q.hidden = false; new QRCode(q, {text: joinLink(), width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M}); }
+}
+const syncMsg = e => e.message==='badcode' ? L('الكود دا مش بيفتح البيانات. اتأكد إنك كاتبه صح.', "That code doesn't open the data. Check it's typed correctly.")
+  : e.message==='nodata' ? L('مفيش بيانات بالكود دا. اتأكد منه، أو فعّل المزامنة على الجهاز التاني الأول.', 'No data under this code. Check it, or turn on sync on the other device first.')
+  : navigator.onLine===false ? L('مفيش نت. جرّب تاني لما النت يرجع.', 'No connection. Try again when online.')
+  : (e.message || String(e));
+document.getElementById('sync-box').addEventListener('click', async e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  const d = b.dataset;
+  try{
+    if(d.syncCreate!==undefined){ b.disabled = true; setSync('busy'); await startSync(newCode(), 'create'); showCode = true; renderSync(); toast(L('اتفعّلت المزامنة. انسخ الكود واحفظه.', 'Sync is on. Copy the code and keep it safe.')); buzz(); }
+    else if(d.syncJoin!==undefined){
+      const code = cleanCode(document.getElementById('sync-code').value);
+      if(code.length !== 16){ toast(L('الكود لازم يبقى 16 حرف ورقم.', 'The code should be 16 letters and digits.')); return; }
+      b.disabled = true; setSync('busy'); await startSync(code, 'join'); joinPrefill = ''; renderSync();
+      toast(L('اتربط الجهاز ✓ وبياناتك اتجابت.', 'Linked ✓ and your data is here.')); buzz();
+    }
+    else if(d.syncShow!==undefined){ showCode = !showCode; renderSync(); }
+    else if(d.syncCopy!==undefined || d.syncLink!==undefined){
+      const t = d.syncCopy!==undefined ? prettyCode(vault.code) : joinLink();
+      try{ await navigator.clipboard.writeText(t); toast(L('اتنسخ.', 'Copied.')); }catch(err){ showCode = true; renderSync(); toast(L('انسخه من الخانة.', 'Copy it from the box.')); }
+    }
+    else if(d.syncQr!==undefined){
+      showQr = !showQr;
+      if(showQr && !window.QRCode) await new Promise((ok, no)=>{ const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+      renderSync();
+    }
+    else if(d.syncNow!==undefined){ await pullNow({force:true}); await pushNow(); }
+    else if(d.syncStop!==undefined){ stopSync(); renderSync(); toast(L('اتوقفت المزامنة على الجهاز دا. بياناتك فضلت عليه.', 'Sync stopped on this device. Your data stays here.')); }
+    else if(d.syncRotate!==undefined){
+      document.getElementById('sync-confirm').innerHTML = `<span class="confirm">${L('هيتعمل كود جديد والقديم هيتلغي، ولازم تدخل الجديد على أجهزتك التانية. متأكد؟','A new code replaces the old one; you will need to enter it on your other devices. Continue?')} <button type="button" data-sync-rotate-yes>${L('غيّر','Change')}</button></span>`;
+    }
+    else if(d.syncRotateYes!==undefined){ setSync('busy'); await rotateCode(); showCode = true; renderSync(); toast(L('اتعمل كود جديد. دخّله على أجهزتك التانية.', 'New code made. Enter it on your other devices.')); }
+  }catch(err){ b.disabled = false; setSync(vault ? 'err' : 'off', syncMsg(err)); if(!vault) syncStatus = 'err'; renderSync(); toast(syncMsg(err)); }
+});
+
+// a join link (…#join=CODE) opens Settings with the code filled in, ready to link
+function takeJoinLink(){
+  const m = location.hash.match(/^#join=([A-Za-z0-9-]+)/); if(!m) return;
+  try{ window.history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+  if(vault && cleanCode(m[1])===vault.code) return;
+  joinPrefill = prettyCode(cleanCode(m[1]));
+  setTimeout(()=>{ openSettings('sync'); }, 300);
+}
+// resume on load, catch up when the app comes back or the connection returns
+async function resumeSync(){
+  let saved = null; try{ saved = JSON.parse(localStorage.getItem(SYNCKEY)); }catch(e){}
+  if(!saved?.code) return;
+  try{ setSync('busy'); vault = await vaultFromCode(saved.code); await fbInit(); const r = await pullNow({force:true}); if(r==='empty') await pushNow(); else setSync('ok'); watchRemote(); }
+  catch(e){ setSync(navigator.onLine===false ? 'offline' : 'err', syncMsg(e)); }
+}
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && vault) pullNow().catch(()=>{}); });
+window.addEventListener('online', ()=>{ if(vault){ pullNow().then(()=>pushNow()).catch(()=>{}); } });
 
 /* ---------- welcome on first run ---------- */
 const wel = document.getElementById('welcome'), welBody = document.getElementById('wel-body');
@@ -3153,7 +3459,10 @@ render();
 goSlide(slideIdx, false);
 setTab(tab, false);
 takeIncomingSms();
-if(FIRST_RUN && !getPin() && !state.pending.length) openWelcome();
+takeJoinLink();
+if(FIRST_RUN && !getPin() && !state.pending.length && !joinPrefill) openWelcome();
+renderSyncInd();
+resumeSync();
 loadEgxList();
 refresh();
 setInterval(()=>{ if(!document.hidden) refresh(); }, 30000);
