@@ -211,6 +211,74 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .checks{display:grid;gap:8px;font-size:.9rem}
 .checks label{display:flex;gap:10px;align-items:center}
+/* spending and income */
+.month-nav{display:flex;align-items:center;gap:6px;font-size:.92rem}
+.month-nav .x{font-size:1.3rem;padding:2px 10px;color:var(--fg)}
+:root[dir="rtl"] .month-nav .x{transform:scaleX(-1)}
+.money{display:grid;gap:18px}
+.mk>div:last-child:nth-child(odd){grid-column:1/-1}
+@media (min-width:641px){.mk{grid-template-columns:repeat(3,1fr)!important}.mk>div:last-child:nth-child(odd){grid-column:auto}}
+.mk{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.mk>div{background:var(--surface);padding:12px 14px;display:grid;gap:2px;min-width:0}
+.mk .l{font-size:.75rem;color:var(--muted)}
+.mk .v{font-size:1.1rem;font-weight:600;overflow-wrap:anywhere}
+.mk .s{font-size:.75rem;color:var(--muted)}
+.m-split{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:20px;align-items:center}
+@media (max-width:640px){.m-split{grid-template-columns:1fr;justify-items:center}}
+.donut{width:180px;height:180px;display:block}
+.donut text{font-family:var(--body)}
+.cat-list{display:grid;gap:6px;width:100%;min-width:0}
+.cat-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:10px;align-items:center;font-size:.9rem}
+.cat-row i{width:10px;height:10px;border-radius:3px}
+.cat-row .p{color:var(--muted);font-size:.8rem;min-width:44px;text-align:end}
+.m-sub{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.m-sub h3{margin:0;font:600 1rem/1.3 var(--display)}
+.insights{display:grid;gap:6px;font-size:.9rem}
+.insights div{padding:8px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--line)}
+.budgets{display:grid;gap:12px}
+.bud{display:grid;gap:5px}
+.bud .top{display:flex;justify-content:space-between;gap:10px;font-size:.88rem}
+.bud .top span:last-child{color:var(--muted)}
+.bud .bar2{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bud .bar2 span{display:block;height:100%;border-radius:4px;background:var(--up)}
+.bud.warn .bar2 span{background:var(--warn)}.bud.over .bar2 span{background:var(--down)}
+.bud.over .top span:last-child{color:var(--down);font-weight:600}
+.tx-day{font-size:.78rem;color:var(--muted);margin:6px 0 2px}
+.tx{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.tx:last-child{border-bottom:0}
+.tx i{width:10px;height:10px;border-radius:3px}
+.tx .nm{min-width:0}
+.tx .nm b{font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx .nm small{color:var(--muted);font-size:.76rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx .amt{font-weight:600;white-space:nowrap}
+.rec-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.88rem;padding:6px 0;border-bottom:1px solid var(--line)}
+.rec-row:last-child{border-bottom:0}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{border:0;border-radius:9px;padding:8px;background:none;color:var(--muted);font-weight:600}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.seg button[data-txtype=exp][aria-pressed=true]{color:var(--down)}
+.seg button[data-txtype=inc][aria-pressed=true]{color:var(--up)}
+.amt-in{font-size:1.8rem!important;font-weight:600;text-align:center!important;padding:10px!important}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{display:flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:.85rem;background:var(--bg)}
+.chips button i{width:9px;height:9px;border-radius:50%}
+.chips button[aria-pressed=true]{border-color:var(--fg);background:var(--fg);color:var(--bg)}
+.bud-edit{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:8px 12px;align-items:center;font-size:.9rem}
+.bud-edit span{display:flex;align-items:center;gap:8px;min-width:0}
+.bud-edit i{width:9px;height:9px;border-radius:50%;flex:none}
+
+/* bank messages waiting to be filed */
+.pend{display:grid;gap:10px;border:1px solid var(--warn);border-radius:14px;padding:14px;background:color-mix(in srgb,var(--warn) 7%,transparent)}
+.pend-item{display:grid;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.pend-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pend-top .amt{font-size:1.15rem;font-weight:600}
+.pend-who{color:var(--muted);font-size:.85rem;min-width:0;overflow-wrap:anywhere}
+.pend-raw summary{font-size:.78rem}
+.pend-raw div{font-size:.8rem;color:var(--muted);margin-top:6px;white-space:pre-wrap}
+.go-btn.sm{background:var(--accent);color:#14110a;border:0;font-weight:600;padding:8px 18px;border-radius:10px}
+.bnav button{position:relative}
+.bnav .badge{position:absolute;top:0;inset-inline-start:calc(50% + 6px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--down);color:#fff;font-size:.65rem;font-weight:700;display:grid;place-items:center}
+
 /* today / week change under net worth */
 .today{font-size:.92rem;font-weight:500;margin-top:4px}
 .today .why{color:var(--muted);font-weight:400}
@@ -514,6 +582,18 @@ section.card.collapsed{gap:0}
     <div class="dots-nav" id="slide-dots" aria-hidden="true"><i></i><i></i><i></i></div>
   </section>
 
+  <section class="card" id="sec-money" data-tab="money">
+    <div class="sec-head">
+      <h2><span class="dot" style="background:var(--accent)"></span><span data-en="Spending and income">المصاريف والدخل</span></h2>
+      <div class="month-nav" id="money-nav">
+        <button type="button" class="x" data-mnav="-1" aria-label="الشهر اللي فات" data-en-label="Previous month">‹</button>
+        <b id="money-month"></b>
+        <button type="button" class="x" data-mnav="1" aria-label="الشهر الجاي" data-en-label="Next month">›</button>
+      </div>
+    </div>
+    <div id="money-body" class="money"></div>
+  </section>
+
   <section class="card" id="sec-zakat" data-tab="zakat">
     <div class="sec-head"><h2><span data-en="Zakat">الزكاة</span></h2><span class="sec-sum m" id="zakat-sum"></span></div>
     <div class="zk" id="zakat-grid"></div>
@@ -662,6 +742,7 @@ section.card.collapsed{gap:0}
       <label><input type="checkbox" data-set="nZakat" id="nZakat"> <span data-en="Zakat (year starts, breaks and completes)">الزكاة (بداية الحول وانقطاعه وموعده)</span></label>
       <label><input type="checkbox" data-set="nBackup" id="nBackup"> <span data-en="Backup reminder after a month">تذكير بالنسخة الاحتياطية لو عدّى شهر</span></label>
       <label><input type="checkbox" data-set="nMonthly" id="nMonthly"> <span data-en="Monthly summary of your wealth">ملخص شهري لثروتك</span></label>
+      <label><input type="checkbox" data-set="nBudget" id="nBudget"> <span data-en="When spending nears a budget">لما المصاريف تقرّب من الميزانية</span></label>
     </div>
     <div class="note" id="notify-note"></div>
   </div>
@@ -715,6 +796,7 @@ section.card.collapsed{gap:0}
   <button type="button" data-goto="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg><span data-en="Home">الرئيسية</span></button>
   <button type="button" data-goto="assets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18l2.5-6h9L19 18zM9 9h6M10 6h4"/></svg><span data-en="Assets">الأصول</span></button>
   <button type="button" data-goto="reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M7 16v-4M12 16V8M17 16v-7"/></svg><span data-en="Reports">التقارير</span></button>
+  <button type="button" data-goto="money"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 15h2"/></svg><span data-en="Spending">المصاريف</span></button>
   <button type="button" data-goto="zakat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M6 8h12M6 8l-3 6h6zM18 8l-3 6h6z"/></svg><span data-en="Zakat">الزكاة</span></button>
   <button type="button" data-goto="alerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20h4"/></svg><span data-en="Alerts">التنبيهات</span></button>
 </nav>
@@ -812,7 +894,7 @@ const today = () => dayKey(Date.now());   // local date, not UTC, so it flips at
 const NEW_ROW = {
   gold:   () => ({k:'21', w:0, cost:'', worn:false}),
   silver: () => ({k:'999', w:0, cost:''}),
-  cash:   () => ({b:'NBE', c:'EGP', a:0}),
+  cash:   () => ({id: newId('a'), b:'NBE', c:'EGP', a:0}),
   stocks: () => ({s:'', q:0, cost:''}),
   other:  () => ({name:'', type:'realestate', v:0}),
   debts:  () => ({name:'', a:0, inst:''}),
@@ -825,12 +907,17 @@ const DEFAULT_STATE = {
   zExcludeWorn:true, zExcludeStocks:false, zDeductDebts:true, zDate:'', lastBackup:null,
   notifyOn:false, nPrice:true, nZakat:true, nBackup:true, zNotified:'', backupNotifiedAt:0,
   goalDate:'', nMonthly:true, monthlySent:'', reports:{}, yearReports:{},
+  tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'',
+  pending:[], merchantCats:{}, autoKnown:true,
   userName:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
 };
 
 // first visit on this device: nothing saved yet and the welcome hasn't been shown
 const FIRST_RUN = (()=>{ try{ return !localStorage.getItem('wealth-v1') && !localStorage.getItem('wealth-welcomed'); }catch(e){ return false; } })();
 let state = load();
+// cash rows get a stable id so spending and income can point at the account they came from or went to
+function newId(p){ return p + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+state.cash.forEach(r => { if(!r.id) r.id = newId('a'); });
 let prices = {};      // TradingView symbol -> {close, change}
 let stockPx = {};     // EGX symbol -> {close, change, desc, logo}
 let egxNames = {}, egxLogos = {};
@@ -842,6 +929,7 @@ function withDefaults(s){
   // the earlier on/off "track the nisab automatically" switch became the method list
   if(s && s.zMode===undefined && s.zAuto===false) d.zMode = 'manual';
   delete d.zAuto;
+  (d.cash || []).forEach(r => { if(!r.id) r.id = newId('a'); });
   return d;
 }
 function load(){
@@ -980,6 +1068,7 @@ async function refresh(){
     }
     priceStatus = 'ok'; lastUpdate = Date.now();
     savePriceCache();
+    processRecurring();
     checkAlerts();
     trackNisab();
     checkReminders();
@@ -1410,6 +1499,7 @@ function render(){
   renderBackupNote();
   renderReportsList();
   renderYearsList();
+  renderMoney();
   drawChart();
   if(typeof fitSlide==='function') fitSlide();
 }
@@ -1933,6 +2023,26 @@ function reportChart(series){
     <text x="${W-m.r}" y="${H-6}" text-anchor="end" style="fill:var(--muted);font-size:11px">${dl(t1)}</text></svg>`;
 }
 
+// income and spending for the report's month or year, read live from the transactions
+function cashFlowHtml(r){
+  const inPeriod = t => r.year ? t.date.slice(0,4)===r.year : monthOf(t.date)===r.month;
+  const txs = (state.tx||[]).filter(inPeriod);
+  if(!txs.length) return '';
+  const inc = txs.filter(t=>t.type==='inc').reduce((a,t)=>a+txEgp(t),0), exp = txs.filter(t=>t.type==='exp').reduce((a,t)=>a+txEgp(t),0);
+  const saved = inc - exp, by = {};
+  txs.filter(t=>t.type==='exp').forEach(t=>{ by[t.cat] = (by[t.cat]||0) + txEgp(t); });
+  const top = Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  return `<div><h4>${L('الدخل والمصاريف','Income and spending')}</h4>
+    <div class="kpis">
+      <div><span class="l">${L('الدخل','Income')}</span><span class="v m up-t">${egp(inc)}</span></div>
+      <div><span class="l">${L('المصاريف','Spending')}</span><span class="v m down-t">${egp(exp)}</span></div>
+      <div><span class="l">${L('المتبقي','Left over')}</span><span class="v m ${saved>=0?'up-t':'down-t'}"><bdi>${saved>=0?'+':'−'}${egp(Math.abs(saved))}</bdi></span>
+        ${inc > 0 ? `<span class="s">${L('نسبة التوفير','Savings rate')} ${fmt(saved/inc*100,0)}${PCT()}</span>` : ''}</div>
+    </div>
+    ${top.length ? `<div class="tbl-wrap" style="margin-top:10px"><table><thead><tr><th>${L('أكبر بنود المصاريف','Top spending')}</th><th>${L('المبلغ','Amount')}</th><th>${L('النسبة','Share')}</th></tr></thead><tbody>
+      ${top.map(([id,v])=>{ const c = catById(id); return `<tr><td><span class="dotc" style="background:${c.color}"></span>${esc(catName(c))}</td><td class="num m">${egp(v)}</td><td class="num">${fmt(v/exp*100,0)}${PCT()}</td></tr>`; }).join('')}
+    </tbody></table></div>` : ''}</div>`;
+}
 function reportHtml(r, partial){
   const sNet = netOf(r.start), eNet = netOf(r.end), d = eNet - sNet, pct = sNet ? d/sNet*100 : 0, sg = v => v>=0 ? '+' : '−';
   const signed = (v, cls=true) => `<span class="${cls ? (v>=0?'up-t':'down-t') : ''}"><bdi>${sg(v)}${egp(Math.abs(v))}</bdi></span>`;
@@ -1987,6 +2097,7 @@ function reportHtml(r, partial){
     <tbody>${rows}</tbody>
     <tfoot><tr><td>${L('صافي الثروة','Net worth')}</td><td class="num m">${egp(sNet)}</td><td class="num m">${egp(eNet)}</td><td class="num m">${signed(d)}</td><td></td></tr></tfoot></table></div>
   </div>
+  ${cashFlowHtml(r)}
   <div><h4>${P(L('أبرز حاجات الشهر','Highlights'), L('أبرز حاجات السنة','Highlights'))}</h4><div class="hl">${hl.map(([l,v])=>`<div><span class="l">${l}</span><span class="v m">${v}</span></div>`).join('')}</div></div>
   <div class="rep-foot">${L('الأرقام مبنية على قيمة ثروتك في الأيام اللي فتحت فيها التطبيق خلال الفترة، والجرامات بسعر عيار 21 وقت عمل التقرير. الأسعار من آي صاغة وTradingView. التقرير للاسترشاد وليس نصيحة استثمارية.',
     "Figures use your net worth on the days you opened the app this month; grams use the 21k price when the report was made. Prices from iSagha and TradingView. For guidance only, not investment advice.")}</div>`;
@@ -2243,7 +2354,7 @@ window.addEventListener('touchend', async ()=>{
 });
 
 /* ---------- phone navigation: one area at a time ---------- */
-const TABS = ['home','assets','reports','zakat','alerts'];
+const TABS = ['home','assets','money','reports','zakat','alerts'];
 let tab = 'home';
 try{ tab = localStorage.getItem('wealth-tab') || 'home'; }catch(e){}
 function setTab(t, scroll=true){
@@ -2260,6 +2371,7 @@ document.getElementById('bnav').addEventListener('click', e=>{ const t = e.targe
 /* ---------- quick add sheet ---------- */
 const sheet = document.getElementById('sheet'), sheetBody = document.getElementById('sheet-body');
 const QTYPES = [
+  {sec:'exp', ar:'مصروف', en:'Expense', color:'var(--down)'}, {sec:'inc', ar:'دخل', en:'Income', color:'var(--up)'},
   {sec:'gold', ar:'ذهب', en:'Gold', color:'var(--gold)'}, {sec:'silver', ar:'فضة', en:'Silver', color:'var(--silver)'},
   {sec:'cash', ar:'كاش', en:'Cash', color:'var(--cash)'}, {sec:'stocks', ar:'سهم', en:'Stock', color:'var(--stocks)'},
   {sec:'other', ar:'أصل تاني', en:'Other asset', color:'var(--other)'}, {sec:'debts', ar:'دين أو قسط', en:'Debt', color:'var(--down)'},
@@ -2329,11 +2441,421 @@ document.getElementById('sheet-close').addEventListener('click', ()=>sheet.close
 sheet.addEventListener('click', e=>{
   if(e.target===sheet) return sheet.close();
   const b = e.target.closest('button'); if(!b) return;
-  if(b.dataset.qt) sheetForm(b.dataset.qt);
+  if(b.dataset.qt) (b.dataset.qt==='exp' || b.dataset.qt==='inc') ? sheetTx(b.dataset.qt) : sheetForm(b.dataset.qt);
   else if(b.dataset.qback!==undefined) sheetTypes();
   else if(b.dataset.qsave!==undefined) sheetSave();
 });
-sheet.addEventListener('keydown', e=>{ if(e.key==='Enter' && sheetSec && e.target.tagName==='INPUT'){ e.preventDefault(); sheetSave(); } });
+sheet.addEventListener('keydown', e=>{ if(e.key==='Enter' && sheetSec && e.target.tagName==='INPUT'){ e.preventDefault(); sheetSec==='tx' ? txSave() : sheetSave(); } });
+
+/* ---------- spending and income ---------- */
+const EXP_CATS = [
+  {id:'food', ar:'أكل وبقالة', en:'Food & groceries', color:'#e0a84f'},
+  {id:'transport', ar:'مواصلات وبنزين', en:'Transport & fuel', color:'#7c9de0'},
+  {id:'bills', ar:'فواتير', en:'Bills & utilities', color:'#4fb08a'},
+  {id:'rent', ar:'إيجار', en:'Rent', color:'#b58ad8'},
+  {id:'install', ar:'أقساط', en:'Instalments', color:'#ec6b5d'},
+  {id:'gamaeya', ar:'جمعية', en:'Savings circle', color:'#de9670'},
+  {id:'edu', ar:'تعليم', en:'Education', color:'#5fb6c9'},
+  {id:'health', ar:'صحة', en:'Health', color:'#e57fa8'},
+  {id:'fun', ar:'خروج وترفيه', en:'Going out', color:'#c9b84a'},
+  {id:'clothes', ar:'هدوم', en:'Clothes', color:'#9aa7b0'},
+  {id:'gifts', ar:'هدايا ومناسبات', en:'Gifts & occasions', color:'#c98f5a'},
+  {id:'charity', ar:'صدقة وزكاة', en:'Charity & zakat', color:'#6fbf73'},
+  {id:'other', ar:'حاجات تانية', en:'Other', color:'#8d958f'},
+];
+const INC_CATS = [
+  {id:'salary', ar:'مرتب', en:'Salary', color:'#4fb08a'},
+  {id:'business', ar:'شغل حر / بيزنس', en:'Business / freelance', color:'#7c9de0'},
+  {id:'returns', ar:'عائد استثمار', en:'Investment returns', color:'#e0b257'},
+  {id:'rentin', ar:'إيجار مقبوض', en:'Rent received', color:'#b58ad8'},
+  {id:'giftin', ar:'هدية', en:'Gift', color:'#de9670'},
+  {id:'otherin', ar:'دخل تاني', en:'Other income', color:'#8d958f'},
+];
+const CUSTOM_COLORS = ['#d08fbf','#8fb3d0','#c7a46b','#7fc4a5','#b9a0e0','#e09f8f'];
+const cats = type => [...(type==='inc' ? INC_CATS : EXP_CATS), ...state.customCats.filter(c=>c.type===type)];
+const catById = id => [...EXP_CATS, ...INC_CATS, ...state.customCats].find(c=>c.id===id) || {id, ar:'فئة محذوفة', en:'Deleted category', color:'#8d958f'};
+const catName = c => c.name || L(c.ar, c.en);
+const acctById = id => state.cash.find(r=>r.id===id);
+const acctName = r => r ? `${lbl(bankById(r.b||'home'))} · ${lbl(CURRENCIES.find(c=>c.id===r.c) || CURRENCIES[0])}` : L('من غير حساب','No account');
+const monthOf = d => d.slice(0,7);
+let moneyMonth = monthKey(Date.now());
+
+// move the account balance: spending takes from it, income adds to it; sign -1 undoes a transaction
+function applyTx(tx, sign){
+  const row = tx.acct && acctById(tx.acct);
+  if(!row) return;
+  row.a = Math.round((num(row.a) + (tx.type==='exp' ? -1 : 1) * tx.amount * sign) * 100) / 100;
+}
+function txEgp(tx){ return tx.egp ?? tx.amount; }
+function addTx(t){
+  const row = t.acct && acctById(t.acct), cur = row ? row.c : 'EGP', r = rate(cur);
+  const tx = {id: newId('t'), type:t.type, amount: num(t.amount), cur, egp: Math.round(num(t.amount) * (isFinite(r) ? r : 1) * 100) / 100,
+              cat:t.cat, note:(t.note||'').trim(), date:t.date || today(), acct: row ? row.id : '', recId: t.recId || ''};
+  const spentBefore = tx.type==='exp' ? catSpent(tx.cat, monthOf(tx.date)) : 0;
+  state.tx.push(tx); applyTx(tx, 1);
+  if(tx.type==='exp') budgetCheck(tx.cat, monthOf(tx.date), spentBefore);
+  if(row && num(row.a) < 0) toast(L(`رصيد ${acctName(row)} بقى بالسالب.`, `${acctName(row)} balance is now negative.`));
+  return tx;
+}
+function delTx(id){
+  const i = state.tx.findIndex(t=>t.id===id); if(i < 0) return;
+  const [tx] = state.tx.splice(i, 1); applyTx(tx, -1); save(); render(); buzz([10,40,10]);
+  toast(L('اتمسحت العملية ورجع المبلغ للحساب.', 'Deleted, and the amount went back to the account.'),
+    {label: L('تراجع','Undo'), fn: ()=>{ state.tx.splice(Math.min(i, state.tx.length), 0, tx); applyTx(tx, 1); save(); render(); }});
+}
+const monthTx = mk => state.tx.filter(t=>monthOf(t.date)===mk);
+const catSpent = (cat, mk) => monthTx(mk).filter(t=>t.type==='exp' && t.cat===cat).reduce((a,t)=>a+txEgp(t),0);
+
+// tell once at 80% and once at 100% of a category's monthly budget
+function budgetCheck(cat, mk, before){
+  const b = num(state.budgets[cat]); if(!(b > 0) || mk !== monthKey(Date.now())) return;
+  const after = catSpent(cat, mk), name = catName(catById(cat));
+  const hit = [1, .8].find(th => before < b*th && after >= b*th);
+  if(!hit) return;
+  const msg = hit===1
+    ? L(`عدّيت ميزانية ${name} الشهر دا: صرفت ${egp(after)} من ${egp(b)}.`, `You've gone over your ${name} budget: ${egp(after)} of ${egp(b)}.`)
+    : L(`قرّبت تخلّص ميزانية ${name}: صرفت ${egp(after)} من ${egp(b)} (${fmt(after/b*100,0)}${PCT()}).`, `You're close to your ${name} budget: ${egp(after)} of ${egp(b)} (${fmt(after/b*100,0)}${PCT()}).`);
+  state.nBudget ? notify(msg, 'budget-' + cat) : toast('🔔 ' + msg);
+}
+
+// monthly repeats: each one is written once per month on its day (catching up on months the app wasn't opened)
+function processRecurring(){
+  const now = today(), cur = monthOf(now);
+  let added = 0;
+  for(const rec of state.recurring){
+    let mk = rec.lastMonth ? nextMonth(rec.lastMonth) : monthOf(rec.start || now);
+    for(let n = 0; n < 24 && mk <= cur; n++, mk = nextMonth(mk)){
+      const date = `${mk}-${String(Math.min(rec.day, 28)).padStart(2,'0')}`;
+      if(date > now) break;
+      addTx({type:rec.type, amount:rec.amount, cat:rec.cat, note:rec.note, acct:rec.acct, date, recId:rec.id});
+      rec.lastMonth = mk; added++;
+    }
+  }
+  if(added){ save(); toast(L(`اتسجّلت ${fmt(added,0)} عملية متكررة لوحدها.`, `${fmt(added,0)} recurring transaction(s) were added.`)); }
+}
+function nextMonth(mk){ const d = new Date(+mk.slice(0,4), +mk.slice(5,7), 1); return monthKey(d.getTime()); }
+
+function donut(parts, total){
+  const R = 70, C = 2*Math.PI*R; let off = 0;
+  const segs = parts.map(p=>{ const len = total ? p.v/total*C : 0;
+    const s = `<circle r="${R}" cx="90" cy="90" fill="none" stroke="${p.color}" stroke-width="26" stroke-dasharray="${Math.max(0,len-2)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 90 90)"/>`;
+    off += len; return s; }).join('');
+  return `<svg class="donut m" viewBox="0 0 180 180" role="img" aria-label="${L('توزيع المصاريف','Spending by category')}">
+    <circle r="${R}" cx="90" cy="90" fill="none" style="stroke:var(--line)" stroke-width="26"/>${segs}
+    <text x="90" y="86" text-anchor="middle" style="fill:var(--muted);font-size:12px">${L('المصاريف','Spent')}</text>
+    <text x="90" y="108" text-anchor="middle" style="fill:var(--fg);font-size:17px;font-weight:600">${compact(total)}</text></svg>`;
+}
+
+function renderMoney(){
+  const body = document.getElementById('money-body'); if(!body) return;
+  // count of bank messages waiting, on the Spending tab button
+  const navBtn = document.querySelector('#bnav [data-goto="money"]');
+  if(navBtn){ let bd = navBtn.querySelector('.badge'); if(!bd){ bd = document.createElement('span'); bd.className = 'badge'; navBtn.appendChild(bd); }
+    bd.textContent = state.pending.length ? fmt(state.pending.length,0) : ''; bd.hidden = !state.pending.length; }
+  document.getElementById('money-month').textContent = monthLabel(moneyMonth);
+  const txs = monthTx(moneyMonth), inc = txs.filter(t=>t.type==='inc').reduce((a,t)=>a+txEgp(t),0), exp = txs.filter(t=>t.type==='exp').reduce((a,t)=>a+txEgp(t),0);
+  const saved = inc - exp, rate2 = inc > 0 ? saved/inc*100 : null, sg = v => v>=0 ? '+' : '−';
+  const byCat = {}; txs.filter(t=>t.type==='exp').forEach(t=>{ byCat[t.cat] = (byCat[t.cat]||0) + txEgp(t); });
+  const parts = Object.entries(byCat).map(([id,v])=>({id, v, color: catById(id).color})).sort((a,b)=>b.v-a.v);
+  // compared with the month before
+  const prevMk = monthKey(new Date(+moneyMonth.slice(0,4), +moneyMonth.slice(5,7)-2, 15).getTime());
+  const prevBy = {}; monthTx(prevMk).filter(t=>t.type==='exp').forEach(t=>{ prevBy[t.cat] = (prevBy[t.cat]||0) + txEgp(t); });
+  const notes = [];
+  if(parts[0]) notes.push(L(`أكبر بند مصاريف: ${catName(catById(parts[0].id))} (${fmt(parts[0].v/exp*100,0)}${PCT()} من مصاريفك).`, `Biggest spending: ${catName(catById(parts[0].id))} (${fmt(parts[0].v/exp*100,0)}${PCT()} of spending).`));
+  for(const p of parts){ const pv = prevBy[p.id]; if(pv > 0 && Math.abs(p.v-pv) >= 200 && Math.abs(p.v-pv)/pv >= .25){
+    const ch = (p.v-pv)/pv*100;
+    notes.push(L(`صرفت على ${catName(catById(p.id))} ${fmt(Math.abs(ch),0)}${PCT()} ${ch>0?'أكتر':'أقل'} من الشهر اللي فات.`, `You spent ${fmt(Math.abs(ch),0)}${PCT()} ${ch>0?'more':'less'} on ${catName(catById(p.id))} than last month.`));
+    if(notes.length >= 4) break; } }
+  if(rate2 !== null) notes.push(rate2 >= 0 ? L(`وفّرت ${fmt(rate2,0)}${PCT()} من دخلك الشهر دا.`, `You saved ${fmt(rate2,0)}${PCT()} of your income this month.`)
+                                           : L(`صرفت أكتر من دخلك الشهر دا بـ ${egp(-saved)}.`, `You spent ${egp(-saved)} more than you earned this month.`));
+  // budgets
+  const budIds = Object.keys(state.budgets).filter(k=>num(state.budgets[k]) > 0);
+  const buds = budIds.map(id=>{ const b = num(state.budgets[id]), s = byCat[id]||0, p = s/b;
+    return `<div class="bud ${p>=1?'over':p>=.8?'warn':''}"><div class="top"><span>${catName(catById(id))}</span><span class="m">${egp(s)} / ${egp(b)}</span></div>
+      <div class="bar2"><span style="width:${Math.min(100,p*100)}%"></span></div></div>`; }).join('');
+  // transactions by day, newest first
+  const days = {}; [...txs].sort((a,b)=>b.date.localeCompare(a.date)).forEach(t=>{ (days[t.date] = days[t.date] || []).push(t); });
+  const list = Object.entries(days).map(([d, ts])=>`<div class="tx-day">${new Date(d+'T12:00').toLocaleDateString(LOC(),{weekday:'long', day:'numeric', month:'long'})}</div>`
+    + ts.map(t=>{ const c = catById(t.cat), row = acctById(t.acct);
+      return `<div class="tx"><i style="background:${c.color}"></i><div class="nm"><b>${esc(t.note || catName(c))}</b><small>${t.note ? catName(c) + ' · ' : ''}${row ? acctName(row) : L('من غير خصم','Not linked')}${t.recId ? ' · ' + L('متكرر','recurring') : ''}</small></div>
+        <span class="amt m ${t.type==='exp'?'down-t':'up-t'}"><bdi>${t.type==='exp'?'−':'+'}${fmt(t.amount)} ${t.cur==='EGP' ? L('ج.م','EGP') : t.cur}</bdi></span>
+        <button type="button" class="x" data-txdel="${t.id}" aria-label="${L('حذف','Delete')}">×</button></div>`; }).join('')).join('');
+  const recs = state.recurring.map(r=>{ const c = catById(r.cat);
+    return `<div class="rec-row"><span>${esc(r.note || catName(c))} · ${L(`يوم ${fmt(r.day,0)} كل شهر`, `day ${r.day} monthly`)}</span>
+      <span class="m ${r.type==='exp'?'down-t':'up-t'}"><bdi>${r.type==='exp'?'−':'+'}${fmt(r.amount)}</bdi> <button type="button" class="x" data-recdel="${r.id}" aria-label="${L('إيقاف','Stop')}">×</button></span></div>`; }).join('');
+  body.innerHTML = pendingHtml() + `
+    <div class="mk">
+      <div><span class="l">${L('الدخل','Income')}</span><span class="v m up-t">${egp(inc)}</span></div>
+      <div><span class="l">${L('المصاريف','Spending')}</span><span class="v m down-t">${egp(exp)}</span></div>
+      <div><span class="l">${L('المتبقي','Left over')}</span><span class="v m ${saved>=0?'up-t':'down-t'}"><bdi>${sg(saved)}${egp(Math.abs(saved))}</bdi></span>
+        ${rate2!==null ? `<span class="s">${L('نسبة التوفير','Savings rate')} ${fmt(rate2,0)}${PCT()}</span>` : ''}</div>
+    </div>
+    ${txs.length ? '' : `<div class="rep-empty">${L('مفيش عمليات في الشهر دا. سجّل مصروف أو دخل من زرار الإضافة (+) أو من هنا.', 'No transactions this month. Add spending or income with the add (+) button or here.')}</div>`}
+    <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button></div>
+    ${parts.length ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
+    ${notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : ''}
+    <div class="m-sub"><h3>${L('الميزانيات','Budgets')}</h3><button type="button" data-budedit>${budIds.length ? L('تعديل الميزانيات','Edit budgets') : L('حدّد ميزانية','Set budgets')}</button></div>
+    ${budIds.length ? `<div class="budgets">${buds}</div>` : `<div class="note">${L('حدّد مبلغ لكل فئة في الشهر، والتطبيق ينبهك لما تقرّب منه.', "Set a monthly amount per category and you'll be warned as you get close.")}</div>`}
+    ${list ? `<div><div class="m-sub"><h3>${L('العمليات','Transactions')}</h3></div>${list}</div>` : ''}
+    <div><div class="m-sub"><h3>${L('المتكرر كل شهر','Monthly repeats')}</h3></div>
+      ${recs || `<div class="note">${L('الإيجار والمرتب والأقساط: سجّلهم مرة واحدة وعلّم على "يتكرر كل شهر"، وهيتسجّلوا لوحدهم في يومهم.', 'Rent, salary, instalments: add them once with "repeat every month" and they record themselves on their day.')}</div>`}</div>`;
+}
+document.getElementById('money-nav').addEventListener('click', e=>{
+  const d = +e.target.closest('[data-mnav]')?.dataset.mnav; if(!d) return;
+  moneyMonth = monthKey(new Date(+moneyMonth.slice(0,4), +moneyMonth.slice(5,7)-1+d, 15).getTime()); renderMoney(); buzz(6);
+});
+document.getElementById('money-body').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.txdel) delTx(b.dataset.txdel);
+  else if(b.dataset.txadd) openTx(b.dataset.txadd);
+  else if(b.dataset.budedit!==undefined) openBudgets();
+  else if(b.dataset.recdel){ state.recurring = state.recurring.filter(r=>r.id!==b.dataset.recdel); save(); render(); toast(L('اتوقف التكرار. العمليات اللي اتسجّلت قبل كدا فضلت زي ما هي.', 'Repeat stopped. Past transactions stay.')); }
+});
+
+// the add-transaction sheet
+let txDraft = null;
+function openTx(type){ sheetTx(type); if(!sheet.open) sheet.showModal(); buzz(6); }
+function sheetTx(type){
+  sheetSec = 'tx';
+  const defAcct = acctById(state.lastAcct) ? state.lastAcct : (state.cash[0]?.id || '');
+  txDraft = {type, cat: txDraft?.type===type ? txDraft.cat : cats(type)[0].id, acct: txDraft?.acct ?? defAcct};
+  renderTxSheet(true);
+  setTimeout(()=>document.getElementById('t-amt')?.focus(), 60);
+}
+// fresh: a newly opened sheet starts empty; otherwise keep what was typed while switching type, category or account
+function renderTxSheet(fresh){
+  const d = txDraft, keep = id => fresh ? undefined : document.getElementById(id)?.value;
+  const amt = keep('t-amt') ?? '', note = keep('t-note') ?? '', date = keep('t-date') || today(), rep = !fresh && document.getElementById('t-rep')?.checked || false;
+  const row = acctById(d.acct), curLbl = row && row.c!=='EGP' ? lbl(CURRENCIES.find(c=>c.id===row.c)) : L('ج.م','EGP');
+  document.getElementById('sheet-title').textContent = d.type==='exp' ? L('مصروف جديد','New expense') : L('دخل جديد','New income');
+  sheetBody.innerHTML = `
+    <div class="seg"><button type="button" data-txtype="exp" aria-pressed="${d.type==='exp'}">${L('مصروف','Expense')}</button><button type="button" data-txtype="inc" aria-pressed="${d.type==='inc'}">${L('دخل','Income')}</button></div>
+    ${fld(L(`المبلغ (${curLbl})`, `Amount (${curLbl})`), `<input id="t-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${esc(amt)}">`)}
+    <div class="field"><span>${L('الفئة','Category')}</span><div class="chips">${cats(d.type).map(c=>`<button type="button" data-txcat="${c.id}" aria-pressed="${c.id===d.cat}"><i style="background:${c.color}"></i>${esc(catName(c))}</button>`).join('')}
+      <button type="button" data-txnewcat>+ ${L('فئة جديدة','New category')}</button></div></div>
+    ${fld(d.type==='exp' ? L('اتدفع من','Paid from') : L('اتحط في','Paid into'), `<select id="t-acct"><option value="">${L('من غير خصم من رصيد','Don’t change any balance')}</option>${state.cash.map(r=>`<option value="${r.id}" ${r.id===d.acct?'selected':''}>${esc(acctName(r))}</option>`).join('')}</select>`)}
+    <div class="two">${fld(L('التاريخ','Date'), `<input id="t-date" type="date" value="${esc(date)}">`)}${fld(L('ملاحظة','Note'), `<input id="t-note" type="text" value="${esc(note)}" placeholder="${L('اختياري','optional')}">`)}</div>
+    <label class="field" style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="t-rep" ${rep?'checked':''}> <span>${L('يتكرر كل شهر في نفس اليوم','Repeat every month on this day')}</span></label>
+    <button type="button" class="go-btn" data-txsave>${L('حفظ','Save')}</button>`;
+}
+function txSave(){
+  const amount = num(document.getElementById('t-amt').value);
+  if(!(amount > 0)){ buzz([30,40,30]); toast(L('اكتب المبلغ الأول.', 'Enter the amount first.')); return; }
+  const date = document.getElementById('t-date').value || today(), acct = document.getElementById('t-acct').value, note = document.getElementById('t-note').value;
+  if(date > today()){ toast(L('التاريخ لسه ماجاش. اختار النهارده أو قبله.', 'That date is in the future. Pick today or earlier.')); return; }
+  const tx = addTx({type:txDraft.type, amount, cat:txDraft.cat, acct, date, note});
+  if(document.getElementById('t-rep').checked){
+    const rec = {id:newId('r'), type:tx.type, amount, cat:tx.cat, note:tx.note, acct, day: +date.slice(8,10), start: date, lastMonth: monthOf(date)};
+    tx.recId = rec.id; state.recurring.push(rec);
+  }
+  state.lastAcct = acct; moneyMonth = monthOf(date);
+  save(); render(); buzz(); sheet.close(); txDraft = null;
+  toast(tx.type==='exp' ? L(`اتسجّل مصروف ${egp(tx.egp)}${acct ? ' واتخصم من الحساب' : ''}.`, `Expense of ${egp(tx.egp)} saved${acct ? ' and taken from the account' : ''}.`)
+                        : L(`اتسجّل دخل ${egp(tx.egp)}${acct ? ' واتضاف للحساب' : ''}.`, `Income of ${egp(tx.egp)} saved${acct ? ' and added to the account' : ''}.`),
+        {label: L('عرض','View'), fn: ()=>{ setTab('money'); document.getElementById('sec-money').scrollIntoView({block:'start'}); }});
+}
+function openBudgets(){
+  sheetSec = 'bud';
+  document.getElementById('sheet-title').textContent = L('الميزانية الشهرية','Monthly budgets');
+  sheetBody.innerHTML = `<div class="note">${L('سيب الخانة فاضية للفئات اللي مش عايز لها ميزانية.', 'Leave a category empty for no budget.')}</div>
+    <div class="bud-edit">${cats('exp').map(c=>`<span><i style="background:${c.color}"></i>${esc(catName(c))}</span><input type="number" min="0" step="any" inputmode="decimal" data-bud="${c.id}" value="${esc(state.budgets[c.id] ?? '')}" placeholder="—">`).join('')}</div>
+    <button type="button" class="go-btn" data-budsave>${L('حفظ','Save')}</button>`;
+  if(!sheet.open) sheet.showModal();
+}
+sheetBody.addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.txtype){ txDraft.type = b.dataset.txtype; txDraft.cat = cats(txDraft.type)[0].id; renderTxSheet(); }
+  else if(b.dataset.txcat){ txDraft.cat = b.dataset.txcat; renderTxSheet(); }
+  else if(b.dataset.txnewcat!==undefined){
+    b.outerHTML = `<span style="display:flex;gap:6px"><input id="t-newcat" type="text" placeholder="${L('اسم الفئة','Category name')}" style="width:150px"><button type="button" data-txaddcat>${L('ضيف','Add')}</button></span>`;
+    document.getElementById('t-newcat').focus();
+  }
+  else if(b.dataset.txaddcat!==undefined){
+    const name = document.getElementById('t-newcat').value.trim(); if(!name) return;
+    const c = {id:newId('c'), type:txDraft.type, name, color: CUSTOM_COLORS[state.customCats.length % CUSTOM_COLORS.length]};
+    state.customCats.push(c); txDraft.cat = c.id; save(); renderTxSheet();
+  }
+  else if(b.dataset.txsave!==undefined) txSave();
+  else if(b.dataset.budsave!==undefined){
+    sheetBody.querySelectorAll('[data-bud]').forEach(i=>{ const v = num(i.value); if(v > 0) state.budgets[i.dataset.bud] = v; else delete state.budgets[i.dataset.bud]; });
+    save(); render(); sheet.close(); buzz(); toast(L('اتحفظت الميزانيات.', 'Budgets saved.'));
+  }
+});
+sheetBody.addEventListener('change', e=>{ if(e.target.id==='t-acct'){ txDraft.acct = e.target.value; renderTxSheet(); } });
+
+/* ---------- bank messages: read an SMS, queue it, file it ---------- */
+// sender names and words that point at each bank (matched against the sender and the text)
+const BANK_HINTS = [
+  ['NBE', /\bNBE\b|national bank of egypt|الأهلي|الاهلي/i], ['BM', /banque\s*misr|\bBM\b|بنك مصر|banquemisr/i],
+  ['CIB', /\bCIB\b|commercial international|التجاري الدولي/i], ['QNB', /\bQNB\b|qnb\s*alahli/i],
+  ['BDC', /banque du caire|\bBDC\b|بنك القاهرة/i], ['ALEX', /alex\s*bank|الإسكندرية|الاسكندرية/i],
+  ['AAIB', /\bAAIB\b|العربي الأفريقي|العربي الافريقي/i], ['HSBC', /\bHSBC\b/i], ['ENBD', /emirates\s*nbd|\bENBD\b|الإمارات دبي/i],
+  ['CAE', /credit\s*agricole|كريدي/i], ['FAISAL', /faisal|فيصل/i], ['ADIB', /\bADIB\b|أبوظبي الإسلامي|ابوظبي الاسلامي/i],
+  ['BARAKA', /baraka|البركة/i], ['EGB', /\bEGB\b|المصري الخليجي/i], ['NBK', /\bNBK\b|الكويت الوطني/i], ['HDB', /\bHDB\b|التعمير/i],
+  ['SAIB', /\bSAIB\b/i], ['EDBE', /\bEDB\b|تنمية الصادرات/i], ['SCB', /suez canal|قناة السويس/i], ['ARAB', /arab\s*bank|البنك العربي\b/i],
+  ['MASHREQ', /mashreq|المشرق/i], ['FAB', /\bFAB\b|first abu dhabi|أبوظبي الأول/i], ['ATTI', /attijari|التجاري وفا/i],
+  ['AIB', /aibank|\bAIB\b/i], ['ABE', /agricultural bank|الزراعي/i], ['UB', /united bank|المصرف المتحد/i], ['POST', /egypt\s*post|البريد/i],
+];
+const toLatinDigits = s => s.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+  .replace(/٫/g, '.').replace(/٬/g, ',');
+const CUR_WORDS = [['USD', /USD|US\$|\$|دولار/i], ['EUR', /EUR|€|يورو/i], ['SAR', /SAR|ريال/i], ['AED', /AED|درهم/i],
+                   ['KWD', /KWD|دينار/i], ['GBP', /GBP|£|إسترليني|استرليني/i], ['EGP', /EGP|L\.?E\.?|جنيه|ج\.?م|جم/i]];
+function parseBankSms(raw, from=''){
+  const text = toLatinDigits(String(raw||'')).replace(/\s+/g, ' ').trim();
+  if(!text) return null;
+  const debitW = /خصم|سحب|شراء|مشتريات|مدين|دفع|سداد|تحويل (?:مبلغ )?.{0,25}(?:إلى|الى)|purchase|debited|charged|withdraw|spent|paid|payment|deducted|transfer(?:red)? to/i;
+  const creditW = /إيداع|ايداع|إضافة|اضافة|استلام|دائن|وارد|راتب|credited|deposit|received|salary|refund|added to|transfer(?:red)? from/i;
+  // codes and logins carry no money: skip them unless they clearly describe a payment
+  if(/OTP|رمز التحقق|كود التحقق|verification code|one.?time|password|كلمة المرور|رمز الدخول/i.test(text) && !debitW.test(text) && !creditW.test(text)) return null;
+  const NUM = '(\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?|\\d+(?:\\.\\d+)?)';
+  const CUR = '(EGP|L\\.?E\\.?|USD|US\\$|EUR|SAR|AED|KWD|GBP|\\$|€|£|جنيه(?: مصري)?|ج\\.?م\\.?|جم|دولار|يورو|ريال|درهم|دينار)';
+  const cands = [];
+  for(const [re, numAt, curAt] of [[new RegExp(CUR + '\\s?' + NUM, 'gi'), 2, 1], [new RegExp(NUM + '\\s?' + CUR, 'gi'), 1, 2],
+                                    [new RegExp('(?:بمبلغ|مبلغ|amount(?: of)?|قيمة)\\s*(?:' + CUR + '\\s*)?' + NUM, 'gi'), 2, 1]]){
+    for(const m of text.matchAll(re)){
+      const before = text.slice(Math.max(0, m.index - 22), m.index);
+      if(/رصيد|الرصيد|balance|limit|حد|المتاح|available/i.test(before)) continue;   // the remaining balance is not the payment
+      const n = parseFloat(m[numAt].replace(/,/g,''));
+      if(n > 0) cands.push({i: m.index, n, cur: m[curAt] || ''});
+    }
+  }
+  if(!cands.length) return null;
+  cands.sort((a,b)=>a.i-b.i);
+  const pick = cands[0];
+  const cur = (CUR_WORDS.find(([, re]) => re.test(pick.cur)) || CUR_WORDS.find(([, re]) => re.test(text.slice(pick.i, pick.i + 40))) || ['EGP'])[0];
+  const isCredit = creditW.test(text) && !(debitW.test(text) && text.search(debitW) < text.search(creditW));
+  const bankHit = BANK_HINTS.find(([, re]) => re.test(from)) || BANK_HINTS.find(([, re]) => re.test(text));
+  const last4 = (text.match(/(?:ending(?: with| in)?|المنتهية(?: ب| بـ|ب)?|منتهي(?:ة)? ب|card|بطاقة|حساب(?:ك)?(?: رقم)?|account|رقم)\D{0,12}(\d{4})\b/i) || text.match(/[*xX•]{2,}\s?(\d{4})\b/) || [])[1] || '';
+  // shop or payee: "at …"/"لدى …" are surest, "to/from …"/"إلى/من …" are tried after them
+  let merchant = '';
+  const enEnd = `(?=\\s+(?:on|dated|via|using|with|ref|at\\s+\\d)\\b|\\s*[,;:]|[.](?:\\s|$)|\\s+\\d{1,2}[\\/-]|$)`;
+  const arEnd = `(?=\\s+(?:بتاريخ|يوم|في|عبر|من حسابك|من بطاقتك|الرصيد|رصيد|برقم|رقم)|\\s*[.,،:]|\\s+\\d|$)`;
+  const tries = [
+    new RegExp(`\\b(?:at|@)\\s+([A-Za-z0-9][A-Za-z0-9 .&'*\\-\\/]{1,38}?)${enEnd}`, 'i'),
+    new RegExp(`(?:لدى|لدي|عند|لصالح)\\s+([^\\d.,،:\\n]{2,38}?)${arEnd}`),
+    new RegExp(`\\b(?:to|from)\\s+([A-Za-z0-9][A-Za-z0-9 .&'*\\-\\/]{1,38}?)${enEnd}`, 'i'),
+    new RegExp(`(?:إلى|الى|من)\\s+([^\\d.,،:\\n]{2,38}?)${arEnd}`),
+  ];
+  for(const re of tries){
+    const m = text.match(re); if(!m) continue;
+    const v = m[1].trim();
+    if(!/^(?:your|the|card|account|حسابك|بطاقتك|حساب|بطاقة)(?:\s|$)/i.test(v)){ merchant = v.replace(/\s{2,}/g,' '); break; }
+  }
+  return {type: isCredit ? 'inc' : 'exp', amount: pick.n, cur, bank: bankHit ? bankHit[0] : '', last4, merchant, raw: String(raw).trim(), from: String(from||'').trim()};
+}
+const merchantKey = m => (m||'').toLowerCase().replace(/[^a-z0-9؀-ۿ]+/g,' ').trim().split(' ').slice(0,2).join(' ');
+// the account the message is about: same bank and currency, then same bank, then the last one used
+function matchAcct(p){
+  const rows = state.cash.filter(r => r.b===p.bank);
+  return (rows.find(r=>r.c===p.cur) || rows[0] || acctById(state.lastAcct) || state.cash[0])?.id || '';
+}
+// returns 'added' (filed straight away for a known shop), 'queued', 'dup' or 'bad'
+function ingestSms(raw, from){
+  const p = parseBankSms(raw, from);
+  if(!p) return 'bad';
+  const sig = p.raw.replace(/\s+/g,' ');
+  if(state.pending.some(x=>x.raw.replace(/\s+/g,' ')===sig) || state.tx.some(t=>t.sig===sig)) return 'dup';   // the same message twice
+  const known = state.merchantCats[merchantKey(p.merchant)];
+  const item = {id:newId('p'), ...p, date: today(), acct: matchAcct(p), cat: known || (p.type==='inc' ? 'otherin' : 'other'), known: !!known};
+  if(known && state.autoKnown && (catById(known).id===known)){
+    const tx = addTx({type:item.type, amount:item.amount, cat:known, acct:item.acct, date:item.date, note:item.merchant});
+    tx.sig = sig; save();
+    return 'added';
+  }
+  state.pending.unshift(item); save();
+  return 'queued';
+}
+function filePending(id){
+  const i = state.pending.findIndex(p=>p.id===id); if(i < 0) return;
+  const p = state.pending[i];
+  const tx = addTx({type:p.type, amount:p.amount, cat:p.cat, acct:p.acct, date:p.date, note:p.merchant || lbl(bankById(p.bank||'OTHER'))});
+  tx.sig = p.raw.replace(/\s+/g,' ');
+  if(p.merchant) state.merchantCats[merchantKey(p.merchant)] = p.cat;   // learn the shop for next time
+  state.pending.splice(i, 1); save(); render(); buzz();
+}
+function pendingHtml(){
+  if(!state.pending.length) return '';
+  return `<div class="pend">
+    <div class="m-sub"><h3>${L('رسايل البنك — مستنية تصنيف','Bank messages to file')} <span class="pill warn">${fmt(state.pending.length,0)}</span></h3></div>
+    ${state.pending.map(p=>{
+      const c = catById(p.cat), row = acctById(p.acct);
+      return `<div class="pend-item">
+        <div class="pend-top"><span class="amt m ${p.type==='exp'?'down-t':'up-t'}"><bdi>${p.type==='exp'?'−':'+'}${fmt(p.amount)} ${p.cur==='EGP'?L('ج.م','EGP'):p.cur}</bdi></span>
+          <span class="pend-who">${esc(p.merchant || L('من غير اسم محل','No shop name'))}${p.bank ? ' · ' + esc(lbl(bankById(p.bank))) : ''}${p.last4 ? ' · ••' + p.last4 : ''}</span></div>
+        <div class="two">
+          <label class="field"><span>${L('الفئة','Category')}</span><select data-pcat="${p.id}">${cats(p.type).map(x=>`<option value="${x.id}" ${x.id===p.cat?'selected':''}>${esc(catName(x))}</option>`).join('')}</select></label>
+          <label class="field"><span>${p.type==='exp'?L('اتدفع من','Paid from'):L('اتحط في','Paid into')}</span><select data-pacct="${p.id}"><option value="">${L('من غير خصم','Not linked')}</option>${state.cash.map(r=>`<option value="${r.id}" ${r.id===p.acct?'selected':''}>${esc(acctName(r))}</option>`).join('')}</select></label>
+        </div>
+        <details class="pend-raw"><summary>${L('نص الرسالة','Message text')}</summary><div>${esc(p.raw)}</div></details>
+        <div class="row"><button type="button" class="go-btn sm" data-pok="${p.id}">✓ ${L('سجّل','File it')}</button><button type="button" class="x" data-pdrop="${p.id}">${L('تجاهل','Ignore')}</button></div>
+      </div>`; }).join('')}
+    <label class="note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-set="autoKnown" id="autoKnown" ${state.autoKnown?'checked':''}> ${L('سجّل لوحده لو المحل صنّفته قبل كدا','File automatically when the shop is already known')}</label>
+  </div>`;
+}
+document.getElementById('money-body').addEventListener('change', e=>{
+  const t = e.target, id = t.dataset.pcat || t.dataset.pacct; if(!id) return;
+  const p = state.pending.find(x=>x.id===id); if(!p) return;
+  if(t.dataset.pcat) p.cat = t.value; else p.acct = t.value;
+  save();
+});
+document.getElementById('money-body').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.pok) filePending(b.dataset.pok);
+  else if(b.dataset.pdrop){ state.pending = state.pending.filter(p=>p.id!==b.dataset.pdrop); save(); render(); }
+  else if(b.dataset.paste!==undefined) openPaste();
+});
+
+// paste a message by hand (the iPhone route, and a fallback everywhere)
+function openPaste(prefill=''){
+  sheetSec = 'paste';
+  document.getElementById('sheet-title').textContent = L('لصق رسالة بنك','Paste a bank message');
+  sheetBody.innerHTML = `<button type="button" data-pclip>📋 ${L('لصق من الحافظة','Paste from clipboard')}</button>
+    <textarea id="p-text" rows="5" style="font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;resize:vertical" placeholder="${L('الصق رسالة البنك هنا','Paste the bank message here')}">${esc(prefill)}</textarea>
+    <button type="button" class="go-btn" data-pread>${L('اقرأ الرسالة','Read message')}</button>
+    <div class="note">${L('ممكن تلصق أكتر من رسالة، كل واحدة في سطر جديد فاضي بينهم.','You can paste several messages, separated by a blank line.')}</div>`;
+  if(!sheet.open) sheet.showModal();
+}
+async function readPaste(){
+  const text = document.getElementById('p-text').value.trim();
+  if(!text){ toast(L('الصق الرسالة الأول.', 'Paste the message first.')); return; }
+  const parts = text.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+  const res = parts.map(s=>ingestSms(s, ''));
+  sheet.close(); render(); setTab('money');
+  reportIngest(res);
+}
+function reportIngest(res){
+  const n = k => res.filter(r=>r===k).length;
+  const parts = [];
+  if(n('added')) parts.push(L(`${fmt(n('added'),0)} اتسجّلت لوحدها`, `${n('added')} filed automatically`));
+  if(n('queued')) parts.push(L(`${fmt(n('queued'),0)} مستنية تصنيف`, `${n('queued')} waiting to be filed`));
+  if(n('dup')) parts.push(L(`${fmt(n('dup'),0)} متسجّلة قبل كدا`, `${n('dup')} already recorded`));
+  if(n('bad')) parts.push(L(`${fmt(n('bad'),0)} مش رسالة دفع`, `${n('bad')} not a payment message`));
+  toast('💳 ' + parts.join(' · '));
+  buzz();
+}
+sheetBody.addEventListener('click', async e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.pclip!==undefined){
+    try{ document.getElementById('p-text').value = await navigator.clipboard.readText(); }
+    catch(err){ toast(L('المتصفح مسمحش بالقراية من الحافظة. الصق بإيدك جوه الخانة.', "The browser didn't allow reading the clipboard. Paste into the box by hand.")); }
+  }
+  else if(b.dataset.pread!==undefined) readPaste();
+});
+
+// a message handed over in the address: MacroDroid opens  …/wealth.html?from=<sender>&sms=<text>
+// and the Android share sheet sends the same two fields (see share_target in the manifest)
+function takeIncomingSms(){
+  const q = location.search; if(!/[?&](?:sms|text)=/.test(q)) return;
+  const dec = s => { try{ return decodeURIComponent(s.replace(/\+/g,' ')); }catch(e){ return s.replace(/\+/g,' '); } };
+  // the message is read to the end of the address, so an "&" inside it doesn't cut it short
+  const smsAt = q.search(/[?&](?:sms|text)=/), raw = dec(q.slice(q.indexOf('=', smsAt) + 1));
+  const from = dec((q.slice(0, smsAt).match(/[?&](?:from|title)=([^&]*)/) || [])[1] || '');
+  // window.history: the page's own "history" variable is the wealth record
+  try{ window.history.replaceState(null, '', location.pathname); }catch(e){}
+  const parts = raw.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+  const res = parts.map(s => ingestSms(s, from));
+  setTab('money'); render(); reportIngest(res);
+}
 
 /* ---------- welcome on first run ---------- */
 const wel = document.getElementById('welcome'), welBody = document.getElementById('wel-body');
@@ -2547,10 +3069,12 @@ if(getPin() && !sessionUnlocked()) showLock('unlock');
 syncStatic();
 applyLang();
 loadPriceCache();
+processRecurring();
 render();
 goSlide(slideIdx, false);
 setTab(tab, false);
-if(FIRST_RUN && !getPin()) openWelcome();
+takeIncomingSms();
+if(FIRST_RUN && !getPin() && !state.pending.length) openWelcome();
 loadEgxList();
 refresh();
 setInterval(()=>{ if(!document.hidden) refresh(); }, 30000);
