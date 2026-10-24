@@ -94,6 +94,16 @@ header>div:first-child{flex:1;min-width:0}
 .theme button+button{border-inline-start:1px solid var(--line)}
 .theme button[aria-pressed=true],.toggle[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.88rem}
+.fold-all{display:flex;gap:6px;justify-content:flex-end;margin-inline-start:auto}
+.fold-all button{width:36px;height:36px;padding:0;display:grid;place-items:center;border-radius:10px;color:var(--muted)}
+.fold-all button:hover{color:var(--fg)}
+.fold-all svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fold-all.mob{display:none}
+@media (max-width:640px){
+  .fold-all.desk{display:none}
+  .fold-all.mob{display:flex;margin-bottom:-6px}
+  :root[data-tab="home"] .fold-all.mob{display:none}
+}
 .ticker{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 @media (min-width:560px){.ticker{grid-template-columns:repeat(3,1fr)}}
 @media (min-width:900px){.ticker{grid-template-columns:repeat(6,1fr)}}
@@ -282,6 +292,11 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .chips button{display:flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:.85rem;background:var(--bg)}
 .chips button i{width:9px;height:9px;border-radius:50%}
 .chips button[aria-pressed=true]{border-color:var(--fg);background:var(--fg);color:var(--bg)}
+.chip-own{display:flex}
+.chip-own>button:first-child{border-start-end-radius:0;border-end-end-radius:0;border-inline-end:0}
+.chip-own .cdel{border-radius:0 999px 999px 0;padding:6px 10px;color:var(--muted);font-size:.85rem}
+:root[dir="rtl"] .chip-own .cdel{border-radius:999px 0 0 999px}
+.chip-own .cdel.arm{color:#fff;background:var(--down);border-color:var(--down)}
 .bud-sum{display:grid;gap:6px;font-size:.88rem}
 .bud-sum:empty{display:none}
 .bud-sum .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
@@ -646,11 +661,10 @@ section.card.collapsed{gap:0}
 
   <div class="tools" data-tab="home">
     <button type="button" id="btn-private" class="toggle" aria-pressed="false"></button>
-    <span style="margin-inline-start:auto;display:flex;gap:8px;flex-wrap:wrap">
-      <button type="button" id="btn-collapse-all" data-en="Collapse all">طي كل الأقسام</button>
-      <button type="button" id="btn-expand-all" data-en="Expand all">فتح كل الأقسام</button>
-    </span>
+    <span class="fold-all desk"></span>
   </div>
+  <!-- phones: the same two icons at the top of each tab except Home -->
+  <div class="fold-all mob"></div>
 
   <div class="install" id="install" hidden data-tab="home">
     <img src="icons/icon-192.png" alt="">
@@ -1094,7 +1108,7 @@ const DEFAULT_STATE = {
   goalDate:'', nMonthly:true, monthlySent:'', reports:{}, yearReports:{},
   tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'',
   pending:[], merchantCats:{}, autoKnown:true, budgetTotal:'',
-  deletedTx:[], deletedPending:[], deletedRec:[], _savedAt:0,
+  deletedTx:[], deletedPending:[], deletedRec:[], deletedCats:[], _savedAt:0,
   userName:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
 };
 
@@ -1162,6 +1176,7 @@ function applyLang(){
   document.title = L('نماء', 'Namaa');
   applyStatic();
   document.querySelectorAll('.fold').forEach(b=>b.setAttribute('aria-label', L('طي أو فتح القسم', 'Collapse or expand section')));
+  renderFoldAll();
   document.getElementById('install-hint').textContent = isIOS && !installEvt
     ? L('من Safari اضغط زرار المشاركة ⬆︎ وبعدين "إضافة إلى الشاشة الرئيسية".', 'In Safari, tap Share ⬆︎ then "Add to Home Screen".')
     : L('افتحه زي أي تطبيق من الشاشة الرئيسية.', 'Open it like any app from your home screen.');
@@ -2553,6 +2568,7 @@ let tab = 'home';
 function setTab(t, scroll=true){
   if(!TABS.includes(t)) t = 'home';
   tab = t;
+  document.documentElement.dataset.tab = t;
   document.querySelectorAll('.wrap > [data-tab]').forEach(el=>el.classList.toggle('tab-off', el.dataset.tab!==t));
   document.querySelectorAll('#bnav button').forEach(b=>b.setAttribute('aria-current', b.dataset.goto===t ? 'page' : 'false'));
   if(scroll) window.scrollTo({top:0});
@@ -2851,6 +2867,28 @@ function sheetTx(type){
   setTimeout(()=>document.getElementById('t-amt')?.focus(), 60);
 }
 // fresh: a newly opened sheet starts empty; otherwise keep what was typed while switching type, category or account
+let delCatArm = '';
+// removing a category moves everything filed under it to "Other", so totals and history stay whole
+function deleteCat(id){
+  const c = state.customCats.find(x=>x.id===id); if(!c) return;
+  const moved = moveCat(state, id);
+  state.customCats = state.customCats.filter(x=>x.id!==id);
+  state.deletedCats.push(id);
+  if(txDraft && txDraft.cat===id) txDraft.cat = cats(txDraft.type)[0].id;
+  save(); render(); buzz();
+  const other = catName(catById(c.type==='inc' ? 'otherin' : 'other'));
+  toast(moved ? L(`اتحذفت فئة «${c.name}»، و${fmt(moved,0)} عملية اتنقلت لـ «${other}».`, `"${c.name}" deleted; ${moved} transaction(s) moved to "${other}".`)
+              : L(`اتحذفت فئة «${c.name}».`, `"${c.name}" deleted.`));
+}
+function moveCat(st, id){
+  let n = 0;
+  const to = x => x.type==='inc' ? 'otherin' : 'other';
+  for(const t of st.tx || []) if(t.cat===id){ t.cat = to(t); n++; }
+  for(const r of [...(st.recurring || []), ...(st.pending || [])]) if(r.cat===id) r.cat = to(r);
+  if(st.budgets) delete st.budgets[id];
+  for(const k in st.merchantCats || {}) if(st.merchantCats[k]===id) delete st.merchantCats[k];
+  return n;
+}
 function renderTxSheet(fresh){
   const d = txDraft, keep = id => fresh ? undefined : document.getElementById(id)?.value;
   const amt = keep('t-amt') ?? '', note = keep('t-note') ?? '', date = keep('t-date') || today(), rep = !fresh && document.getElementById('t-rep')?.checked || false;
@@ -2859,7 +2897,11 @@ function renderTxSheet(fresh){
   sheetBody.innerHTML = `
     <div class="seg"><button type="button" data-txtype="exp" aria-pressed="${d.type==='exp'}">${L('مصروف','Expense')}</button><button type="button" data-txtype="inc" aria-pressed="${d.type==='inc'}">${L('دخل','Income')}</button></div>
     ${fld(L(`المبلغ (${curLbl})`, `Amount (${curLbl})`), `<input id="t-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${esc(amt)}">`)}
-    <div class="field"><span>${L('الفئة','Category')}</span><div class="chips">${cats(d.type).map(c=>`<button type="button" data-txcat="${c.id}" aria-pressed="${c.id===d.cat}"><i style="background:${c.color}"></i>${esc(catName(c))}</button>`).join('')}
+    <div class="field"><span>${L('الفئة','Category')}</span><div class="chips">${cats(d.type).map(c=>{
+      const pick = `<button type="button" data-txcat="${c.id}" aria-pressed="${c.id===d.cat}"><i style="background:${c.color}"></i>${esc(catName(c))}</button>`;
+      // categories the person added get a remove button; the built-in ones stay
+      return c.name===undefined ? pick : `<span class="chip-own">${pick}<button type="button" class="cdel${delCatArm===c.id?' arm':''}" data-txdelcat="${c.id}" aria-label="${L('احذف الفئة','Delete category')}">${delCatArm===c.id ? L('احذف؟','Delete?') : '×'}</button></span>`;
+    }).join('')}
       <button type="button" data-txnewcat>+ ${L('فئة جديدة','New category')}</button></div></div>
     ${fld(d.type==='exp' ? L('اتدفع من','Paid from') : L('اتحط في','Paid into'), `<select id="t-acct"><option value="">${L('من غير خصم من رصيد','Don’t change any balance')}</option>${state.cash.map(r=>`<option value="${r.id}" ${r.id===d.acct?'selected':''}>${esc(acctName(r))}</option>`).join('')}</select>`)}
     <div class="two">${fld(L('التاريخ','Date'), `<input id="t-date" type="date" value="${esc(date)}">`)}${fld(L('ملاحظة','Note'), `<input id="t-note" type="text" value="${esc(note)}" placeholder="${L('اختياري','optional')}">`)}</div>
@@ -2919,7 +2961,12 @@ sheetBody.addEventListener('input', e=>{ if(sheetSec==='bud' && (e.target.datase
 sheetBody.addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.txtype){ txDraft.type = b.dataset.txtype; txDraft.cat = cats(txDraft.type)[0].id; renderTxSheet(); }
-  else if(b.dataset.txcat){ txDraft.cat = b.dataset.txcat; renderTxSheet(); }
+  else if(b.dataset.txcat){ delCatArm = ''; txDraft.cat = b.dataset.txcat; renderTxSheet(); }
+  else if(b.dataset.txdelcat){
+    const id = b.dataset.txdelcat;
+    if(delCatArm !== id){ delCatArm = id; renderTxSheet(); return; }   // first tap asks, second tap deletes
+    delCatArm = ''; deleteCat(id); renderTxSheet();
+  }
   else if(b.dataset.txnewcat!==undefined){
     b.outerHTML = `<span style="display:flex;gap:6px"><input id="t-newcat" type="text" placeholder="${L('اسم الفئة','Category name')}" style="width:150px"><button type="button" data-txaddcat>${L('ضيف','Add')}</button></span>`;
     document.getElementById('t-newcat').focus();
@@ -3418,7 +3465,10 @@ function mergeData(loc, rem, preferRemote){
   const byId = (a, b, dead) => { const m = new Map(); for(const x of [...(b||[]), ...(a||[])]) if(!dead.has(x.id)) m.set(x.id, x); return [...m.values()]; };
   st.pending = byId(st.pending, os.pending, deadP);
   st.recurring = byId(st.recurring, os.recurring, deadR);
-  st.customCats = byId(st.customCats, os.customCats, new Set());
+  st.deletedCats = join(st.deletedCats, os.deletedCats);
+  st.customCats = byId(st.customCats, os.customCats, new Set(st.deletedCats));
+  // anything the other device filed under a category deleted here goes to "Other" too
+  for(const id of st.deletedCats) moveCat(st, id);
   st.merchantCats = {...(os.merchantCats||{}), ...(st.merchantCats||{})};
   st.reports = {...(os.reports||{}), ...(st.reports||{})}; st.yearReports = {...(os.yearReports||{}), ...(st.yearReports||{})};
   const days = new Map();
@@ -3777,8 +3827,20 @@ document.querySelectorAll('section.card').forEach(sec=>{
   h2.addEventListener('click', ()=>setCollapsed(sec, !sec.classList.contains('collapsed')));
   setCollapsed(sec, !!collapsed[sec.id]);
 });
-document.getElementById('btn-collapse-all').addEventListener('click', ()=>document.querySelectorAll('section.card').forEach(s=>setCollapsed(s, true)));
-document.getElementById('btn-expand-all').addEventListener('click', ()=>document.querySelectorAll('section.card').forEach(s=>setCollapsed(s, false)));
+// collapse / expand all, as two icons: on phones they act on the open tab only, on wider screens on every section
+function renderFoldAll(){
+  const ico = d => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+  document.querySelectorAll('.fold-all').forEach(el=>{ el.innerHTML =
+    `<button type="button" data-fold-all="1" aria-label="${L('طي كل الأقسام','Collapse all')}" title="${L('طي كل الأقسام','Collapse all')}">${ico('M7 4l5 5 5-5M7 20l5-5 5 5')}</button>
+     <button type="button" data-fold-all="0" aria-label="${L('فتح كل الأقسام','Expand all')}" title="${L('فتح كل الأقسام','Expand all')}">${ico('M7 9l5-5 5 5M7 15l5 5 5-5')}</button>`; });
+}
+renderFoldAll();
+document.querySelectorAll('.fold-all').forEach(el=>el.addEventListener('click', e=>{
+  const b = e.target.closest('[data-fold-all]'); if(!b) return;
+  const phone = matchMedia('(max-width:640px)').matches;
+  document.querySelectorAll('section.card').forEach(s=>{ if(!phone || s.dataset.tab===tab) setCollapsed(s, b.dataset.foldAll==='1'); });
+  buzz(6);
+}));
 
 // fill the static setting controls from state
 function syncStatic(){
