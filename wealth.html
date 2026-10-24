@@ -795,6 +795,11 @@ section.card.collapsed{gap:0}
   </div>
 
   <div class="dlg-sec">
+    <h3><span data-en="Bank messages in the background">رسايل البنك في الخلفية</span> <span class="pill idle" id="inbox-pill"></span></h3>
+    <div id="inbox-box" class="sync-box"></div>
+  </div>
+
+  <div class="dlg-sec">
     <h3><span data-en="App lock">قفل التطبيق</span> <span class="pill idle" id="pin-pill"></span></h3>
     <div class="row">
       <button type="button" id="btn-pin-set"></button>
@@ -1056,7 +1061,7 @@ function applyLang(){
     : L('افتحه زي أي تطبيق من الشاشة الرئيسية.', 'Open it like any app from your home screen.');
   resetClearButton();
   renderHello(); renderNotify(); renderPin(); applyPrivate(isPrivate());
-  if(dlg.open) renderSync();
+  if(dlg.open){ renderSync(); renderInbox(); }
 }
 function renderHello(){
   const el = document.getElementById('hello'), name = (state.userName||'').trim();
@@ -1872,7 +1877,7 @@ document.getElementById('zToday').addEventListener('click', ()=>{ state.zDate = 
 /* ---------- settings dialog ---------- */
 const dlg = document.getElementById('settings');
 function openSettings(part){
-  syncStatic(); renderBackupNote(); renderNotify(); renderSync();
+  syncStatic(); renderBackupNote(); renderNotify(); renderSync(); renderInbox();
   if(!dlg.open) dlg.showModal();
   if(part==='notify') document.getElementById('notify-box').scrollIntoView({block:'start'});
   if(part==='sync') document.getElementById('sync-box').scrollIntoView({block:'center'});
@@ -3001,6 +3006,106 @@ function takeIncomingSms(){
   setTab('money'); render(); reportIngest(res);
 }
 
+/* ---------- bank messages in the background: a tiny inbox the person deploys on their own Google account ----------
+   MacroDroid sends each SMS to it without opening the app; the app collects them whenever it opens, then clears them.
+   The inbox keeps messages in the script's own storage (no Sheet), only answers with the secret key,
+   and lives on this device only, so two devices never collect the same message twice. */
+const INBOX = 'wealth-inbox';
+let inbox = (()=>{ try{ return JSON.parse(localStorage.getItem(INBOX)) || {}; }catch(e){ return {}; } })();
+let inboxBusy = false, inboxLast = 0, inboxErr = '', showScript = false;
+const saveInbox = () => { try{ localStorage.setItem(INBOX, JSON.stringify(inbox)); }catch(e){} };
+function inboxKey(){
+  if(!inbox.key){ inbox.key = [...crypto.getRandomValues(new Uint8Array(18))].map(b=>CODE_ABC[b % 32]).join(''); saveInbox(); }
+  return inbox.key;
+}
+const inboxAddr = extra => inbox.url + '?key=' + encodeURIComponent(inboxKey()) + (extra || '');
+const macroLink = () => inboxAddr('&from=[sms_number]&sms=[sms_message]');
+const inboxScript = () => `// صندوق رسايل البنك لنماء — Namaa bank-message inbox
+const KEY = '${inboxKey()}';
+
+function doGet(e) {
+  const p = e.parameter, box = PropertiesService.getScriptProperties();
+  if (p.key !== KEY) return out({ok: false});
+  if (p.sms) {
+    box.setProperty('m' + Date.now() + Math.random().toString(36).slice(2, 6), JSON.stringify({from: p.from || '', sms: p.sms}));
+    return out({ok: true});
+  }
+  if (p.done) {
+    p.done.split(',').forEach(function (k) { box.deleteProperty(k); });
+    return out({ok: true});
+  }
+  const all = box.getProperties();
+  return out({ok: true, msgs: Object.keys(all).sort().map(function (k) { const m = JSON.parse(all[k]); m.id = k; return m; })});
+}
+function doPost(e) { return doGet(e); }
+function out(o) {
+  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}`;
+async function pullInbox(manual){
+  if(!inbox.url || inboxBusy || (document.hidden && !manual)) return;
+  inboxBusy = true; renderInbox();
+  try{
+    const j = await fetch(inboxAddr(), {cache:'no-store'}).then(r=>r.json());
+    if(!j.ok) throw new Error('key');
+    inboxErr = ''; inboxLast = Date.now();
+    if(j.msgs.length){
+      const res = j.msgs.map(m => ingestSms(String(m.sms || ''), String(m.from || '')));
+      // cleared only after they're saved here; if this fails, the next pull sees them again and skips them as duplicates
+      await fetch(inboxAddr('&done=' + j.msgs.map(m=>m.id).join(',')), {cache:'no-store'}).catch(()=>{});
+      render(); reportIngest(res);
+    } else if(manual) toast(L('مفيش رسايل جديدة.', 'No new messages.'));
+  }catch(e){
+    inboxErr = e.message==='key' ? L('الصندوق رفض المفتاح. اتأكد إنك نسخت السكريبت من هنا ونشرته تاني.', 'The inbox refused the key. Copy the script from here and deploy it again.')
+      : navigator.onLine===false ? L('مفيش نت.', 'Offline.') : L('مقدرتش أوصل للصندوق. اتأكد من الرابط وإن النشر "Anyone".', "Couldn't reach the inbox. Check the link and that access is set to Anyone.");
+    if(manual) toast(inboxErr);
+  }finally{ inboxBusy = false; renderInbox(); }
+}
+function renderInbox(){
+  const pill = document.getElementById('inbox-pill'), box = document.getElementById('inbox-box'); if(!box) return;
+  pill.className = 'pill ' + (!inbox.url ? 'idle' : inboxErr ? 'due' : 'ok');
+  pill.textContent = !inbox.url ? L('مقفول','Off') : inboxErr ? L('فيه مشكلة','Problem') : L('شغال','On');
+  const scriptBox = showScript ? `<textarea readonly rows="8" id="inbox-script" style="font:12px/1.5 ui-monospace,Consolas,monospace;direction:ltr;text-align:left;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;resize:vertical">${esc(inboxScript())}</textarea>` : '';
+  if(!inbox.url){
+    box.innerHTML = `<div class="note">${L('MacroDroid يبعت رسالة البنك لصندوق صغير على حساب جوجل بتاعك، من غير ما يفتح التطبيق، ونماء يلمّها أول ما تفتحه. محدش بيشوف الصندوق غيرك.',
+        "MacroDroid sends each bank message to a small inbox on your own Google account without opening the app; Namaa collects them when you open it. Only you can see the inbox.")}</div>
+      <div class="row"><button type="button" data-inbox-script>${showScript ? L('إخفاء السكريبت','Hide script') : L('1. اعرض السكريبت','1. Show the script')}</button>
+        <button type="button" data-inbox-copy-script>${L('نسخ السكريبت','Copy script')}</button></div>
+      ${scriptBox}
+      <div class="field"><span>${L('2. الصق رابط الـ Web app هنا','2. Paste the Web app link here')}</span>
+        <div class="row" style="flex-wrap:nowrap"><input id="inbox-url" type="url" autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" style="direction:ltr">
+        <button type="button" data-inbox-save>${L('حفظ','Save')}</button></div></div>`;
+    return;
+  }
+  box.innerHTML = `<div class="who">${inboxBusy ? L('بيشوف الصندوق…','Checking the inbox…') : inboxErr ? `<span class="err">${esc(inboxErr)}</span>`
+      : inboxLast ? L(`شغال ✓ · آخر مرة شاف الصندوق ${new Date(inboxLast).toLocaleTimeString(LOC())}`, `Working ✓ · last checked ${new Date(inboxLast).toLocaleTimeString(LOC())}`) : L('محفوظ ✓','Saved ✓')}</div>
+    <div class="field"><span>${L('الرابط اللي هتحطه في MacroDroid','The link to put in MacroDroid')}</span>
+      <input type="text" readonly value="${esc(macroLink())}" style="direction:ltr;font-size:.8rem"></div>
+    <div class="row">
+      <button type="button" class="go-btn sm" data-inbox-copy-link>${L('نسخ رابط MacroDroid','Copy MacroDroid link')}</button>
+      <button type="button" data-inbox-now>${L('شوف الصندوق دلوقتي','Check now')}</button>
+      <button type="button" data-inbox-script>${showScript ? L('إخفاء السكريبت','Hide script') : L('السكريبت','Script')}</button>
+    </div>
+    ${scriptBox}
+    <div class="note">${L('شغّل دا على موبايلك بس. الرابط فيه مفتاح سري، متديهوش لحد.', "Use this on your phone only. The link carries a secret key; don't share it.")}</div>
+    <div class="row"><button type="button" class="x" data-inbox-off>${L('إيقاف','Turn off')}</button></div>`;
+}
+document.getElementById('inbox-box').addEventListener('click', async e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  const d = b.dataset;
+  const copy = async t => { try{ await navigator.clipboard.writeText(t); toast(L('اتنسخ.', 'Copied.')); return true; }catch(err){ return false; } };
+  if(d.inboxScript!==undefined){ showScript = !showScript; renderInbox(); }
+  else if(d.inboxCopyScript!==undefined){ if(!await copy(inboxScript())){ showScript = true; renderInbox(); toast(L('انسخه من الخانة.', 'Copy it from the box.')); } }
+  else if(d.inboxCopyLink!==undefined){ if(!await copy(macroLink())) toast(L('انسخه من الخانة.', 'Copy it from the box.')); }
+  else if(d.inboxSave!==undefined){
+    const url = document.getElementById('inbox-url').value.trim().replace(/\?.*$/, '');
+    if(!/^https:\/\/script\.google\.com\/(?:a\/[^/]+\/)?macros\/s\/[\w-]+\/exec$/.test(url)){
+      toast(L('دا مش رابط Web app. لازم يبدأ بـ https://script.google.com/macros/s/ ويخلص بـ /exec', "That isn't a Web app link. It starts with https://script.google.com/macros/s/ and ends with /exec")); return; }
+    inbox.url = url; saveInbox(); showScript = false; await pullInbox(true);
+  }
+  else if(d.inboxNow!==undefined) pullInbox(true);
+  else if(d.inboxOff!==undefined){ inbox = {key: inbox.key}; saveInbox(); inboxErr = ''; inboxLast = 0; renderInbox(); }
+});
+
 /* ---------- cloud sync with a shared code ----------
    One secret code links devices. From it come two separate things:
    the vault id (a hash, used as the Firestore path) and the AES key (PBKDF2), so the stored id reveals nothing about the key.
@@ -3516,6 +3621,10 @@ const refreshIfStale = () => { if(!document.hidden && Date.now() - lastUpdate > 
 document.addEventListener('visibilitychange', refreshIfStale);
 window.addEventListener('focus', refreshIfStale);
 window.addEventListener('pageshow', refreshIfStale);
+// bank messages waiting in the inbox: collect on open, on coming back, and every minute while open
+pullInbox();
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) pullInbox(); });
+setInterval(pullInbox, 60e3);
 setInterval(renderHello, 10*60e3);   // switch morning/evening greeting while the page stays open
 </script>
 </body>
