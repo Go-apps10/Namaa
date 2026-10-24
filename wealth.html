@@ -1018,6 +1018,7 @@ function applyLang(){
     : L('افتحه زي أي تطبيق من الشاشة الرئيسية.', 'Open it like any app from your home screen.');
   resetClearButton();
   renderHello(); renderNotify(); renderPin(); applyPrivate(isPrivate());
+  if(dlg.open) renderSync();
 }
 function renderHello(){
   const el = document.getElementById('hello'), name = (state.userName||'').trim();
@@ -1833,10 +1834,10 @@ document.getElementById('zToday').addEventListener('click', ()=>{ state.zDate = 
 /* ---------- settings dialog ---------- */
 const dlg = document.getElementById('settings');
 function openSettings(part){
-  syncStatic(); renderBackupNote(); renderNotify();
+  syncStatic(); renderBackupNote(); renderNotify(); renderSync();
   if(!dlg.open) dlg.showModal();
   if(part==='notify') document.getElementById('notify-box').scrollIntoView({block:'start'});
-  if(part==='sync'){ renderSync(); document.getElementById('sync-box').scrollIntoView({block:'center'}); }
+  if(part==='sync') document.getElementById('sync-box').scrollIntoView({block:'center'});
 }
 document.getElementById('btn-settings').addEventListener('click', ()=>openSettings());
 document.getElementById('settings-close').addEventListener('click', ()=>dlg.close());
