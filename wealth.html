@@ -449,11 +449,20 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .g-add{justify-self:end;width:30px;height:30px;border-radius:50%;background:#3949ab;color:#fff;display:grid;place-items:center;font-size:16px}
 /* the phone getting the message */
 .g-phone{position:absolute;inset:0;background:linear-gradient(160deg,#1b3a30,#0f2a22)}
-.g-ntf{position:absolute;left:12px;right:12px;top:14px;background:rgba(255,255,255,.96);color:#222;border-radius:12px;padding:10px 12px;box-shadow:0 6px 18px rgba(0,0,0,.35);animation:gdown .5s ease}
+.g-scene .g-ntf{position:absolute;left:12px;right:12px;top:14px;background:rgba(255,255,255,.96);color:#222;border-radius:12px;padding:10px 12px;box-shadow:0 6px 18px rgba(0,0,0,.35);animation:gdown .5s ease}
 .g-ntf small{display:block;color:#666;font-size:10px}
 @keyframes gdown{from{transform:translateY(-130%)}}
+.g-scene [data-s]{animation:gin .3s}
+.g-two{position:absolute;inset:0;display:flex;gap:10px;align-items:center;justify-content:center;padding:12px;background:var(--bg);color:var(--fg)}
+.g-dev{background:var(--surface);border:2px solid var(--line);padding:10px 8px;display:grid;gap:8px;align-content:start;font-size:11px;min-width:0}
+.g-dev.ph{width:112px;height:210px;border-radius:18px}
+.g-dev.lp{width:170px;height:130px;border-radius:8px;border-bottom-width:8px}
+.g-sync{font-size:10px;color:var(--up)}
+.g-cloud{position:relative;width:44px;display:grid;place-items:center;font-size:22px;color:var(--muted)}
+.g-scene .g-cloud i{position:absolute;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--accent);animation:gfly 1.2s ease-in-out forwards}
+@keyframes gfly{from{inset-inline-start:-30px;opacity:0}30%{opacity:1}to{inset-inline-start:64px;opacity:0}}
 .g-quiet{position:absolute;left:12px;right:12px;bottom:22px;text-align:center;color:#e0b257;font-weight:600;font-size:13px;animation:gin .4s}
-@media (prefers-reduced-motion:reduce){.g-ptr{transition:none}.g-scene,.g-ntf,.g-quiet,.g-toast,.g-menu,.g-opts,.g-item.new{animation:none}.g-bars i.now:not(.still) b{animation:none;width:100%}}
+@media (prefers-reduced-motion:reduce){.g-ptr{transition:none}.g-scene,.g-scene *{animation:none!important}.g-bars i.now:not(.still) b{animation:none;width:100%}}
 /* welcome */
 .welcome{border:1px solid var(--line);border-radius:18px;padding:0;background:var(--surface);color:var(--fg);width:min(460px,calc(100% - 28px));box-shadow:0 24px 60px rgba(0,0,0,.35)}
 .welcome::backdrop{background:var(--bg)}
@@ -616,7 +625,7 @@ html,body{overscroll-behavior-y:contain}   /* turns off the browser's own pull-t
   tbody[id$="-rows"] td.lead::before{display:none}
   tbody[id$="-rows"] td.del{position:absolute;top:8px;inset-inline-end:6px}
   tbody[id$="-rows"] td.empty{grid-column:1/-1}
-  tbody[id$="-rows"] td.nosym{display:none}
+  tbody[id$="-rows"] td.nosym,tbody[id$="-rows"] td.no-rate{display:none}
   tbody[id$="-rows"] td.num{font-weight:600}
   tbody[id$="-rows"] .sname{max-width:100%}
 }
@@ -991,7 +1000,7 @@ section.card.collapsed{gap:0}
 
 <!-- animated how-to for bank messages in the background -->
 <dialog id="guide" class="welcome guide" aria-labelledby="guide-title">
-  <div class="dlg-head"><h2 id="guide-title" data-en="Bank messages in the background: how-to">شرح رسايل البنك في الخلفية</h2><button type="button" class="x" id="guide-close" aria-label="إغلاق" data-en-label="Close">×</button></div>
+  <div class="dlg-head"><h2 id="guide-title"></h2><button type="button" class="x" id="guide-close" aria-label="إغلاق" data-en-label="Close">×</button></div>
   <div class="g-bars" id="g-bars"></div>
   <div class="g-stage" id="g-stage"><div class="g-scene" id="g-scene"></div><div class="g-ptr" id="g-ptr"></div></div>
   <div class="g-cap" id="g-cap" aria-live="polite"></div>
@@ -1471,7 +1480,7 @@ function rowHtml(sec, r, i){
     case 'cash': {
       const bk = r.b || 'home';
       return `<tr>${T(LB.bank(), `<div class="stk">${bankLogoHtml(bk)}<div class="stk-in">${sIn(sec,i,'b',BANKS,bk)}</div></div>`, 'class="lead"')}
-        ${T(LB.cur(), sIn(sec,i,'c',CURRENCIES,r.c))}${T(LB.amount(), nIn(sec,i,'a',r.a))}${T(LB.rate(), fmt(rate(r.c)), 'class="num" data-c')}${val}${del(sec,i)}</tr>`;
+        ${T(LB.cur(), sIn(sec,i,'c',CURRENCIES,r.c))}${T(LB.amount(), nIn(sec,i,'a',r.a))}${r.c==='EGP' ? '<td class="no-rate"></td>' : T(LB.rate(), fmt(rate(r.c)), 'class="num" data-c')}${val}${del(sec,i)}</tr>`;
     }
     case 'stocks': {
       const sym = (r.s||'').trim().toUpperCase(), sp = stockPx[sym], nm = sp?.desc || egxNames[sym];
@@ -3309,7 +3318,7 @@ document.getElementById('inbox-box').addEventListener('click', async e=>{
       toast(L('دا مش رابط Web app. لازم يبدأ بـ https://script.google.com/macros/s/ ويخلص بـ /exec', "That isn't a Web app link. It starts with https://script.google.com/macros/s/ and ends with /exec")); return; }
     inbox.url = url; saveInbox(); showScript = false; await pullInbox(true);
   }
-  else if(d.inboxGuide!==undefined) openGuide();
+  else if(d.inboxGuide!==undefined) openGuide('inbox');
   else if(d.inboxNow!==undefined) pullInbox(true);
   else if(d.inboxOff!==undefined){ inbox = {key: inbox.key}; saveInbox(); inboxErr = ''; inboxLast = 0; renderInbox(); }
 });
@@ -3322,7 +3331,7 @@ const gEditor = (code, extra='') => gGoogle('script.google.com', `<div class="g-
 const gScript = `<pre>// Namaa bank-message inbox\nconst KEY = '••••••••••';\n\nfunction doGet(e) {\n  …\n}</pre>`;
 const gNamaa = inner => `<div class="g-app"><div class="g-ttl">⚙ ${L('الإعدادات','Settings')}</div><div class="g-card">${inner}</div></div>`;
 const gInboxHead = (pill, cls='') => `<div class="g-hd"><b>${L('رسايل البنك في الخلفية','Bank messages in the background')}</b><span class="g-pill ${cls}">${pill}</span></div>`;
-const GUIDE = [
+const INBOX_GUIDE = [
   { cap: ['في نماء: الإعدادات ← «رسايل البنك في الخلفية» ← «نسخ السكريبت». ابعته لنفسك عشان تفتحه على اللاب.',
           'In Namaa: Settings → "Bank messages in the background" → "Copy script". Send it to yourself to open on a laptop.'],
     html: () => gNamaa(`${gInboxHead(L('مقفول','Off'))}<i class="g-line"></i><i class="g-line s"></i>
@@ -3384,6 +3393,72 @@ const GUIDE = [
         <div class="g-toast">💳 ${L(`${fmt(1,0)} مستنية تصنيف`,'1 waiting to be filed')}</div></div>`,
     acts: [[1800,'show','q'], [3600,'hide','q'], [3600,'show','app']], dur: 7000 },
 ];
+
+// cloud sync, from turning it on to the second device showing the same data
+const gSyncHead = (pill, cls='') => `<div class="g-hd"><b>☁ ${L('المزامنة السحابية','Cloud sync')}</b><span class="g-pill ${cls}">${pill}</span></div>`;
+const gCode = 'K7QM-2XPA-9HVE-T4RB';
+const gQr = () => {   // a made-up QR-looking pattern, only for the picture
+  let cells = '', seed = 7;
+  const finder = (x, y) => (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
+  for(let y = 0; y < 21; y++) for(let x = 0; x < 21; x++){
+    seed = (seed * 9301 + 49297) % 233280;
+    const f = finder(x, y), fx = x > 13 ? x - 14 : x, fy = y > 13 ? y - 14 : y;
+    const on = f ? (fx===0 || fx===6 || fy===0 || fy===6 || (fx>1 && fx<5 && fy>1 && fy<5)) : seed / 233280 < .45;
+    if(on) cells += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+  }
+  return `<svg viewBox="-1 -1 23 23" width="96" height="96" style="background:#fff;border-radius:6px;fill:#111">${cells}</svg>`;
+};
+const SYNC_GUIDE = [
+  { cap: ['على أول جهاز (الموبايل مثلاً): الإعدادات ← «المزامنة السحابية» ← «فعّل المزامنة (كود جديد)».',
+          'On your first device (say your phone): Settings → "Cloud sync" → "Turn on sync (new code)".'],
+    html: () => gNamaa(`<div data-s="off">${gSyncHead(L('مقفولة','Off'))}</div><div data-s="on" hidden>${gSyncHead(L('شغالة','On'),'ok')}</div>
+      <i class="g-line"></i><i class="g-line s"></i>
+      <span class="g-ab go" data-t="on" style="text-align:center">☁ ${L('فعّل المزامنة (كود جديد)','Turn on sync (new code)')}</span>
+      <small style="color:var(--muted)">${L('عندك كود من جهاز تاني؟','Have a code from another device?')}</small><div class="g-in">XXXX-XXXX-XXXX-XXXX</div>`)
+      + `<div class="g-toast" data-s="toast" hidden>${L('اتفعّلت المزامنة. انسخ الكود واحفظه.','Sync is on. Copy the code and keep it safe.')}</div>`,
+    acts: [[700,'tap','on'], [1400,'hide','off'], [1400,'show','on'], [1400,'show','toast']], dur: 4600 },
+  { cap: ['هيظهرلك كود من 16 حرف ورقم. دا مفتاح بياناتك: احفظه في مكان آمن ومتديهوش لحد.',
+          "You get a 16-character code. It's the key to your data: keep it safe and don't share it."],
+    html: () => gNamaa(`${gSyncHead(L('شغالة','On'),'ok')}<small style="color:var(--muted)">${L('متزامن ✓','Synced ✓')}</small>
+      <div class="g-row" style="flex-wrap:nowrap"><div class="g-in" style="text-align:center;letter-spacing:.08em;font-weight:600"><span data-s="mask">K7QM-••••-••••-••••</span><span data-s="full" hidden>${gCode}</span></div><span class="g-ab" data-t="show">${L('إظهار','Show')}</span></div>
+      <div class="g-row"><span class="g-ab" data-t="copy">${L('نسخ الكود','Copy code')}</span><span class="g-ab">${L('نسخ رابط الربط','Copy link')}</span><span class="g-ab">${L('QR للموبايل','QR for phone')}</span></div>`)
+      + `<div class="g-toast" data-s="toast" hidden>${L('اتنسخ.','Copied.')}</div>`,
+    acts: [[700,'tap','show'], [1400,'hide','mask'], [1400,'show','full'], [2400,'tap','copy'], [3100,'show','toast']], dur: 5200 },
+  { cap: ['عشان تربط جهاز تاني: دوس «نسخ رابط الربط» وابعته لنفسك على واتساب، أو دوس «QR للموبايل» وصوّره بكاميرا الموبايل.',
+          'To link another device: tap "Copy link" and send it to yourself, or tap "QR for phone" and scan it with the phone camera.'],
+    html: () => gNamaa(`${gSyncHead(L('شغالة','On'),'ok')}
+      <div class="g-row"><span class="g-ab">${L('نسخ الكود','Copy code')}</span><span class="g-ab" data-t="link">${L('نسخ رابط الربط','Copy link')}</span><span class="g-ab" data-t="qr">${L('QR للموبايل','QR for phone')}</span></div>
+      <div data-s="qr" hidden style="justify-self:center">${gQr()}</div>`)
+      + `<div class="g-toast" data-s="toast" hidden>${L('اتنسخ.','Copied.')}</div>`,
+    acts: [[700,'tap','link'], [1400,'show','toast'], [2600,'hide','toast'], [2700,'tap','qr'], [3400,'show','qr']], dur: 5600 },
+  { cap: ['على الجهاز التاني افتح الرابط أو صوّر الـ QR. الكود هيتكتب لوحده في الإعدادات، دوس «اربط» وبياناتك هتيجي.',
+          'On the other device open the link or scan the QR. The code fills in by itself; tap "Link" and your data arrives.'],
+    html: () => gGoogle('go-apps10.github.io/Namaa', `<div class="g-app" style="position:relative;flex:1">${`<div class="g-card">${gSyncHead(L('مقفولة','Off'))}
+      <small style="color:var(--muted)">${L('عندك كود من جهاز تاني؟','Have a code from another device?')}</small>
+      <div class="g-row" style="flex-wrap:nowrap"><div class="g-in" style="text-align:center;letter-spacing:.08em"><span data-s="typed" hidden>${gCode}</span></div><span class="g-ab go" data-t="link">${L('اربط','Link')}</span></div></div>`}
+      <div class="g-toast" data-s="toast" hidden>${L('اتربط الجهاز ✓ وبياناتك اتجابت.','Linked ✓ and your data is here.')}</div></div>`),
+    acts: [[900,'show','typed'], [1900,'tap','link'], [2700,'show','toast']], dur: 5200 },
+  { cap: ['خلاص! أي حاجة تضيفها على جهاز بتظهر على التاني في ثواني. لما تشوف «☁ متزامن» فوق يبقى كله تمام.',
+          'Done! Anything you add on one device shows on the other within seconds. "☁ Synced" at the top means all is well.'],
+    html: () => `<div class="g-two">
+      <div class="g-dev ph"><span class="g-sync">☁ ${L('متزامن','Synced')}</span><b>${L('المصاريف','Spending')}</b>
+        <div class="g-tx" data-s="tx1" hidden><span>${L('أكل وبقالة','Food')}</span><span class="a">−${fmt(250)}</span></div><span class="g-ab go" data-t="add" style="text-align:center">+ ${L('مصروف','Expense')}</span></div>
+      <div class="g-cloud"><span>☁</span><i data-s="fly" hidden></i></div>
+      <div class="g-dev lp"><span class="g-sync">☁ ${L('متزامن','Synced')}</span><b>${L('المصاريف','Spending')}</b>
+        <div class="g-tx" data-s="tx2" hidden><span>${L('أكل وبقالة','Food')}</span><span class="a">−${fmt(250)}</span></div></div></div>`,
+    acts: [[700,'tap','add'], [1400,'show','tx1'], [1700,'show','fly'], [2900,'hide','fly'], [2900,'show','tx2']], dur: 5600 },
+  { cap: ['لو حسيت إن الكود وصل لحد: «تغيير الكود» وادخل الجديد على أجهزتك. ولو عايز توقفها على جهاز: «إيقاف على الجهاز دا». بياناتك متشفرة، ومحدش يقدر يقراها من غير الكود.',
+          'If the code may have leaked: "Change code" and enter the new one on your devices. To stop on one device: "Stop on this device". Your data is encrypted; nobody can read it without the code.'],
+    html: () => gNamaa(`${gSyncHead(L('شغالة','On'),'ok')}<div class="g-in" style="text-align:center;letter-spacing:.08em">K7QM-••••-••••-••••</div>
+      <small style="color:var(--muted)">🔒 ${L('بتتشفّر على جهازك قبل ما تطلع','Encrypted on your device before it leaves')}</small>
+      <div class="g-row"><span class="g-ab" data-t="rot" style="color:var(--down)">${L('تغيير الكود','Change code')}</span><span class="g-ab" data-t="stop" style="color:var(--down)">${L('إيقاف على الجهاز دا','Stop on this device')}</span></div>`),
+    acts: [[900,'tap','rot'], [2600,'tap','stop']], dur: 6400 },
+];
+const GUIDES = {
+  inbox: {title: ['شرح رسايل البنك في الخلفية', 'Bank messages in the background: how-to'], scenes: INBOX_GUIDE},
+  sync: {title: ['شرح المزامنة السحابية', 'Cloud sync: how-to'], scenes: SYNC_GUIDE},
+};
+let GUIDE = INBOX_GUIDE;
 const guideDlg = document.getElementById('guide'), gStage = document.getElementById('g-stage'), gPtr = document.getElementById('g-ptr');
 let gIdx = 0, gTimers = [], gAuto = true;
 function gTap(el){
@@ -3416,7 +3491,12 @@ function gShow(i){
   if(gAuto && !last) gTimers.push(setTimeout(()=>gShow(gIdx + 1), sc.dur));
   if(gAuto && last) gTimers.push(setTimeout(()=>{ gAuto = false; document.querySelector('#g-bars .now')?.classList.add('still'); document.getElementById('g-play').textContent = '↻ ' + L('من الأول','Again'); }, sc.dur));
 }
-function openGuide(){ gAuto = true; guideDlg.showModal(); gShow(0); }
+// which guide plays: the scenes and the dialog title
+function openGuide(name='inbox'){
+  const g = GUIDES[name];
+  GUIDE = g.scenes; document.getElementById('guide-title').textContent = L(...g.title);
+  gAuto = true; guideDlg.showModal(); gShow(0);
+}
 document.getElementById('g-next').addEventListener('click', ()=>{ if(gIdx===GUIDE.length - 1) guideDlg.close(); else gShow(gIdx + 1); });
 document.getElementById('g-prev').addEventListener('click', ()=>gShow(gIdx - 1));
 document.getElementById('g-play').addEventListener('click', ()=>{
@@ -3630,7 +3710,8 @@ function renderSync(){
   if(!vault){
     box.innerHTML = `<div class="note">${L('اربط موبايلك واللاب (أو أي أجهزة) بكود سري واحد، وبياناتك تبقى هي هي على كلهم. البيانات بتتشفّر بالكود قبل ما تطلع من جهازك، ومحدش يقدر يقراها من غيره.',
         'Link your phone, laptop or any device with one secret code and see the same data on all of them. Data is encrypted with the code before it leaves your device; no one can read it without the code.')}</div>
-      <button type="button" class="go-btn sm" data-sync-create>☁ ${L('فعّل المزامنة (كود جديد)','Turn on sync (new code)')}</button>
+      <div class="row"><button type="button" class="go-btn sm" data-sync-create>☁ ${L('فعّل المزامنة (كود جديد)','Turn on sync (new code)')}</button>
+        <button type="button" data-sync-guide>▶ ${L('شوف الشرح','Watch the guide')}</button></div>
       <div class="field"><span>${L('عندك كود من جهاز تاني؟','Have a code from another device?')}</span>
         <div class="row" style="flex-wrap:nowrap"><input id="sync-code" type="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX" value="${esc(joinPrefill)}" style="direction:ltr;text-align:center;letter-spacing:.08em">
         <button type="button" data-sync-join>${L('اربط','Link')}</button></div></div>
@@ -3648,6 +3729,7 @@ function renderSync(){
       <button type="button" data-sync-link>${L('نسخ رابط الربط','Copy link')}</button>
       <button type="button" data-sync-qr>${L('QR للموبايل','QR for phone')}</button>
       <button type="button" data-sync-now>${L('زامن دلوقتي','Sync now')}</button>
+      <button type="button" data-sync-guide>▶ ${L('الشرح','Guide')}</button>
     </div>
     <div id="sync-qr" style="justify-self:center;background:#fff;padding:10px;border-radius:12px" hidden></div>
     <div class="note">${L('احفظ الكود في مكان آمن ومتديهوش لحد. لو ضاع، بياناتك على أجهزتك هتفضل، بس اللي على السحابة مش هتتفتح غير بيه.',
@@ -3674,6 +3756,7 @@ document.getElementById('sync-box').addEventListener('click', async e=>{
       toast(L('اتربط الجهاز ✓ وبياناتك اتجابت.', 'Linked ✓ and your data is here.')); buzz();
     }
     else if(d.syncShow!==undefined){ showCode = !showCode; renderSync(); }
+    else if(d.syncGuide!==undefined) openGuide('sync');
     else if(d.syncCopy!==undefined || d.syncLink!==undefined){
       const t = d.syncCopy!==undefined ? prettyCode(vault.code) : joinLink();
       try{ await navigator.clipboard.writeText(t); toast(L('اتنسخ.', 'Copied.')); }catch(err){ showCode = true; renderSync(); toast(L('انسخه من الخانة.', 'Copy it from the box.')); }
