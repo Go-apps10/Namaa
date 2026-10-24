@@ -280,7 +280,9 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .tx{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .tx:last-child{border-bottom:0}
 .tx i{width:10px;height:10px;border-radius:3px}
-.tx .nm{min-width:0}
+.tx .nm{min-width:0;cursor:pointer;border-radius:6px}
+.tx .nm:hover b{color:var(--accent)}
+.tx .cat-pick{text-decoration:none;border-bottom:1px dashed currentColor}
 .tx .nm b{font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tx .nm small{color:var(--muted);font-size:.76rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tx .amt{font-weight:600;white-space:nowrap}
@@ -2873,8 +2875,8 @@ function renderMoney(){
       <span class="ds m">${dOut ? `<bdi class="down-t">−${egp(dOut)}</bdi>` : ''}${dIn && dOut ? ' · ' : ''}${dIn ? `<bdi class="up-t">+${egp(dIn)}</bdi>` : ''}</span></summary>
       <div class="tx-in">`
     + ts.map(t=>{ const c = catById(t.cat), row = acctById(t.acct);
-      return `<div class="tx"><i style="background:${c.color}"></i><div class="nm"><b>${esc(t.note || catName(c))}</b><small>${t.note ? catName(c) + ' · ' : ''}${row ? acctName(row) : L('من غير خصم','Not linked')}${t.recId ? ' · ' + L('متكرر','recurring') : ''}</small></div>
-        <span class="amt m ${t.type==='exp'?'down-t':'up-t'}"><bdi>${t.type==='exp'?'−':'+'}${fmt(t.amount)} ${t.cur==='EGP' ? L('ج.م','EGP') : t.cur}</bdi></span>
+      return `<div class="tx"><i style="background:${c.color}"></i><div class="nm" role="button" tabindex="0" data-txrecat="${t.id}" title="${L('تعديل','Edit')}"><b>${esc(t.note || catName(c))}</b><small>${t.note ? `<u class="cat-pick">${esc(catName(c))} ▾</u> · ` : `<u class="cat-pick">${L('تعديل','Edit')} ▾</u> · `}${row ? acctName(row) : L('من غير خصم','Not linked')}${t.recId ? ' · ' + L('متكرر','recurring') : ''}</small></div>
+        <span class="amt m ${t.type==='exp'?'down-t':'up-t'}" data-txrecat="${t.id}" style="cursor:pointer"><bdi>${t.type==='exp'?'−':'+'}${fmt(t.amount)} ${t.cur==='EGP' ? L('ج.م','EGP') : t.cur}</bdi></span>
         <button type="button" class="x" data-txdel="${t.id}" aria-label="${L('حذف','Delete')}">×</button></div>`; }).join('') + `</div></details>`; }).join('');
   const recs = state.recurring.map(r=>{ const c = catById(r.cat);
     return `<div class="rec-row"><span>${esc(r.note || catName(c))} · ${L(`يوم ${fmt(r.day,0)} كل شهر`, `day ${r.day} monthly`)}</span>
@@ -2896,6 +2898,40 @@ function renderMoney(){
     <div><div class="m-sub"><h3>${L('المتكرر كل شهر','Monthly repeats')}</h3></div>
       ${recs || `<div class="note">${L('الإيجار والمرتب والأقساط: سجّلهم مرة واحدة وعلّم على "يتكرر كل شهر"، وهيتسجّلوا لوحدهم في يومهم.', 'Rent, salary, instalments: add them once with "repeat every month" and they record themselves on their day.')}</div>`}</div>`;
 }
+// tap a transaction to fix its amount or move it to another category
+let recatId = null, recatCat = '';
+function openRecat(id){
+  const t = state.tx.find(x=>x.id===id); if(!t) return;
+  recatId = id; recatCat = t.cat; sheetSec = 'recat';
+  const curLbl = t.cur && t.cur!=='EGP' ? t.cur : L('ج.م','EGP');
+  document.getElementById('sheet-title').textContent = t.type==='exp' ? L('تعديل المصروف','Edit expense') : L('تعديل الدخل','Edit income');
+  sheetBody.innerHTML = `<div class="note"><b>${esc(t.note || catName(catById(t.cat)))}</b></div>
+    ${fld(L(`المبلغ (${curLbl})`, `Amount (${curLbl})`), `<input id="re-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" value="${t.amount}">`)}
+    <div class="field"><span>${L('الفئة','Category')}</span><div class="chips" id="re-cats">${cats(t.type).map(c=>`<button type="button" data-recat="${c.id}" aria-pressed="${c.id===t.cat}"><i style="background:${c.color}"></i>${esc(catName(c))}</button>`).join('')}</div></div>
+    ${t.note && t.sig ? `<label class="note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="recat-learn" checked> ${L(`افتكر «${esc(t.note)}» على الفئة دي في رسايل البنك الجاية`, `Remember "${esc(t.note)}" under this category for future bank messages`)}</label>` : ''}
+    ${t.acct ? `<div class="note">${L('لو غيّرت المبلغ، رصيد الحساب هيتظبط بالفرق.', 'Changing the amount adjusts the account balance by the difference.')}</div>` : ''}
+    <button type="button" class="go-btn" data-resave>${L('حفظ','Save')}</button>`;
+  if(!sheet.open) sheet.showModal();
+}
+sheetBody.addEventListener('click', e=>{
+  if(sheetSec!=='recat') return;
+  const pick = e.target.closest('[data-recat]');
+  if(pick){ recatCat = pick.dataset.recat; sheetBody.querySelectorAll('[data-recat]').forEach(b=>b.setAttribute('aria-pressed', b===pick)); return; }
+  if(!e.target.closest('[data-resave]')) return;
+  const t = state.tx.find(x=>x.id===recatId); if(!t) return;
+  const amount = num(document.getElementById('re-amt').value);
+  if(!(amount > 0)){ buzz([30,40,30]); toast(L('اكتب المبلغ الأول.', 'Enter the amount first.')); return; }
+  // take the old amount off the account, then put the new one on, keeping the exchange rate it was recorded at
+  const perUnit = t.amount ? txEgp(t) / t.amount : 1;
+  applyTxTo(state.cash, t, -1);
+  t.amount = amount; t.egp = Math.round(amount * perUnit * 100) / 100; t.cat = recatCat;
+  applyTxTo(state.cash, t, 1);
+  if(document.getElementById('recat-learn')?.checked) state.merchantCats[merchantKey(t.note)] = t.cat;
+  save(); render(); sheet.close(); buzz();
+  toast(L('اتعدّلت العملية.', 'Transaction updated.'));
+});
+document.getElementById('money-body').addEventListener('click', e=>{ const n = e.target.closest('[data-txrecat]'); if(n) openRecat(n.dataset.txrecat); });
+document.getElementById('money-body').addEventListener('keydown', e=>{ const n = e.target.closest('[data-txrecat]'); if(n && (e.key==='Enter' || e.key===' ')){ e.preventDefault(); openRecat(n.dataset.txrecat); } });
 document.getElementById('money-body').addEventListener('toggle', e=>{ const d = e.target.dataset?.day; if(d) openDays[d] = e.target.open; }, true);
 document.getElementById('money-nav').addEventListener('click', e=>{
   const d = +e.target.closest('[data-mnav]')?.dataset.mnav; if(!d) return;
