@@ -20,8 +20,12 @@
   try{
     const t = localStorage.getItem('wealth-theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme = t;
     if(localStorage.getItem('wealth-private')==='1') document.documentElement.dataset.private = '';
-    if((JSON.parse(localStorage.getItem('wealth-v1'))||{}).lang==='en'){ document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr'; }
-    if(localStorage.getItem('wealth-pin')) document.documentElement.classList.add('locked');   // hide amounts until the PIN is entered
+    const saved = JSON.parse(localStorage.getItem('wealth-v1')) || {};
+    if(saved.lang==='en'){ document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr'; }
+    if(+saved.fontScale > 0) document.documentElement.style.fontSize = (+saved.fontScale * 100) + '%';
+    // hide amounts until the PIN is entered, unless this tab was already unlocked and not left in the background too long
+    const unlocked = sessionStorage.getItem('wealth-unlocked'), hidAt = +sessionStorage.getItem('wealth-hidden-at') || 0;
+    if(localStorage.getItem('wealth-pin') && !(unlocked && (!hidAt || Date.now() - hidAt < 60e3))) document.documentElement.classList.add('locked');
   }catch(e){}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,7 +55,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 .gold-tbl td:first-child,.alerts-tbl td:first-child{min-width:170px}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);font-variant-numeric:tabular-nums;transition:background-color .2s,color .2s}
+body{margin:0;background:var(--bg);color:var(--fg);font:.9375rem/1.6 var(--body);font-variant-numeric:tabular-nums;transition:background-color .2s,color .2s}
 @media (prefers-reduced-motion:reduce){body{transition:none}}
 .wrap{max-width:1040px;margin:0 auto;padding-block:24px 48px;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));display:grid;gap:20px}
 header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
@@ -207,6 +211,61 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .checks{display:grid;gap:8px;font-size:.9rem}
 .checks label{display:flex;gap:10px;align-items:center}
+/* today / week change under net worth */
+.today{font-size:.92rem;font-weight:500;margin-top:4px}
+.today .why{color:var(--muted);font-weight:400}
+.cached{color:var(--warn)}
+/* floating add button and bottom sheet */
+.fab{position:fixed;inset-inline-end:max(18px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:15;
+  width:56px;height:56px;border-radius:18px;border:0;background:var(--accent);color:#14110a;display:grid;place-items:center;
+  box-shadow:0 8px 22px rgba(0,0,0,.28)}
+.fab:hover{filter:brightness(1.06)}
+:root.locked .fab,:root.locked .bnav{visibility:hidden}
+.sheet{border:1px solid var(--line);border-radius:18px 18px 0 0;padding:0;background:var(--surface);color:var(--fg);
+  width:min(560px,100%);max-width:100%;margin:auto auto 0;max-height:88dvh;overflow:auto;box-shadow:0 -10px 40px rgba(0,0,0,.3)}
+.sheet::backdrop{background:rgba(10,16,14,.5)}
+.sheet[open]{animation:sheetup .22s ease-out}
+@keyframes sheetup{from{transform:translateY(40px);opacity:.4}}
+@media (prefers-reduced-motion:reduce){.sheet[open]{animation:none}}
+.sheet-grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:8px auto 0}
+.sheet-body{padding:16px 18px calc(20px + env(safe-area-inset-bottom,0px));display:grid;gap:14px}
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.type-grid button{display:grid;justify-items:center;gap:6px;padding:14px 8px;border-radius:14px;background:var(--bg);font-weight:500}
+.type-grid i{width:12px;height:12px;border-radius:50%}
+.sheet .field{font-size:.85rem}
+.sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sheet .go-btn{background:var(--accent);color:#14110a;border:0;font-weight:600;padding:12px;border-radius:12px;font-size:1rem}
+.sheet .back{justify-self:start}
+/* welcome */
+.welcome{border:1px solid var(--line);border-radius:18px;padding:0;background:var(--surface);color:var(--fg);width:min(460px,calc(100% - 28px));box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.welcome::backdrop{background:var(--bg)}
+.wel-body{padding:26px 22px;display:grid;gap:16px;text-align:center;justify-items:center}
+.wel-body img{width:72px;height:72px;border-radius:18px}
+.wel-body h2{font-size:1.35rem;justify-content:center}
+.wel-body p{margin:0;color:var(--muted);font-size:.92rem;max-width:34ch}
+.wel-body .field{width:100%;text-align:start}
+.wel-body .row{justify-content:center}
+.wel-body .go-btn{background:var(--accent);color:#14110a;border:0;font-weight:600;padding:12px 28px;border-radius:12px;font-size:1rem}
+.wel-steps{display:flex;gap:6px}
+.wel-steps i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.wel-steps i.on{background:var(--accent);width:22px;border-radius:4px}
+.wel-choices{display:grid;gap:10px;width:100%}
+.wel-choices button{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;background:var(--bg);font-weight:500}
+.wel-choices button.done{border-color:var(--up);color:var(--up)}
+/* bottom navigation (phones only) */
+.bnav{display:none}
+@media (max-width:640px){
+  .bnav{display:flex;position:fixed;inset-inline:0;bottom:0;z-index:14;background:var(--surface);border-top:1px solid var(--line);
+    padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+  .bnav button{flex:1;border:0;background:none;display:grid;justify-items:center;gap:2px;padding:4px 0;font-size:.7rem;color:var(--muted);border-radius:10px}
+  .bnav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .bnav button[aria-current=page]{color:var(--accent);font-weight:600}
+  .wrap{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  .fab{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  .toasts{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+  .wrap>.tab-off{display:none!important}
+}
+
 /* swipeable insight cards */
 .tabs{display:flex;gap:4px;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px}
 .tabs button{border:0;border-radius:8px;padding:5px 12px;font-size:.84rem;background:none;color:var(--muted)}
@@ -303,7 +362,7 @@ section.card.collapsed .tabs{display:none}
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 11v3M8.5 7.5A5 5 0 0 1 17 11v1.5M7 11v1c0 3 .8 5.4 2.4 7.4M17 15.5c-.2 1.6-.7 3-1.4 4.2M12 3a8 8 0 0 0-8 8v1M20 12v-1a8 8 0 0 0-3-6.2M12 14c0 2.6.6 4.8 1.8 6.6'/%3E%3C/svg%3E") center/contain no-repeat}
 .lock .confirm{max-width:320px;text-align:center;justify-content:center}
 /* pull to refresh */
-body{overscroll-behavior-y:contain}
+html,body{overscroll-behavior-y:contain}   /* turns off the browser's own pull-to-reload so the page's refresh is used */
 .ptr{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translate(-50%,-60px);z-index:30;
   background:var(--fg);color:var(--bg);border-radius:999px;padding:6px 16px;font-size:.85rem;box-shadow:0 4px 14px rgba(0,0,0,.2);pointer-events:none}
 .goal-plan{font-size:.85rem;color:var(--muted)}
@@ -355,7 +414,7 @@ section.card.collapsed{gap:0}
     </div>
   </header>
 
-  <div class="tools">
+  <div class="tools" data-tab="home">
     <button type="button" id="btn-private" class="toggle" aria-pressed="false"></button>
     <span style="margin-inline-start:auto;display:flex;gap:8px;flex-wrap:wrap">
       <button type="button" id="btn-collapse-all" data-en="Collapse all">طي كل الأقسام</button>
@@ -363,22 +422,24 @@ section.card.collapsed{gap:0}
     </span>
   </div>
 
-  <div class="install" id="install" hidden>
+  <div class="install" id="install" hidden data-tab="home">
     <img src="icons/icon-192.png" alt="">
     <div class="grow"><b data-en="Install Namaa on your phone">ثبّت نماء على موبايلك</b><div class="note" id="install-hint"></div></div>
     <button type="button" id="btn-install" data-en="Install">تثبيت</button>
     <button type="button" class="x" id="btn-install-close" aria-label="إغلاق" data-en-label="Close">×</button>
   </div>
 
-  <div class="ticker" id="ticker"></div>
-  <div class="note" id="market-note" hidden></div>
+  <div class="ticker" id="ticker" data-tab="home"></div>
+  <div class="note" id="market-note" hidden data-tab="home"></div>
 
-  <div class="total">
+  <div class="total" data-tab="home">
     <div>
       <div class="note" data-en="Net worth">صافي الثروة</div>
       <div class="big m" id="grand">—</div>
       <div class="usd m" id="grandUsd"></div>
       <div class="assets-line m" id="assets-line"></div>
+      <div class="today m" id="today-line" hidden></div>
+      <div class="note m" id="week-line" hidden></div>
     </div>
     <div class="bar" id="bar"></div>
     <div class="legend" id="legend"></div>
@@ -396,7 +457,7 @@ section.card.collapsed{gap:0}
   </div>
 
   <!-- three swipeable cards: history chart, monthly reports, yearly reports -->
-  <section class="card" id="sec-insights">
+  <section class="card" id="sec-insights" data-tab="reports">
     <div class="sec-head">
       <h2><span data-en="Your wealth">ثروتك</span></h2>
       <div class="tabs" id="insight-tabs" role="tablist">
@@ -416,6 +477,11 @@ section.card.collapsed{gap:0}
         <button type="button" data-range="365" data-en="Year">سنة</button>
         <button type="button" data-range="0" data-en="All">الكل</button>
       </div>
+    </div>
+    <div class="ranges" id="series" role="group" aria-label="المؤشر" data-en-label="Measure">
+      <button type="button" data-series="wealth" data-en="Your wealth">ثروتك</button>
+      <button type="button" data-series="gold" data-en="21k gold gram">جرام ذهب 21</button>
+      <button type="button" data-series="usd" data-en="US dollar">الدولار</button>
     </div>
     <div class="chart" id="chart"></div>
     <div class="legend" id="hist-legend"></div>
@@ -448,7 +514,7 @@ section.card.collapsed{gap:0}
     <div class="dots-nav" id="slide-dots" aria-hidden="true"><i></i><i></i><i></i></div>
   </section>
 
-  <section class="card" id="sec-zakat">
+  <section class="card" id="sec-zakat" data-tab="zakat">
     <div class="sec-head"><h2><span data-en="Zakat">الزكاة</span></h2><span class="sec-sum m" id="zakat-sum"></span></div>
     <div class="zk" id="zakat-grid"></div>
     <div class="zk-msg" id="zakat-msg"></div>
@@ -468,7 +534,7 @@ section.card.collapsed{gap:0}
     <div class="note" data-en="The zakat year (hawl) is one lunar year (354 days) from the day your wealth reaches the nisab. Majority view: if the zakat base drops below the nisab at any point, the year breaks and a new one starts the day it reaches the nisab again. Hanafi view: dips during the year don't matter; zakat is due if the base is at or above the nisab at the year's end, and if it's below, no zakat is due and a new year starts once it reaches the nisab. In both, the page starts the year by itself. Property, cars and other assets for personal use are not included. This is an estimate; for special cases, ask a scholar.">الحول = سنة هجرية (354 يوم) من يوم ما المال يبلغ النصاب. رأي الجمهور: لو الوعاء نزل تحت النصاب في أي وقت الحول بينقطع، وبيبدأ حول جديد يوم ما يرجع للنصاب. رأي الحنفية: نزول المال في نص السنة مش بيأثر، والعبرة بآخر الحول: لو الوعاء فوق النصاب الزكاة واجبة، ولو تحته مفيش زكاة وبيبدأ حول جديد لما يرجع للنصاب. في الحالتين الصفحة بتبدأ الحول لوحدها. العقارات والسيارات والأصول الأخرى للاستخدام مش داخلة في الحساب. الحساب تقريبي، وفي الحالات الخاصة ارجع لأهل العلم.</div>
   </section>
 
-  <section class="card" id="sec-gold">
+  <section class="card" id="sec-gold" data-tab="assets">
     <div class="sec-head"><h2><span class="dot" style="background:var(--gold)"></span><span data-en="Gold">الذهب</span></h2><span class="sec-sum m" id="sum-gold"></span></div>
     <div class="settings">
       <label for="goldSource"><span data-en="Price source">مصدر السعر</span>
@@ -488,7 +554,7 @@ section.card.collapsed{gap:0}
     <button class="add" type="button" data-add="gold" data-en="+ Add gold">+ إضافة ذهب</button>
   </section>
 
-  <section class="card" id="sec-silver">
+  <section class="card" id="sec-silver" data-tab="assets">
     <div class="sec-head"><h2><span class="dot" style="background:var(--silver)"></span><span data-en="Silver">الفضة</span></h2><span class="sec-sum m" id="sum-silver"></span></div>
     <div class="settings" id="silverPremium-wrap">
       <label for="silverPremium"><span data-en="Local market premium (%)">فرق السوق المحلي (٪)</span><input id="silverPremium" type="number" step="0.1" data-set="silverPremium"></label>
@@ -497,14 +563,14 @@ section.card.collapsed{gap:0}
     <button class="add" type="button" data-add="silver" data-en="+ Add silver">+ إضافة فضة</button>
   </section>
 
-  <section class="card" id="sec-cash">
+  <section class="card" id="sec-cash" data-tab="assets">
     <div class="sec-head"><h2><span class="dot" style="background:var(--cash)"></span><span data-en="Cash">الكاش</span></h2><span class="sec-sum m" id="sum-cash"></span></div>
     <div class="tbl-wrap"><table class="cash-tbl"><thead><tr><th data-en="Bank">البنك</th><th data-en="Currency">العملة</th><th data-en="Amount">المبلغ</th><th data-en="Rate in EGP">السعر بالجنيه</th><th data-en="Value">القيمة</th><th></th></tr></thead><tbody id="cash-rows"></tbody></table></div>
     <button class="add" type="button" data-add="cash" data-en="+ Add amount">+ إضافة مبلغ</button>
     <div id="cash-banks"></div>
   </section>
 
-  <section class="card" id="sec-stocks">
+  <section class="card" id="sec-stocks" data-tab="assets">
     <div class="sec-head"><h2><span class="dot" style="background:var(--stocks)"></span><span data-en="Egyptian stocks (EGX)">أسهم البورصة المصرية</span> <span class="pill due" id="egx-status"></span></h2><span class="sec-sum m" id="sum-stocks"></span></div>
     <div class="tbl-wrap"><table class="stocks-tbl"><thead><tr><th data-en="Ticker">الرمز</th><th data-en="Shares">عدد الأسهم</th><th data-en="Price">السعر</th><th data-en="Average buy price">متوسط سعر الشراء</th><th data-en="Value">القيمة</th><th data-en="Profit / loss">الربح / الخسارة</th><th></th></tr></thead><tbody id="stocks-rows"></tbody></table></div>
     <datalist id="egx-list"></datalist>
@@ -512,27 +578,27 @@ section.card.collapsed{gap:0}
     <div class="note" data-en="Type the EGX ticker (e.g. COMI for CIB, TMGH for Talaat Moustafa). Stock prices are delayed about 15 minutes.">اكتب رمز السهم كما في البورصة (مثل COMI لبنك CIB، TMGH لطلعت مصطفى). أسعار الأسهم متأخرة حوالي 15 دقيقة.</div>
   </section>
 
-  <section class="card" id="sec-other">
+  <section class="card" id="sec-other" data-tab="assets">
     <div class="sec-head"><h2><span class="dot" style="background:var(--other)"></span><span data-en="Other assets">أصول أخرى</span></h2><span class="sec-sum m" id="sum-other"></span></div>
     <div class="tbl-wrap"><table><thead><tr><th data-en="Description">الوصف</th><th data-en="Type">النوع</th><th data-en="Estimated value (EGP)">القيمة التقديرية (ج.م)</th><th></th></tr></thead><tbody id="other-rows"></tbody></table></div>
     <button class="add" type="button" data-add="other" data-en="+ Add asset">+ إضافة أصل</button>
   </section>
 
-  <section class="card" id="sec-debts">
+  <section class="card" id="sec-debts" data-tab="assets">
     <div class="sec-head"><h2><span class="dot" style="background:var(--down)"></span><span data-en="Debts and instalments">الديون والأقساط</span></h2><span class="sec-sum m" id="sum-debts"></span></div>
     <div class="sub-sum m" id="debts-inst"></div>
     <div class="tbl-wrap"><table><thead><tr><th data-en="Description">الوصف</th><th data-en="Remaining (EGP)">المبلغ المتبقي (ج.م)</th><th data-en="Monthly instalment (EGP)">القسط الشهري (ج.م)</th><th></th></tr></thead><tbody id="debts-rows"></tbody></table></div>
     <button class="add" type="button" data-add="debts" data-en="+ Add debt or instalment">+ إضافة دين أو قسط</button>
   </section>
 
-  <section class="card" id="sec-alerts">
+  <section class="card" id="sec-alerts" data-tab="alerts">
     <div class="sec-head"><h2><span data-en="Price alerts">تنبيهات الأسعار</span></h2></div>
     <div class="tbl-wrap"><table class="alerts-tbl"><thead><tr><th data-en="Alert me when">نبهني لما</th><th data-en="Ticker">رمز السهم</th><th data-en="Goes">يبقى</th><th data-en="Price">السعر</th><th data-en="Current price">السعر الحالي</th><th data-en="Status">الحالة</th><th></th></tr></thead><tbody id="alerts-rows"></tbody></table></div>
     <button class="add" type="button" data-add="alerts" data-en="+ Add alert">+ إضافة تنبيه</button>
     <div class="note"><span data-en="Each alert fires once and can be re-armed. To get it as a phone or computer notification, turn notifications on in">كل تنبيه بيشتغل مرة واحدة، وتقدر تعيد تفعيله. عشان يوصلك كإشعار على الموبايل أو الكمبيوتر، فعّل الإشعارات من</span> <button type="button" class="linkish" data-open-settings="notify" data-en="Settings">الإعدادات</button>.</div>
   </section>
 
-  <p class="note" data-en="Sources: iSagha isagha.com (gold and silver prices in Egypt), TradingView (global prices, currencies and EGX stocks). Prices refresh every minute. Your data is stored on this device only, so back it up from time to time. Figures are for guidance and are not investment advice.">المصادر: آي صاغة isagha.com (أسعار الذهب والفضة في مصر)، TradingView (الأسعار العالمية والعملات وأسهم EGX). التحديث تلقائي كل دقيقة. بياناتك تُحفظ على هذا الجهاز فقط، فاعمل نسخة احتياطية من وقت للتاني. الأرقام للاسترشاد وليست نصيحة استثمارية.</p>
+  <p class="note" data-tab="home" data-en="Sources: iSagha isagha.com (gold and silver prices in Egypt), TradingView (global prices, currencies and EGX stocks). Prices refresh every minute. Your data is stored on this device only, so back it up from time to time. Figures are for guidance and are not investment advice.">المصادر: آي صاغة isagha.com (أسعار الذهب والفضة في مصر)، TradingView (الأسعار العالمية والعملات وأسهم EGX). التحديث تلقائي كل دقيقة. بياناتك تُحفظ على هذا الجهاز فقط، فاعمل نسخة احتياطية من وقت للتاني. الأرقام للاسترشاد وليست نصيحة استثمارية.</p>
 </div>
 
 <dialog id="settings" aria-labelledby="settings-title">
@@ -559,6 +625,13 @@ section.card.collapsed{gap:0}
         <option value="auto" data-en="Match the language">حسب اللغة</option>
         <option value="ar" data-en="Arabic ١٢٣">عربية ١٢٣</option>
         <option value="en" data-en="English 123">إنجليزية 123</option>
+      </select></label>
+    <label class="field" for="fontScale"><span data-en="Text size">حجم الخط</span>
+      <select id="fontScale" data-set="fontScale">
+        <option value="0.92" data-en="Small">صغير</option>
+        <option value="1" data-en="Normal">عادي</option>
+        <option value="1.1" data-en="Large">كبير</option>
+        <option value="1.22" data-en="Larger">أكبر</option>
       </select></label>
     <div class="theme" id="theme" role="group" aria-label="المظهر" data-en-label="Appearance">
       <button type="button" data-theme-set="light" data-en="☀ Light">☀ فاتح</button>
@@ -610,6 +683,8 @@ section.card.collapsed{gap:0}
   <div class="dlg-head">
     <h2 id="rep-title"><span data-en="Monthly report">التقرير الشهري</span></h2>
     <div class="row">
+      <button type="button" id="rep-share" data-en="Share as image">مشاركة كصورة</button>
+      <button type="button" id="rep-share-pct" data-en="Share percentages only">مشاركة بالنسب بس</button>
       <button type="button" id="rep-print" data-en="🖨 Print / PDF">🖨 طباعة / PDF</button>
       <button type="button" class="x" id="rep-close" aria-label="إغلاق" data-en-label="Close">×</button>
     </div>
@@ -619,6 +694,30 @@ section.card.collapsed{gap:0}
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div class="ptr" id="ptr" hidden></div>
+
+<!-- quick add: floating button and a bottom sheet with a short form per holding type -->
+<button type="button" class="fab" id="fab" aria-label="إضافة" data-en-label="Add">
+  <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+<dialog id="sheet" class="sheet" aria-labelledby="sheet-title">
+  <div class="sheet-grip" aria-hidden="true"></div>
+  <div class="dlg-head"><h2 id="sheet-title"></h2><button type="button" class="x" id="sheet-close" aria-label="إغلاق" data-en-label="Close">×</button></div>
+  <div class="sheet-body" id="sheet-body"></div>
+</dialog>
+
+<!-- welcome on first run -->
+<dialog id="welcome" class="welcome" aria-labelledby="wel-title">
+  <div class="wel-body" id="wel-body"></div>
+</dialog>
+
+<!-- phone navigation -->
+<nav class="bnav" id="bnav" aria-label="التنقل" data-en-label="Navigation">
+  <button type="button" data-goto="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg><span data-en="Home">الرئيسية</span></button>
+  <button type="button" data-goto="assets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18l2.5-6h9L19 18zM9 9h6M10 6h4"/></svg><span data-en="Assets">الأصول</span></button>
+  <button type="button" data-goto="reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M7 16v-4M12 16V8M17 16v-7"/></svg><span data-en="Reports">التقارير</span></button>
+  <button type="button" data-goto="zakat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M6 8h12M6 8l-3 6h6zM18 8l-3 6h6z"/></svg><span data-en="Zakat">الزكاة</span></button>
+  <button type="button" data-goto="alerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20h4"/></svg><span data-en="Alerts">التنبيهات</span></button>
+</nav>
 
 <div class="lock" id="lock" hidden role="dialog" aria-modal="true" aria-labelledby="lock-title">
   <img src="icons/logo.svg" alt="" width="64" height="64">
@@ -726,9 +825,11 @@ const DEFAULT_STATE = {
   zExcludeWorn:true, zExcludeStocks:false, zDeductDebts:true, zDate:'', lastBackup:null,
   notifyOn:false, nPrice:true, nZakat:true, nBackup:true, zNotified:'', backupNotifiedAt:0,
   goalDate:'', nMonthly:true, monthlySent:'', reports:{}, yearReports:{},
-  userName:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:''
+  userName:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
 };
 
+// first visit on this device: nothing saved yet and the welcome hasn't been shown
+const FIRST_RUN = (()=>{ try{ return !localStorage.getItem('wealth-v1') && !localStorage.getItem('wealth-welcomed'); }catch(e){ return false; } })();
 let state = load();
 let prices = {};      // TradingView symbol -> {close, change}
 let stockPx = {};     // EGX symbol -> {close, change, desc, logo}
@@ -878,6 +979,7 @@ async function refresh(){
       for(const r of sr) stockPx[r.s.split(':')[1]] = {close:r.d[0], change:r.d[1], desc:r.d[2], logo:r.d[3]};
     }
     priceStatus = 'ok'; lastUpdate = Date.now();
+    savePriceCache();
     checkAlerts();
     trackNisab();
     checkReminders();
@@ -906,13 +1008,39 @@ function renderMarket(){
   note.textContent = L('النهارده إجازة البورصة والبنوك، فأسعار الأسهم والدولار غالباً هتفضل ثابتة لحد يوم الأحد، وأسعار الصاغة بتتحرك قليل. أوقية الذهب العالمية بس اللي بتتحرك لحد ما السوق العالمي يقفل مساء الجمعة.',
                        "The stock exchange and banks are closed today, so stock and dollar prices will likely stay flat until Sunday, and jewellers' prices move little. Only the global gold ounce keeps moving until world markets close Friday evening.");
 }
+// the last good prices are kept on the device, so the app opens with numbers at once and still shows them offline
+const PKEY = 'wealth-prices';
+function savePriceCache(){
+  try{ localStorage.setItem(PKEY, JSON.stringify({prices, stockPx, local, localAt, localBoardTime, lastUpdate})); }catch(e){}
+}
+function loadPriceCache(){
+  try{
+    const c = JSON.parse(localStorage.getItem(PKEY)); if(!c || !c.lastUpdate) return;
+    prices = c.prices || {}; stockPx = c.stockPx || {}; local = c.local || null; localAt = c.localAt || 0;
+    localBoardTime = c.localBoardTime || ''; lastUpdate = c.lastUpdate; priceStatus = 'cached';
+  }catch(e){}
+}
+function ago(t){
+  const m = Math.round((Date.now() - t) / 60e3);
+  if(m < 1) return L('من لحظات', 'just now');
+  if(m < 60) return L(`من ${fmt(m,0)} دقيقة`, `${fmt(m,0)} min ago`);
+  const h = Math.round(m / 60);
+  if(h < 24) return L(`من ${fmt(h,0)} ساعة`, `${fmt(h,0)} h ago`);
+  return L(`من ${fmt(Math.round(h/24),0)} يوم`, `${fmt(Math.round(h/24),0)} days ago`);
+}
 function renderStamp(){
+  const offline = navigator.onLine === false, stamp = document.getElementById('stamp');
   document.getElementById('live').className = 'live' + (priceStatus==='ok' ? ' on' : priceStatus==='err' ? ' err' : '');
-  document.getElementById('stamp').textContent =
+  stamp.classList.toggle('cached', priceStatus!=='ok' && lastUpdate > 0);
+  stamp.textContent =
     priceStatus==='ok' ? L('آخر تحديث ', 'Updated ') + new Date(lastUpdate).toLocaleTimeString(LOC())
-    : priceStatus==='err' ? L('تعذّر تحديث الأسعار — تأكد من الاتصال بالإنترنت', "Couldn't refresh prices — check your connection")
+    : lastUpdate ? (offline ? L('مفيش نت · ', 'Offline · ') : priceStatus==='err' ? L('تعذّر التحديث · ', "Couldn't refresh · ") : L('بيحدّث… · ', 'Updating… · '))
+                   + L('آخر أسعار ', 'prices from ') + ago(lastUpdate)
+    : priceStatus==='err' ? L('تعذّر تحميل الأسعار — تأكد من الاتصال بالإنترنت', "Couldn't load prices — check your connection")
     : L('جاري تحميل الأسعار…', 'Loading prices…');
 }
+window.addEventListener('online', ()=>refresh());
+window.addEventListener('offline', ()=>renderStamp());
 
 function usdEgp(){ return prices['FX_IDC:USDEGP']?.close; }
 const useLocal = () => state.goldSource==='local' && !!local;
@@ -1063,15 +1191,18 @@ function checkAlerts(){
   });
   if(changed) save();
 }
-function toast(text){
+function toast(text, action){
   const t = document.createElement('div');
   t.className = 'toast';
-  t.innerHTML = `<span></span><button type="button" aria-label="${L('إغلاق','Close')}">×</button>`;
+  t.innerHTML = `<span></span>${action ? `<button type="button" class="act" style="font-weight:700;text-decoration:underline">${esc(action.label)}</button>` : ''}<button type="button" class="cls" aria-label="${L('إغلاق','Close')}">×</button>`;
   t.firstChild.textContent = text;
-  t.querySelector('button').onclick = () => t.remove();
+  t.querySelector('.cls').onclick = () => t.remove();
+  if(action) t.querySelector('.act').onclick = () => { t.remove(); action.fn(); };
   document.getElementById('toasts').appendChild(t);
-  setTimeout(()=>t.remove(), 10000);
+  setTimeout(()=>t.remove(), action ? 6000 : 10000);
 }
+// short vibration on phones that support it (Android); silently does nothing elsewhere
+const buzz = (p = 12) => { try{ if(navigator.userActivation?.hasBeenActive !== false) navigator.vibrate?.(p); }catch(e){} };
 
 /* ---------- summary ---------- */
 function totals(){
@@ -1110,6 +1241,7 @@ function renderTotals(){
     isFinite(g21) && g21 > 0 && t.net > 0 ? L(`≈ ${fmt(t.net/g21,1)} جرام ذهب عيار 21`, `≈ ${fmt(t.net/g21,1)} g of 21k gold`) : '',
   ].filter(Boolean).join('  ·  ');
   document.getElementById('assets-line').textContent = t.debts > 0 ? L(`الأصول ${egp(t.assets)} − الديون ${egp(t.debts)}`, `Assets ${egp(t.assets)} − debts ${egp(t.debts)}`) : '';
+  renderChanges(t);
   const shown = ASSETS.filter(s=>t[s]>0);
   document.getElementById('bar').innerHTML = shown.map(s=>`<span style="width:${t[s]/t.assets*100}%;background:${COLORS[s]}"></span>`).join('');
   document.getElementById('legend').innerHTML = ASSETS.map(s=>`<span><i style="background:${COLORS[s]}"></i>${NAMES[s]} ${t.assets?fmt(t[s]/t.assets*100,1):fmt(0,0)}${PCT()}</span>`).join('');
@@ -1136,6 +1268,37 @@ function renderTotals(){
   renderCashBanks();
   renderZakat(t);
   renderSourceNote();
+}
+
+// change since the last recorded day before today, and over the past week, with what drove it
+function renderChanges(t){
+  const todayEl = document.getElementById('today-line'), weekEl = document.getElementById('week-line');
+  todayEl.hidden = weekEl.hidden = true;
+  if(!isFinite(t.net) || !pricesComplete() || !history.length) return;
+  const cur = {debts: t.debts}; for(const k of STACK) cur[k] = t[k] || 0;
+  const drivers = base => STACK.map(k => ({k, c: cur[k] - (base[k]||0)}))
+    .concat([{k:'debts', c: -(cur.debts - (base.debts||0))}])
+    .filter(x => Math.abs(x.c) >= 1).sort((a,b) => Math.abs(b.c) - Math.abs(a.c));
+  const sgn = v => v>=0 ? '+' : '−';
+  const tk = dayKey(Date.now());
+  const prev = [...history].reverse().find(p => dayKey(p.t) < tk);
+  if(prev){
+    const n0 = netOf(prev), d = t.net - n0, pct = n0 ? d/n0*100 : 0, main = drivers(prev)[0];
+    const yesterday = dayKey(Date.now() - DAY) === dayKey(prev.t);
+    const when = yesterday ? L('النهارده','today') : L(`من ${dateFmt(new Date(prev.t))}`, `since ${dateFmt(new Date(prev.t))}`);
+    todayEl.innerHTML = `<span class="${d>=0?'up-t':'down-t'}"><bdi>${sgn(d)}${egp(Math.abs(d))}</bdi> <bdi>(${sgn(d)}${fmt(Math.abs(pct),2)}${PCT()})</bdi></span> ${when}`
+      + (main && Math.abs(d) >= 1 ? ` <span class="why">· ${L('أغلبه من','mostly from')} ${NAMES[main.k]}</span>` : '');
+    todayEl.hidden = false;
+  }
+  // a week back: the last record at least 7 days old; contributions are in percentage points of that week's net worth
+  const base = [...history].reverse().find(p => p.t <= Date.now() - 7*DAY);
+  if(base){
+    const n0 = netOf(base), d = t.net - n0, pct = n0 ? d/n0*100 : 0;
+    const parts = drivers(base).slice(0, 2).map(x => `${NAMES[x.k]} ${sgn(x.c)}${fmt(Math.abs(n0 ? x.c/n0*100 : 0),1)}`).join(L('، ',', '));
+    weekEl.innerHTML = L(`الأسبوع دا: ثروتك ${sgn(d)}${fmt(Math.abs(pct),1)}${PCT()}`, `This week: ${sgn(d)}${fmt(Math.abs(pct),1)}${PCT()}`)
+      + (parts ? L(` — ${parts} نقطة`, ` — ${parts} pts`) : '');
+    weekEl.hidden = false;
+  }
 }
 
 // what the goal needs per month by its date, and when the recent pace would reach it
@@ -1283,6 +1446,8 @@ function recordSnapshot(){
   const t = totals(), p = {t:Date.now()};
   for(const s of STACK) p[s] = Math.round(t[s]||0);
   p.debts = Math.round(t.debts);
+  // the day's market prices too, for the gold and dollar charts
+  p.px = {g21: Math.round(goldPrice('21')*100)/100, usd: Math.round((usdEgp()||0)*100)/100};
   if(!STACK.some(s=>p[s]>0)) return;
   const last = history[history.length-1];
   // one point per day: today's point is replaced until the day ends
@@ -1312,7 +1477,9 @@ function niceTicks(max, n=4){
 function drawChart(){
   const box = document.getElementById('chart');
   document.querySelectorAll('#ranges button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.range===range));
+  document.querySelectorAll('#series button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.series===state.chartSeries));
   const pts = visiblePoints();
+  if(state.chartSeries==='gold' || state.chartSeries==='usd'){ renderHistTable(); return drawPriceChart(box, pts, state.chartSeries); }
   const hasDebts = pts.some(p=>p.debts>0);
   document.getElementById('hist-legend').innerHTML = [...STACK].reverse().filter(s=>pts.some(p=>p[s]>0)).map(s=>`<span><i style="background:${COLORS[s]}"></i>${NAMES[s]}</span>`).join('')
     + (hasDebts ? `<span><i style="background:var(--fg)"></i>${L('صافي الثروة (بعد الديون)','Net worth (after debts)')}</span>` : '');
@@ -1388,6 +1555,55 @@ function drawChart(){
   hit.addEventListener('mouseleave', leave); hit.addEventListener('touchend', leave);
 }
 
+// a single line of the 21k gram or the dollar rate, from the prices kept with each day's record
+function drawPriceChart(box, all, key){
+  const k = key==='gold' ? 'g21' : 'usd';
+  const pts = all.filter(p => p.px && p.px[k] > 0);
+  const label = key==='gold' ? L('سعر جرام الذهب عيار 21','21k gold price per gram') : L('سعر الدولار بالجنيه','US dollar in EGP');
+  document.getElementById('hist-legend').innerHTML = `<span><i style="background:var(--accent)"></i>${label}</span>`;
+  if(pts.length < 2){
+    box.innerHTML = `<div class="empty">${L('الرسم دا بيبدأ من النهارده: الصفحة بقت تحفظ سعر الذهب والدولار مع كل يوم.<br>هيظهر بعد يومين من التسجيل.', "This chart starts today: the page now saves the gold and dollar price with each day.<br>It appears after two recorded days.")}</div>`;
+    document.getElementById('hist-delta').textContent = '';
+    return;
+  }
+  const W = box.clientWidth || 600, H = 260, m = {t:12, r:12, b:26, l:56}, iw = W-m.l-m.r, ih = H-m.t-m.b;
+  const vals = pts.map(p=>p.px[k]), lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi-lo)*.15 || hi*.01 || 1;
+  const y0 = lo-pad, y1 = hi+pad, t0 = pts[0].t, t1 = pts[pts.length-1].t;
+  const x = t => m.l + (t-t0)/(t1-t0||1)*iw, y = v => m.t + ih - (v-y0)/(y1-y0)*ih;
+  const line = pts.map(p=>`${x(p.t).toFixed(1)},${y(p.px[k]).toFixed(1)}`).join('L');
+  const grid = [lo, (lo+hi)/2, hi].map(v=>`<line class="grid" x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${m.l-8}" y="${y(v)+4}" text-anchor="end">${fmt(v, k==='usd'?2:0)}</text>`).join('');
+  const dl = t => new Date(t).toLocaleDateString(LOC(), {day:'numeric', month:'short'});
+  const last = pts[pts.length-1];
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}">${grid}
+    <path d="M${x(t0)},${m.t+ih}L${line}L${x(t1)},${m.t+ih}Z" style="fill:var(--accent);fill-opacity:.12"/>
+    <path d="M${line}" style="fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round"/>
+    <circle cx="${x(last.t)}" cy="${y(last.px[k])}" r="4.5" style="fill:var(--accent);stroke:var(--surface);stroke-width:2"/>
+    <text class="axis" x="${m.l}" y="${H-6}">${dl(t0)}</text><text class="axis" x="${W-m.r}" y="${H-6}" text-anchor="end">${dl(t1)}</text>
+    <g id="hover" style="display:none"><line id="hv" y1="${m.t}" y2="${m.t+ih}" style="stroke:var(--muted);stroke-dasharray:3 3"/><circle id="hd" r="5" style="fill:var(--accent);stroke:var(--surface);stroke-width:2"/></g>
+    <rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent" id="hit"/></svg><div class="tip" id="tip" hidden></div>`;
+  const first = pts[0].px[k], d = last.px[k] - first, pct = d/first*100, s = d>=0 ? '+' : '−';
+  document.getElementById('hist-delta').innerHTML = `${L('التغير خلال الفترة:','Change over this period:')} <span class="delta" style="color:${d>=0?'var(--up)':'var(--down)'}"><bdi>${s}${fmt(Math.abs(d), k==='usd'?2:0)}</bdi> <bdi>(${s}${fmt(Math.abs(pct),1)}${PCT()})</bdi></span>`;
+  const hit = box.querySelector('#hit'), tip = box.querySelector('#tip'), g = box.querySelector('#hover');
+  const move = ev => {
+    const px = (ev.touches?ev.touches[0].clientX:ev.clientX) - box.querySelector('svg').getBoundingClientRect().left;
+    const tt = t0 + (px-m.l)/iw*(t1-t0);
+    let best = pts[0]; for(const p of pts) if(Math.abs(p.t-tt) < Math.abs(best.t-tt)) best = p;
+    const cx = x(best.t), cy = y(best.px[k]);
+    g.style.display = ''; g.querySelector('#hv').setAttribute('x1',cx); g.querySelector('#hv').setAttribute('x2',cx);
+    g.querySelector('#hd').setAttribute('cx',cx); g.querySelector('#hd').setAttribute('cy',cy);
+    tip.innerHTML = `<div class="t">${new Date(best.t).toLocaleDateString(LOC(),{weekday:'short', day:'numeric', month:'short'})}</div><div class="r tot"><span>${label}</span><span>${fmt(best.px[k], k==='usd'?2:0)}</span></div>`;
+    tip.hidden = false;
+    const tw = tip.offsetWidth; tip.style.left = Math.max(0, Math.min(W-tw, cx + (cx > W/2 ? -tw-12 : 12))) + 'px'; tip.style.top = Math.max(0, cy-40) + 'px';
+  };
+  const leave = () => { g.style.display='none'; tip.hidden = true; };
+  hit.addEventListener('mousemove', move); hit.addEventListener('touchmove', move, {passive:true});
+  hit.addEventListener('mouseleave', leave); hit.addEventListener('touchend', leave);
+}
+document.getElementById('series').addEventListener('click', e=>{
+  const s = e.target.closest('button')?.dataset.series; if(!s) return;
+  state.chartSeries = s; save(); drawChart(); fitSlide();
+});
+
 // daily log grouped by month, newest first; only the current month starts open
 const openMonths = {};   // months the viewer opened or closed by hand during this visit
 function renderHistTable(){
@@ -1452,6 +1668,7 @@ document.addEventListener('input', e=>{
     save();
     if(key==='userName'){ renderHello(); return; }
     if(key==='lang') applyLang();
+    if(key==='fontScale') document.documentElement.style.fontSize = (num(el.value)||1)*100 + '%';
     if(key==='zMode'){ state.zBrokenOn = ''; trackNisab(); }
     render(); return;
   }
@@ -1469,8 +1686,13 @@ document.addEventListener('input', e=>{
 document.addEventListener('change', e=>{ const f = e.target.dataset.f; if(f==='s' || f==='sym') refresh(); });
 document.addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
-  if(b.dataset.add){ state[b.dataset.add].push(NEW_ROW[b.dataset.add]()); save(); render(); }
-  else if(b.dataset.del){ state[b.dataset.del].splice(+b.dataset.i,1); save(); render(); }
+  if(b.dataset.add){ state[b.dataset.add].push(NEW_ROW[b.dataset.add]()); save(); render(); buzz(); }
+  else if(b.dataset.del){
+    // delete right away, keep the row for a few seconds so it can be put back
+    const sec = b.dataset.del, i = +b.dataset.i, [row] = state[sec].splice(i, 1);
+    save(); render(); buzz([10, 40, 10]);
+    toast(L('اتمسح', 'Deleted'), {label: L('تراجع','Undo'), fn: () => { state[sec].splice(Math.min(i, state[sec].length), 0, row); save(); render(); buzz(); }});
+  }
   else if(b.dataset.rearm!==undefined){ state.alerts[+b.dataset.rearm].done = false; save(); render(); }
   else if(b.dataset.openSettings!==undefined){ openSettings(b.dataset.openSettings); }
 });
@@ -1771,6 +1993,7 @@ function reportHtml(r, partial){
 }
 
 const repDlg = document.getElementById('report');
+let curReport = null, curPartial = false;
 // keys: a month ('2026-09'), 'now' (this month so far), 'y:2026' (a stored year) or 'y:now' (this year so far)
 function openReport(key){
   const curY = dayKey(Date.now()).slice(0,4);
@@ -1781,6 +2004,7 @@ function openReport(key){
           : state.reports?.[key];
   if(!r){ toast(L('مفيش تسجيلات كفاية للفترة دي لسه.', 'There are no records for this period yet.')); return; }
   document.getElementById('rep-title').textContent = r.year ? L('التقرير السنوي','Yearly report') : L('التقرير الشهري','Monthly report');
+  curReport = r; curPartial = partial;
   document.getElementById('rep-body').innerHTML = reportHtml(r, partial);
   if(!repDlg.open) repDlg.showModal();
   repDlg.scrollTop = 0;
@@ -1804,7 +2028,10 @@ function markSlide(i){
   fitSlide();
 }
 // the strip takes the height of the card in view, so a short card leaves no empty space under it
-function fitSlide(){ const s = slidesEl.children[slideIdx]; if(s) slidesEl.style.height = s.offsetHeight + 'px'; }
+function fitSlide(){
+  const h = slidesEl.children[slideIdx]?.offsetHeight;
+  slidesEl.style.height = h ? h + 'px' : '';   // 0 while the area is hidden on phones; fall back to natural height
+}
 document.getElementById('hist-months').addEventListener('toggle', ()=>fitSlide(), true);
 // scrollLeft runs negative in right-to-left pages, so move by the page direction
 function goSlide(i, smooth=true){
@@ -1861,14 +2088,25 @@ function showLock(mode){
   document.getElementById('lock-bio').hidden = !(mode==='unlock' && getBio());
   lockEl.hidden = false;
   if(mode==='unlock'){
+    try{ sessionStorage.removeItem('wealth-unlocked'); }catch(e){}
     document.documentElement.classList.add('locked');
     // ask for the fingerprint or face right away; if the browser wants a tap first, the button stays there
     if(getBio()) setTimeout(tryBio, 250);
   }
 }
 function hideLock(){ lockEl.hidden = true; lockMode = null; document.documentElement.classList.remove('locked'); }
+// an unlock lasts for this tab (it survives reloads and pull-to-refresh) until the app is closed
+// or left in the background for more than a minute; sessionStorage is wiped when the app is closed
+function markUnlocked(){ try{ sessionStorage.setItem('wealth-unlocked','1'); sessionStorage.removeItem('wealth-hidden-at'); }catch(e){} }
+function sessionUnlocked(){
+  try{
+    const hid = +sessionStorage.getItem('wealth-hidden-at') || 0;
+    return !!sessionStorage.getItem('wealth-unlocked') && (!hid || Date.now() - hid < LOCK_AFTER);
+  }catch(e){ return false; }
+}
 function renderDots(){ [...lockDots.children].forEach((d,i)=>d.classList.toggle('on', i < lockBuf.length)); }
 function lockWrong(){
+  buzz([30, 40, 30]);
   lockDots.classList.add('err');
   setTimeout(()=>{ lockDots.classList.remove('err'); lockBuf = ''; renderDots(); }, 450);
 }
@@ -1882,13 +2120,13 @@ async function lockKey(k){
   if(lockMode==='unlock' || lockMode==='verify'){
     if(await hashPin(pin) !== getPin()) return lockWrong();
     const next = lockMode==='verify' ? afterVerify : null;
-    afterVerify = null; hideLock(); next && next();
+    afterVerify = null; hideLock(); markUnlocked(); buzz(); next && next();
   } else if(lockMode==='set'){
     lockFirst = pin; setTimeout(()=>showLock('confirm'), 150);
   } else if(lockMode==='confirm'){
     if(pin !== lockFirst){ lockWrong(); toast(L('الرقمين مش زي بعض، جرّب تاني.', "The PINs didn't match. Try again.")); setTimeout(()=>showLock('set'), 500); return; }
     try{ localStorage.setItem(PINKEY, await hashPin(pin)); }catch(e){}
-    hideLock(); renderPin(); toast(L('اتفعّل قفل التطبيق.', 'App lock is on.'));
+    hideLock(); markUnlocked(); renderPin(); toast(L('اتفعّل قفل التطبيق.', 'App lock is on.'));
   }
 }
 document.getElementById('lock-pad').addEventListener('click', e=>{ const k = e.target.closest('button')?.dataset.k; if(k) lockKey(k); });
@@ -1955,7 +2193,7 @@ async function bioCheck(){
 async function tryBio(){
   if(bioBusy || lockMode!=='unlock') return;
   bioBusy = true;
-  try{ if(await bioCheck()){ hideLock(); } }catch(e){}
+  try{ if(await bioCheck()){ hideLock(); markUnlocked(); buzz(); } }catch(e){}
   bioBusy = false;
 }
 document.getElementById('lock-bio').addEventListener('click', tryBio);
@@ -1977,7 +2215,8 @@ document.getElementById('btn-pin-off').addEventListener('click', ()=>{
 });
 // lock again after the app has been in the background for more than a minute
 document.addEventListener('visibilitychange', ()=>{
-  if(document.hidden){ hiddenAt = Date.now(); return; }
+  if(document.hidden){ hiddenAt = Date.now(); try{ sessionStorage.setItem('wealth-hidden-at', hiddenAt); }catch(e){} return; }
+  try{ sessionStorage.removeItem('wealth-hidden-at'); }catch(e){}
   if(getPin() && hiddenAt && Date.now() - hiddenAt > LOCK_AFTER && lockMode!=='unlock') showLock('unlock');
 });
 
@@ -2002,6 +2241,193 @@ window.addEventListener('touchend', async ()=>{
   if(go){ ptr.textContent = L('جاري التحديث…','Refreshing…'); ptr.style.transform = 'translate(-50%, 20px)'; await refresh(); }
   ptr.hidden = true; ptr.style.transform = '';
 });
+
+/* ---------- phone navigation: one area at a time ---------- */
+const TABS = ['home','assets','reports','zakat','alerts'];
+let tab = 'home';
+try{ tab = localStorage.getItem('wealth-tab') || 'home'; }catch(e){}
+function setTab(t, scroll=true){
+  if(!TABS.includes(t)) t = 'home';
+  tab = t;
+  document.querySelectorAll('.wrap > [data-tab]').forEach(el=>el.classList.toggle('tab-off', el.dataset.tab!==t));
+  document.querySelectorAll('#bnav button').forEach(b=>b.setAttribute('aria-current', b.dataset.goto===t ? 'page' : 'false'));
+  try{ localStorage.setItem('wealth-tab', t); }catch(e){}
+  if(scroll) window.scrollTo({top:0});
+  if(t==='reports'){ drawChart(); goSlide(slideIdx, false); }   // the chart measures its width, which is 0 while hidden
+}
+document.getElementById('bnav').addEventListener('click', e=>{ const t = e.target.closest('button')?.dataset.goto; if(t){ setTab(t); buzz(6); } });
+
+/* ---------- quick add sheet ---------- */
+const sheet = document.getElementById('sheet'), sheetBody = document.getElementById('sheet-body');
+const QTYPES = [
+  {sec:'gold', ar:'ذهب', en:'Gold', color:'var(--gold)'}, {sec:'silver', ar:'فضة', en:'Silver', color:'var(--silver)'},
+  {sec:'cash', ar:'كاش', en:'Cash', color:'var(--cash)'}, {sec:'stocks', ar:'سهم', en:'Stock', color:'var(--stocks)'},
+  {sec:'other', ar:'أصل تاني', en:'Other asset', color:'var(--other)'}, {sec:'debts', ar:'دين أو قسط', en:'Debt', color:'var(--down)'},
+];
+let sheetSec = null, sheetDone = null;
+const fld = (label, html) => `<label class="field"><span>${label}</span>${html}</label>`;
+const qNum = (id, ph='', step='any') => `<input id="${id}" type="number" min="0" step="${step}" inputmode="decimal" placeholder="${ph}">`;
+const qSel = (id, list, v) => `<select id="${id}">${opts(list, v)}</select>`;
+function sheetTypes(){
+  sheetSec = null;
+  document.getElementById('sheet-title').textContent = L('تضيف إيه؟','What are you adding?');
+  sheetBody.innerHTML = `<div class="type-grid">${QTYPES.map(q=>`<button type="button" data-qt="${q.sec}"><i style="background:${q.color}"></i>${L(q.ar,q.en)}</button>`).join('')}</div>`;
+}
+function sheetForm(sec){
+  sheetSec = sec;
+  const q = QTYPES.find(x=>x.sec===sec);
+  document.getElementById('sheet-title').textContent = L(`إضافة ${q.ar}`, `Add ${q.en.toLowerCase()}`);
+  const opt = OPTIONAL();
+  const f = {
+    gold:   fld(LB.karat(), qSel('q-k', GOLD_KARATS, '21')) + `<div class="two">${fld(L('الوزن أو العدد','Weight or count'), qNum('q-w', L('جرام','grams')))}${fld(LB.paid(), qNum('q-cost', opt))}</div>`
+            + `<label class="field" style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="q-worn"> <span>${L('ذهب ملبوس (للزينة)','Worn jewellery')}</span></label>`,
+    silver: fld(LB.karat(), qSel('q-k', SILVER_KARATS, '999')) + `<div class="two">${fld(LB.weightG(), qNum('q-w'))}${fld(LB.paid(), qNum('q-cost', opt))}</div>`,
+    cash:   fld(LB.bank(), qSel('q-b', BANKS, 'NBE')) + `<div class="two">${fld(LB.cur(), qSel('q-c', CURRENCIES, 'EGP'))}${fld(LB.amount(), qNum('q-a'))}</div>`,
+    stocks: fld(LB.ticker(), `<input id="q-s" class="sym" list="egx-list" placeholder="COMI" autocapitalize="characters">`)
+            + `<div class="two">${fld(LB.shares(), qNum('q-q','', '1'))}${fld(LB.avg(), qNum('q-cost', opt))}</div>`,
+    other:  fld(LB.desc(), `<input id="q-name" type="text" placeholder="${L('مثلاً: شقة التجمع','e.g. New Cairo flat')}">`)
+            + `<div class="two">${fld(LB.type(), qSel('q-type', OTHER_TYPES, 'realestate'))}${fld(LB.est(), qNum('q-v'))}</div>`,
+    debts:  fld(LB.desc(), `<input id="q-name" type="text" placeholder="${L('مثلاً: قسط العربية','e.g. car loan')}">`)
+            + `<div class="two">${fld(LB.remain(), qNum('q-a'))}${fld(LB.inst(), qNum('q-inst', opt))}</div>`,
+  }[sec];
+  sheetBody.innerHTML = f + `<button type="button" class="go-btn" data-qsave>${L('إضافة','Add')}</button>
+    <button type="button" class="linkish back" data-qback>${L('← رجوع','← Back')}</button>`;
+  setTimeout(()=>sheetBody.querySelector('input:not([type=checkbox])')?.focus(), 50);
+}
+function sheetSave(){
+  const v = id => document.getElementById(id)?.value ?? '';
+  const row = NEW_ROW[sheetSec]();
+  const need = {gold:'q-w', silver:'q-w', cash:'q-a', stocks:'q-q', other:'q-v', debts:'q-a'}[sheetSec];
+  if(!(num(v(need)) > 0) || (sheetSec==='stocks' && !v('q-s').trim())){
+    buzz([30,40,30]); toast(L('اكتب المبلغ أو الكمية الأول.', 'Enter the amount or quantity first.')); return;
+  }
+  switch(sheetSec){
+    case 'gold':   Object.assign(row, {k:v('q-k'), w:v('q-w'), cost:v('q-cost'), worn:document.getElementById('q-worn').checked}); break;
+    case 'silver': Object.assign(row, {k:v('q-k'), w:v('q-w'), cost:v('q-cost')}); break;
+    case 'cash':   Object.assign(row, {b:v('q-b'), c:v('q-c'), a:v('q-a')}); break;
+    case 'stocks': Object.assign(row, {s:v('q-s').trim().toUpperCase(), q:v('q-q'), cost:v('q-cost')}); break;
+    case 'other':  Object.assign(row, {name:v('q-name'), type:v('q-type'), v:v('q-v')}); break;
+    case 'debts':  Object.assign(row, {name:v('q-name'), a:v('q-a'), inst:v('q-inst')}); break;
+  }
+  // drop the empty starter row the page begins with, so the first real entry replaces it
+  const rows = state[sheetSec];
+  if(rows.length===1 && !num(rows[0].w ?? rows[0].a ?? rows[0].q ?? rows[0].v)) rows.pop();
+  rows.push(row); save(); render(); buzz();
+  const sec = sheetSec; sheet.close();
+  toast(L('اتضاف ✓','Added ✓'), {label: L('عرض','View'), fn: ()=>{ setTab('assets'); document.getElementById('sec-'+sec)?.scrollIntoView({block:'start'}); }});
+  if(sec==='stocks') refresh();
+  if(sheetDone){ const cb = sheetDone; sheetDone = null; cb(sec); }
+}
+function openSheet(sec, done){
+  sheetDone = done || null;
+  sec ? sheetForm(sec) : sheetTypes();
+  if(!sheet.open) sheet.showModal();
+  buzz(6);
+}
+document.getElementById('fab').addEventListener('click', ()=>openSheet());
+document.getElementById('sheet-close').addEventListener('click', ()=>sheet.close());
+sheet.addEventListener('click', e=>{
+  if(e.target===sheet) return sheet.close();
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.qt) sheetForm(b.dataset.qt);
+  else if(b.dataset.qback!==undefined) sheetTypes();
+  else if(b.dataset.qsave!==undefined) sheetSave();
+});
+sheet.addEventListener('keydown', e=>{ if(e.key==='Enter' && sheetSec && e.target.tagName==='INPUT'){ e.preventDefault(); sheetSave(); } });
+
+/* ---------- welcome on first run ---------- */
+const wel = document.getElementById('welcome'), welBody = document.getElementById('wel-body');
+let welStep = 0, welAdded = new Set();
+function renderWelcome(){
+  const dots = `<div class="wel-steps">${[0,1,2].map(i=>`<i class="${i===welStep?'on':''}"></i>`).join('')}</div>`;
+  const steps = [
+    `<img src="icons/logo.svg" alt="">
+     <h2>${L('أهلاً بيك في نماء','Welcome to Namaa')}</h2>
+     <p>${L('تابع ثروتك من الذهب والفضة والكاش والأسهم بأسعار مصر أول بأول. كل بياناتك بتفضل على جهازك بس.', "Track your gold, silver, cash and stocks at live Egyptian prices. Everything stays on your device.")}</p>
+     ${fld(L('اسمك (اختياري)','Your name (optional)'), `<input id="w-name" type="text" data-set="userName" value="${esc(state.userName)}" placeholder="${L('مثلاً: محمد','e.g. Mohamed')}">`)}
+     ${fld(L('اللغة','Language'), `<select id="w-lang" data-set="lang"><option value="ar" ${LANG==='ar'?'selected':''}>العربية</option><option value="en" ${LANG==='en'?'selected':''}>English</option></select>`)}
+     <button type="button" class="go-btn" data-wnext>${L('يلا نبدأ','Get started')}</button>`,
+    `<h2>${L('ضيف أول حاجة عندك','Add what you own')}</h2>
+     <p>${L('تقدر تضيف الباقي بعدين من زرار الإضافة (+) اللي تحت.', 'You can add the rest later with the add (+) button.')}</p>
+     <div class="wel-choices">${['gold','cash','stocks'].map(s=>{ const q = QTYPES.find(x=>x.sec===s);
+       return `<button type="button" data-wadd="${s}" class="${welAdded.has(s)?'done':''}"><span>${L(q.ar,q.en)}</span><span>${welAdded.has(s)?'✓':'+'}</span></button>`; }).join('')}
+       <button type="button" data-wrestore><span>${L('عندي نسخة احتياطية','I have a backup')}</span><span>⬆</span></button></div>
+     <button type="button" class="go-btn" data-wnext>${L('التالي','Next')}</button>`,
+    `<h2>${L('أمّن تطبيقك','Keep it private')}</h2>
+     <p>${L('القفل بيخبي ثروتك عن أي حد ماسك موبايلك، والإشعارات بتنبهك للأسعار والزكاة.', 'A lock hides your wealth from anyone holding your phone; notifications tell you about prices and zakat.')}</p>
+     <div class="wel-choices">
+       <button type="button" data-wlock><span>🔒 ${L('قفل برقم سري','Lock with a PIN')}</span><span>›</span></button>
+       ${canNotify ? `<button type="button" data-wnotify class="${notifyOn()?'done':''}"><span>🔔 ${L('تفعيل الإشعارات','Turn on notifications')}</span><span>${notifyOn()?'✓':'›'}</span></button>` : ''}
+     </div>
+     <button type="button" class="go-btn" data-wdone>${L('ابدأ','Start')}</button>`,
+  ];
+  welBody.innerHTML = dots + steps[welStep];
+}
+function finishWelcome(){ try{ localStorage.setItem('wealth-welcomed','1'); }catch(e){} if(wel.open) wel.close(); }
+function openWelcome(){ welStep = 0; renderWelcome(); wel.showModal(); }
+wel.addEventListener('cancel', ()=>finishWelcome());
+wel.addEventListener('change', e=>{ if(e.target.id==='w-lang') renderWelcome(); });
+wel.addEventListener('click', async e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.wnext!==undefined){ welStep++; renderWelcome(); }
+  else if(b.dataset.wadd) openSheet(b.dataset.wadd, sec=>{ welAdded.add(sec); renderWelcome(); });
+  else if(b.dataset.wrestore!==undefined){ finishWelcome(); openSettings(); fileIn.click(); }
+  else if(b.dataset.wnotify!==undefined){ document.getElementById('btn-notify').click(); setTimeout(renderWelcome, 800); }
+  else if(b.dataset.wlock!==undefined){ finishWelcome(); showLock('set'); }
+  else if(b.dataset.wdone!==undefined){ finishWelcome(); buzz(); }
+});
+
+/* ---------- share a report as an image ---------- */
+const CANVAS_COLORS = {gold:'#e0b257', silver:'#aab6bd', cash:'#5cb48d', stocks:'#7c9de0', other:'#de9670', certs:'#b58ad8'};
+async function shareReportImage(r, partial, pctOnly){
+  const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'), rtl = LANG!=='en';
+  try{ await document.fonts.ready; }catch(e){}
+  const bg = g.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#123326'); bg.addColorStop(1,'#0a1c16');
+  g.fillStyle = bg; g.fillRect(0,0,W,H);
+  g.direction = rtl ? 'rtl' : 'ltr'; g.textAlign = rtl ? 'right' : 'left'; g.textBaseline = 'alphabetic';
+  const X = rtl ? W-80 : 80, F = (w, s, fam='"IBM Plex Sans Arabic", Tahoma, sans-serif') => `${w} ${s}px Rubik, ${fam}`;
+  const text = (t, x, y, font, color) => { g.font = font; g.fillStyle = color; g.fillText(t, x, y); };
+  try{ const img = new Image(); img.src = 'icons/logo.svg'; await img.decode(); g.drawImage(img, rtl ? 80 : W-190, 72, 110, 110); }catch(e){}
+  const Y = !!r.year, eNet = netOf(r.end), sNet = netOf(r.start), d = eNet - sNet, pct = sNet ? d/sNet*100 : 0, s = d>=0 ? '+' : '−';
+  const period = Y ? L(`سنة ${fmt(+r.year,0).replace(/[٬,]/g,'')}`, `Year ${r.year}`) : monthLabel(r.month);
+  text(L('نماء','Namaa'), X, 140, F(700, 70, 'Alexandria, Tahoma, sans-serif'), '#e0b257');
+  text(`${Y ? L('التقرير السنوي','Yearly report') : L('التقرير الشهري','Monthly report')} · ${period}${partial ? L(' (لحد دلوقتي)',' (so far)') : ''}`, X, 196, F(500, 34), '#cfd6d2');
+  g.fillStyle = '#e0b257'; g.fillRect(80, 232, W-160, 4);
+  if(pctOnly){
+    text(Y ? L('التغير خلال السنة','Change this year') : L('التغير خلال الشهر','Change this month'), X, 330, F(400, 34), '#9fb0a8');
+    text(`${s}${fmt(Math.abs(pct),1)}${PCT()}`, X, 450, F(700, 120), d>=0 ? '#5fd08f' : '#ef7a6c');
+  } else {
+    text(L('صافي الثروة','Net worth'), X, 330, F(400, 34), '#9fb0a8');
+    text(egp(eNet), X, 430, F(700, 92), '#f3f1ea');
+    text(`${s}${egp(Math.abs(d))}  (${s}${fmt(Math.abs(pct),1)}${PCT()})`, X, 500, F(600, 42), d>=0 ? '#5fd08f' : '#ef7a6c');
+  }
+  // composition at period end, largest first
+  const assets = STACK.reduce((a,k)=>a+r.end[k],0);
+  const cats = STACK.filter(k => r.end[k] > 0).sort((a,b)=>r.end[b]-r.end[a]).slice(0,5);
+  text(L('توزيع الثروة','Breakdown'), X, 620, F(600, 38), '#f3f1ea');
+  cats.forEach((k,i)=>{
+    const y = 700 + i*112, share = assets ? r.end[k]/assets : 0;
+    text(NAMES[k], X, y, F(500, 34), '#e9ece9');
+    g.textAlign = rtl ? 'left' : 'right';
+    text(pctOnly ? `${fmt(share*100,1)}${PCT()}` : `${egp(r.end[k])} · ${fmt(share*100,1)}${PCT()}`, rtl ? 80 : W-80, y, F(500, 30), '#b9c4bf');
+    g.textAlign = rtl ? 'right' : 'left';
+    g.fillStyle = '#21423a'; g.beginPath(); g.roundRect(80, y+22, W-160, 22, 11); g.fill();
+    const bw = Math.max(22, (W-160)*share); g.fillStyle = CANVAS_COLORS[k] || '#e0b257';
+    g.beginPath(); g.roundRect(rtl ? W-80-bw : 80, y+22, bw, 22, 11); g.fill();
+  });
+  text(L(`نماء · ${dateFmt(new Date())}`, `Namaa · ${dateFmt(new Date())}`), X, H-70, F(400, 28), '#7f918a');
+  const blob = await new Promise(res => c.toBlob(res, 'image/png'));
+  const file = new File([blob], `namaa-${Y ? r.year : r.month}${pctOnly ? '-pct' : ''}.png`, {type:'image/png'});
+  try{
+    if(navigator.canShare?.({files:[file]})){ await navigator.share({files:[file], title: L('نماء','Namaa')}); return; }
+  }catch(e){ if(e.name==='AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+  toast(L('الصورة اتحفظت.', 'Image saved.'));
+}
+document.getElementById('rep-share').addEventListener('click', ()=>curReport && shareReportImage(curReport, curPartial, false));
+document.getElementById('rep-share-pct').addEventListener('click', ()=>curReport && shareReportImage(curReport, curPartial, true));
 
 /* ---------- privacy ---------- */
 const privBtn = document.getElementById('btn-private');
@@ -2117,11 +2543,14 @@ document.getElementById('btn-install-close').addEventListener('click', ()=>{
 window.addEventListener('appinstalled', ()=>{ installBox.hidden = true; toast(L('اتثبّت نماء على جهازك.', 'Namaa is installed on your device.')); });
 
 applyTheme(document.documentElement.dataset.theme || 'system');
-if(getPin()) showLock('unlock');
+if(getPin() && !sessionUnlocked()) showLock('unlock');
 syncStatic();
 applyLang();
+loadPriceCache();
 render();
 goSlide(slideIdx, false);
+setTab(tab, false);
+if(FIRST_RUN && !getPin()) openWelcome();
 loadEgxList();
 refresh();
 setInterval(()=>{ if(!document.hidden) refresh(); }, 30000);
