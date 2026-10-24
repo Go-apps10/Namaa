@@ -87,6 +87,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 header>div:first-child{flex:1;min-width:0}
 .btn-settings{order:3;width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center;flex:none;color:var(--fg)}
 .btn-settings:hover{color:var(--accent)}
+.avatar-btn{order:3;width:44px;height:44px;border-radius:50%;padding:0;overflow:hidden;flex:none;border:2px solid var(--accent)}
+.avatar-btn img,.avatar-pv img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar-pv{width:56px;height:56px;border-radius:50%;overflow:hidden;background:var(--bg);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);flex:none}
+.avatar-pv svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .status{order:2}
 @media (max-width:640px){ .status{order:4;width:100%} }
 .theme{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;justify-self:start}
@@ -654,6 +658,7 @@ section.card.collapsed{gap:0}
       <button type="button" class="sync-ind" id="sync-ind" hidden data-open-settings="sync"></button>
       <button id="refresh" type="button" data-en="Refresh">تحديث الآن</button>
     </div>
+    <button id="btn-avatar" type="button" class="avatar-btn" hidden aria-haspopup="dialog" aria-label="بياناتك الشخصية" data-en-label="Your profile"><img id="avatar-img" alt=""></button>
     <button id="btn-settings" type="button" class="btn-settings" aria-haspopup="dialog" aria-label="الإعدادات" data-en-label="Settings" title="الإعدادات">
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
     </button>
@@ -867,6 +872,13 @@ section.card.collapsed{gap:0}
     <h3 data-en="You">بياناتك الشخصية</h3>
     <label class="field" for="userName"><span data-en="Your name">اسمك</span>
       <input id="userName" type="text" data-set="userName" placeholder="مثلاً: محمد" data-en-ph="e.g. Mohamed" autocomplete="given-name" maxlength="40"></label>
+    <div class="field"><span data-en="Your photo">صورتك</span>
+      <div class="row">
+        <span class="avatar-pv" id="avatar-pv"></span>
+        <button type="button" id="btn-photo" data-en="Choose a photo">اختار صورة</button>
+        <button type="button" class="x" id="btn-photo-off" hidden data-en="Remove">شيل الصورة</button>
+        <input type="file" id="file-photo" accept="image/*" hidden>
+      </div></div>
     <label class="field" for="lang"><span data-en="Language">اللغة</span>
       <select id="lang" data-set="lang">
         <option value="ar">العربية</option>
@@ -1108,8 +1120,8 @@ const DEFAULT_STATE = {
   goalDate:'', nMonthly:true, monthlySent:'', reports:{}, yearReports:{},
   tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'',
   pending:[], merchantCats:{}, autoKnown:true, budgetTotal:'',
-  deletedTx:[], deletedPending:[], deletedRec:[], deletedCats:[], _savedAt:0,
-  userName:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
+  deletedTx:[], deletedPending:[], deletedRec:[], deletedCats:[], hiddenCats:[], _savedAt:0,
+  userName:'', avatar:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
 };
 
 // first visit on this device: nothing saved yet and the welcome hasn't been shown
@@ -1181,9 +1193,38 @@ function applyLang(){
     ? L('من Safari اضغط زرار المشاركة ⬆︎ وبعدين "إضافة إلى الشاشة الرئيسية".', 'In Safari, tap Share ⬆︎ then "Add to Home Screen".')
     : L('افتحه زي أي تطبيق من الشاشة الرئيسية.', 'Open it like any app from your home screen.');
   resetClearButton();
-  renderHello(); renderNotify(); renderPin(); applyPrivate(isPrivate());
+  renderHello(); renderAvatar(); renderNotify(); renderPin(); applyPrivate(isPrivate());
   if(dlg.open){ renderSync(); renderInbox(); }
 }
+// the person's photo: shown at the top next to Settings, and in Settings with choose / remove
+let shownAvatar = null;
+function renderAvatar(){
+  const src = shownAvatar = state.avatar || '';
+  document.getElementById('btn-avatar').hidden = !src;
+  if(src) document.getElementById('avatar-img').src = src;
+  document.getElementById('avatar-pv').innerHTML = src ? `<img src="${src}" alt="">` : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>';
+  document.getElementById('btn-photo-off').hidden = !src;
+  document.getElementById('btn-photo').textContent = src ? L('غيّر الصورة','Change photo') : L('اختار صورة','Choose a photo');
+}
+// cut to a centred square and shrink to 192px, so the photo stays a few KB in storage and sync
+async function photoToData(file){
+  const url = URL.createObjectURL(file);
+  try{
+    const img = await new Promise((ok, no)=>{ const i = new Image(); i.onload = ()=>ok(i); i.onerror = no; i.src = url; });
+    const s = Math.min(img.naturalWidth, img.naturalHeight), N = 192, c = document.createElement('canvas');
+    c.width = c.height = N;
+    c.getContext('2d').drawImage(img, (img.naturalWidth - s)/2, (img.naturalHeight - s)/2, s, s, 0, 0, N, N);
+    return c.toDataURL('image/jpeg', 0.85);
+  } finally { URL.revokeObjectURL(url); }
+}
+document.getElementById('btn-photo').addEventListener('click', ()=>document.getElementById('file-photo').click());
+document.getElementById('file-photo').addEventListener('change', async e=>{
+  const f = e.target.files[0]; e.target.value = ''; if(!f) return;
+  try{ state.avatar = await photoToData(f); save(); renderAvatar(); toast(L('اتحطت صورتك.', 'Photo set.')); }
+  catch(err){ toast(L('مقدرتش أفتح الصورة دي. جرّب صورة تانية.', "Couldn't open that image. Try another one.")); }
+});
+document.getElementById('btn-photo-off').addEventListener('click', ()=>{ state.avatar = ''; save(); renderAvatar(); });
+document.getElementById('btn-avatar').addEventListener('click', ()=>openSettings());
 function renderHello(){
   const el = document.getElementById('hello'), name = (state.userName||'').trim();
   el.hidden = !name;
@@ -1697,6 +1738,7 @@ function renderBackupNote(){
 
 const ROW_SECS = ['gold','silver','cash','stocks','other','debts','alerts'];
 function render(){
+  if((state.avatar||'') !== shownAvatar) renderAvatar();   // a photo set on another device arrives with sync
   renderStamp();
   renderMarket();
   renderTicker();
@@ -2680,7 +2722,9 @@ const INC_CATS = [
   {id:'otherin', ar:'دخل تاني', en:'Other income', color:'#8d958f'},
 ];
 const CUSTOM_COLORS = ['#d08fbf','#8fb3d0','#c7a46b','#7fc4a5','#b9a0e0','#e09f8f'];
-const cats = type => [...(type==='inc' ? INC_CATS : EXP_CATS), ...state.customCats.filter(c=>c.type===type)];
+// built-in categories the person removed are only hidden (state.hiddenCats), so old reports still name them
+const cats = type => [...(type==='inc' ? INC_CATS : EXP_CATS).filter(c=>!state.hiddenCats.includes(c.id)), ...state.customCats.filter(c=>c.type===type)];
+const KEEP_CATS = ['other', 'otherin'];   // where a removed category's transactions go, so these two stay
 const catById = id => [...EXP_CATS, ...INC_CATS, ...state.customCats].find(c=>c.id===id) || {id, ar:'فئة محذوفة', en:'Deleted category', color:'#8d958f'};
 const catName = c => c.name || L(c.ar, c.en);
 const acctById = id => state.cash.find(r=>r.id===id);
@@ -2870,15 +2914,18 @@ function sheetTx(type){
 let delCatArm = '';
 // removing a category moves everything filed under it to "Other", so totals and history stay whole
 function deleteCat(id){
-  const c = state.customCats.find(x=>x.id===id); if(!c) return;
+  if(KEEP_CATS.includes(id)) return;
+  const own = state.customCats.find(x=>x.id===id), built = [...EXP_CATS, ...INC_CATS].find(x=>x.id===id);
+  if(!own && !built) return;
+  const c = own || built, name = catName(c), inc = own ? own.type==='inc' : INC_CATS.includes(built);
   const moved = moveCat(state, id);
-  state.customCats = state.customCats.filter(x=>x.id!==id);
-  state.deletedCats.push(id);
+  if(own){ state.customCats = state.customCats.filter(x=>x.id!==id); state.deletedCats.push(id); }
+  else if(!state.hiddenCats.includes(id)) state.hiddenCats.push(id);
   if(txDraft && txDraft.cat===id) txDraft.cat = cats(txDraft.type)[0].id;
   save(); render(); buzz();
-  const other = catName(catById(c.type==='inc' ? 'otherin' : 'other'));
-  toast(moved ? L(`اتحذفت فئة «${c.name}»، و${fmt(moved,0)} عملية اتنقلت لـ «${other}».`, `"${c.name}" deleted; ${moved} transaction(s) moved to "${other}".`)
-              : L(`اتحذفت فئة «${c.name}».`, `"${c.name}" deleted.`));
+  const other = catName(catById(inc ? 'otherin' : 'other'));
+  toast(moved ? L(`اتحذفت فئة «${name}»، و${fmt(moved,0)} عملية اتنقلت لـ «${other}».`, `"${name}" deleted; ${moved} transaction(s) moved to "${other}".`)
+              : L(`اتحذفت فئة «${name}».`, `"${name}" deleted.`));
 }
 function moveCat(st, id){
   let n = 0;
@@ -2899,10 +2946,11 @@ function renderTxSheet(fresh){
     ${fld(L(`المبلغ (${curLbl})`, `Amount (${curLbl})`), `<input id="t-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${esc(amt)}">`)}
     <div class="field"><span>${L('الفئة','Category')}</span><div class="chips">${cats(d.type).map(c=>{
       const pick = `<button type="button" data-txcat="${c.id}" aria-pressed="${c.id===d.cat}"><i style="background:${c.color}"></i>${esc(catName(c))}</button>`;
-      // categories the person added get a remove button; the built-in ones stay
-      return c.name===undefined ? pick : `<span class="chip-own">${pick}<button type="button" class="cdel${delCatArm===c.id?' arm':''}" data-txdelcat="${c.id}" aria-label="${L('احذف الفئة','Delete category')}">${delCatArm===c.id ? L('احذف؟','Delete?') : '×'}</button></span>`;
+      // every category can be removed except "Other", which takes the removed ones' transactions
+      return KEEP_CATS.includes(c.id) ? pick : `<span class="chip-own">${pick}<button type="button" class="cdel${delCatArm===c.id?' arm':''}" data-txdelcat="${c.id}" aria-label="${L('احذف الفئة','Delete category')}">${delCatArm===c.id ? L('احذف؟','Delete?') : '×'}</button></span>`;
     }).join('')}
-      <button type="button" data-txnewcat>+ ${L('فئة جديدة','New category')}</button></div></div>
+      <button type="button" data-txnewcat>+ ${L('فئة جديدة','New category')}</button>
+      ${state.hiddenCats.length ? `<button type="button" class="linkish" data-txrestore style="border:0;background:none">${L(`↺ رجّع الفئات الأساسية (${fmt(state.hiddenCats.length,0)})`, `↺ Bring back built-in categories (${state.hiddenCats.length})`)}</button>` : ''}</div></div>
     ${fld(d.type==='exp' ? L('اتدفع من','Paid from') : L('اتحط في','Paid into'), `<select id="t-acct"><option value="">${L('من غير خصم من رصيد','Don’t change any balance')}</option>${state.cash.map(r=>`<option value="${r.id}" ${r.id===d.acct?'selected':''}>${esc(acctName(r))}</option>`).join('')}</select>`)}
     <div class="two">${fld(L('التاريخ','Date'), `<input id="t-date" type="date" value="${esc(date)}">`)}${fld(L('ملاحظة','Note'), `<input id="t-note" type="text" value="${esc(note)}" placeholder="${L('اختياري','optional')}">`)}</div>
     <label class="field" style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="t-rep" ${rep?'checked':''}> <span>${L('يتكرر كل شهر في نفس اليوم','Repeat every month on this day')}</span></label>
@@ -2967,6 +3015,7 @@ sheetBody.addEventListener('click', e=>{
     if(delCatArm !== id){ delCatArm = id; renderTxSheet(); return; }   // first tap asks, second tap deletes
     delCatArm = ''; deleteCat(id); renderTxSheet();
   }
+  else if(b.dataset.txrestore!==undefined){ state.hiddenCats = []; save(); render(); renderTxSheet(); toast(L('رجعت الفئات الأساسية.', 'Built-in categories are back.')); }
   else if(b.dataset.txnewcat!==undefined){
     b.outerHTML = `<span style="display:flex;gap:6px"><input id="t-newcat" type="text" placeholder="${L('اسم الفئة','Category name')}" style="width:150px"><button type="button" data-txaddcat>${L('ضيف','Add')}</button></span>`;
     document.getElementById('t-newcat').focus();
