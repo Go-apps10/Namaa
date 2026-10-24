@@ -3071,7 +3071,7 @@ function renderInbox(){
       <div class="row"><button type="button" data-inbox-script>${showScript ? L('إخفاء السكريبت','Hide script') : L('1. اعرض السكريبت','1. Show the script')}</button>
         <button type="button" data-inbox-copy-script>${L('نسخ السكريبت','Copy script')}</button></div>
       ${scriptBox}
-      <div class="field"><span>${L('2. الصق رابط الـ Web app هنا','2. Paste the Web app link here')}</span>
+      <div class="field"><span>${L('2. الصق رابط الـ Web app هنا (أو رابط MacroDroid من جهاز تاني)','2. Paste the Web app link here (or the MacroDroid link from another device)')}</span>
         <div class="row" style="flex-wrap:nowrap"><input id="inbox-url" type="url" autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" style="direction:ltr">
         <button type="button" data-inbox-save>${L('حفظ','Save')}</button></div></div>`;
     return;
@@ -3097,7 +3097,10 @@ document.getElementById('inbox-box').addEventListener('click', async e=>{
   else if(d.inboxCopyScript!==undefined){ if(!await copy(inboxScript())){ showScript = true; renderInbox(); toast(L('انسخه من الخانة.', 'Copy it from the box.')); } }
   else if(d.inboxCopyLink!==undefined){ if(!await copy(macroLink())) toast(L('انسخه من الخانة.', 'Copy it from the box.')); }
   else if(d.inboxSave!==undefined){
-    const url = document.getElementById('inbox-url').value.trim().replace(/\?.*$/, '');
+    const typed = document.getElementById('inbox-url').value.trim(), url = typed.replace(/\?.*$/, '');
+    // the MacroDroid link from another device carries that device's key: take it, so the script made there keeps working here
+    const k = (typed.match(/[?&]key=([A-Za-z0-9]+)/) || [])[1];
+    if(k) inbox.key = k;
     if(!/^https:\/\/script\.google\.com\/(?:a\/[^/]+\/)?macros\/s\/[\w-]+\/exec$/.test(url)){
       toast(L('دا مش رابط Web app. لازم يبدأ بـ https://script.google.com/macros/s/ ويخلص بـ /exec', "That isn't a Web app link. It starts with https://script.google.com/macros/s/ and ends with /exec")); return; }
     inbox.url = url; saveInbox(); showScript = false; await pullInbox(true);
