@@ -1,0 +1,2136 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>نماء</title>
+<meta name="description" content="احسب صافي ثروتك من الذهب والفضة والكاش وأسهم البورصة المصرية بأسعار محدّثة.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/logo.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141716" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Namaa">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>
+  // apply the saved theme, privacy mode and language before first paint to avoid a flash
+  try{
+    const t = localStorage.getItem('wealth-theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme = t;
+    if(localStorage.getItem('wealth-private')==='1') document.documentElement.dataset.private = '';
+    if((JSON.parse(localStorage.getItem('wealth-v1'))||{}).lang==='en'){ document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr'; }
+    if(localStorage.getItem('wealth-pin')) document.documentElement.classList.add('locked');   // hide amounts until the PIN is entered
+  }catch(e){}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- Rubik is loaded with only digits, separators and signs, so it draws every number while letters fall through to the other faces -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&text=0123456789%D9%A0%D9%A1%D9%A2%D9%A3%D9%A4%D9%A5%D9%A6%D9%A7%D9%A8%D9%A9.%2C%D9%AB%D9%AC%25%D9%AA%2B-%E2%88%92&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Alexandria:wght@500;600;700&display=swap">
+<style>
+/* Layout: a single ledger column — header with settings, price strip, net worth, history, zakat, then the holding sections */
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --fg:#1d2321; --muted:#68716d; --line:#e2e0d8;
+  --gold:#b8862b; --silver:#7d8a92; --cash:#2f7a5b; --stocks:#3a5a9b; --certs:#7b4f9e; --other:#a65d3a;
+  --up:#1f8a4c; --down:#c0392b; --warn:#b7791f; --accent:#8a6420;
+  --display:"Rubik","Alexandria","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --body:"Rubik","IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+  --page-dir:rtl;
+  color-scheme:light;
+}
+:root[dir="ltr"]{--page-dir:ltr}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141716; --surface:#1d2120; --fg:#ecebe6; --muted:#9aa29e; --line:#2e3331;
+  --gold:#e0b257; --silver:#aab6bd; --cash:#5cb48d; --stocks:#7c9de0; --certs:#b58ad8; --other:#de9670;
+  --up:#4cc27c; --down:#ec6b5d; --warn:#e6b350; --accent:#e0b257; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#141716; --surface:#1d2120; --fg:#ecebe6; --muted:#9aa29e; --line:#2e3331;
+  --gold:#e0b257; --silver:#aab6bd; --cash:#5cb48d; --stocks:#7c9de0; --certs:#b58ad8; --other:#de9670;
+  --up:#4cc27c; --down:#ec6b5d; --warn:#e6b350; --accent:#e0b257; color-scheme:dark;}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.gold-tbl td:first-child,.alerts-tbl td:first-child{min-width:170px}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);font-variant-numeric:tabular-nums;transition:background-color .2s,color .2s}
+@media (prefers-reduced-motion:reduce){body{transition:none}}
+.wrap{max-width:1040px;margin:0 auto;padding-block:24px 48px;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));display:grid;gap:20px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font:700 2rem/1.2 var(--display);margin:0;color:var(--accent)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{border-radius:11px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.hello{font-size:.92rem;color:var(--muted);margin-top:2px;margin-inline-start:56px}
+/* install banner */
+.install{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:.9rem}
+.install img{width:40px;height:40px;border-radius:9px}
+.install .grow{flex:1;min-width:180px}
+h2{font:600 1.2rem/1.35 var(--display);margin:0;display:flex;align-items:center;gap:8px}
+h2 .dot{width:10px;height:10px;border-radius:50%}
+.status{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.live{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.live.on{background:var(--up);animation:pulse 2s infinite}
+.live.err{background:var(--down)}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.live.on{animation:none}}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:6px 12px}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn-settings{display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.btn-settings svg{flex:none}
+.theme{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;justify-self:start}
+.theme button{border:0;border-radius:0;padding:6px 12px;font-size:.85rem;background:var(--surface)}
+.theme button+button{border-inline-start:1px solid var(--line)}
+.theme button[aria-pressed=true],.toggle[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.88rem}
+.ticker{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+@media (min-width:560px){.ticker{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:900px){.ticker{grid-template-columns:repeat(6,1fr)}}
+.tk{background:var(--surface);padding:10px 14px}
+.tk .l{font-size:.78rem;color:var(--muted)}
+.tk .v{font-weight:600;font-size:1.05rem}
+.chg{font-size:.78rem;direction:ltr;display:inline-block}
+.chg.up{color:var(--up)}.chg.down{color:var(--down)}
+.total{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:14px}
+.total .big{font:700 clamp(2rem,6vw,3rem)/1.1 var(--display)}
+.total .big .cur{font-size:.42em;font-weight:500;color:var(--muted);margin-inline-start:.35em}
+.total .usd,.assets-line{color:var(--muted)}
+.assets-line{font-size:.88rem}
+.bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--line);gap:2px}
+.bar span{height:100%;transition:width .4s}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.85rem}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:6px}
+.goal{display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:12px}
+.goal-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.88rem}
+.goal-row input{width:160px}
+.prog{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.prog span{display:block;height:100%;background:var(--accent);border-radius:4px;transition:width .4s}
+section.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:12px;min-width:0}
+/* grid items default to their content's width; let wide tables scroll inside their own box instead of widening the page */
+.wrap>*,section.card>*,.months>*{min-width:0}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sec-sum{font-weight:600}
+.sub-sum{font-size:.85rem;color:var(--muted)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:480px}
+th{font-weight:500;font-size:.8rem;color:var(--muted);text-align:start;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.num{white-space:nowrap}
+td.empty{color:var(--muted);font-size:.88rem;padding:14px 8px}
+input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:100%;min-width:0}
+input[type=number]{direction:ltr;text-align:end}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.x{border:0;background:none;color:var(--muted);padding:2px 8px;font-size:1.1rem}
+.x:hover{color:var(--down)}
+.add{justify-self:start;color:var(--accent)}
+.note{font-size:.8rem;color:var(--muted)}
+.note.old{color:var(--warn);font-weight:500}
+.settings{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;font-size:.88rem}
+.settings label{display:flex;align-items:center;gap:8px}
+.settings input[type=number]{width:110px}
+.settings select{width:auto;max-width:100%}
+.settings label{flex-wrap:wrap;min-width:0;max-width:100%}
+.linkish{border:0;background:none;padding:0;color:var(--accent);text-decoration:underline;font-size:inherit}
+.sym{direction:ltr;text-align:end;text-transform:uppercase}
+.sname{font-size:.78rem;color:var(--muted);display:block;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bad{color:var(--down)}
+.pl{white-space:nowrap;font-weight:500}
+.pl.up{color:var(--up)}.pl.down{color:var(--down)}
+.pl small{font-weight:400}
+.pill{display:inline-block;font-size:.76rem;padding:1px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;font-family:var(--body);font-weight:500}
+.pill.ok{color:var(--up)}.pill.warn{color:var(--warn)}.pill.due{color:var(--down)}.pill.idle{color:var(--muted)}
+.stk{display:flex;align-items:center;gap:10px;min-width:0}
+.stk-in{min-width:0;flex:1}
+.logo{width:32px;height:32px;border-radius:50%;flex:none;object-fit:cover;background:var(--line);border:1px solid var(--line)}
+.logo.fav{object-fit:contain;padding:3px;background:#fff}
+.logo.ph{display:grid;place-items:center;font-size:.72rem;font-weight:600;color:var(--muted);direction:ltr}
+table.cash-tbl{min-width:680px}
+.cash-tbl td:first-child{min-width:220px}
+.cash-tbl td:nth-child(2){min-width:140px}
+table.gold-tbl,table.stocks-tbl{min-width:760px}
+table.alerts-tbl{min-width:760px}
+#cash-banks{display:grid;gap:8px}
+#cash-banks:empty{display:none}
+.bank-chips{display:flex;flex-wrap:wrap;gap:8px}
+.bank-chip{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--bg)}
+.bank-chip .bn{font-size:.85rem;font-weight:500}
+.bank-chip .bv{font-size:.78rem;color:var(--muted)}
+.ranges{display:flex;gap:4px;flex-wrap:wrap}
+.ranges button{padding:3px 10px;font-size:.82rem}
+.ranges button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chart{position:relative;direction:ltr;min-height:260px}
+.chart svg{display:block;width:100%;height:260px;overflow:visible}
+.chart .axis{fill:var(--muted);font-size:11px;font-family:var(--body)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:.9rem;direction:var(--page-dir);padding:20px}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.8rem;direction:var(--page-dir);box-shadow:0 4px 14px rgba(0,0,0,.12);min-width:180px;z-index:2}
+.tip .t{color:var(--muted);margin-bottom:4px}
+.tip .r{display:flex;justify-content:space-between;gap:12px}
+.tip .r i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-inline-end:6px}
+.tip .tot{font-weight:600;border-top:1px solid var(--line);margin-top:4px;padding-top:4px}
+.chart-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.delta{font-weight:600}
+details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
+.months{display:grid;gap:8px}
+.months:empty{display:none}
+.month{border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.month>summary{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:10px 14px;color:var(--fg);font-size:.9rem}
+.month>summary::-webkit-details-marker{display:none}
+.month>summary::before{content:"";width:8px;height:8px;border:solid var(--muted);border-width:0 2px 2px 0;transform:rotate(135deg);transition:transform .2s;flex:none}
+:root[dir="ltr"] .month>summary::before{transform:rotate(-45deg)}
+.month[open]>summary::before,:root[dir="ltr"] .month[open]>summary::before{transform:rotate(45deg)}
+@media (prefers-reduced-motion:reduce){.month>summary::before{transition:none}}
+.month .mn{font-weight:600;min-width:110px}
+.month .ms{color:var(--muted);font-size:.82rem}
+.month .tbl-wrap{padding:0 8px 8px}
+.month table{min-width:520px}
+.dchg{font-size:.82rem;white-space:nowrap}
+.dchg.up{color:var(--up)}.dchg.down{color:var(--down)}
+.confirm{display:inline-flex;gap:6px;align-items:center;font-size:.85rem;flex-wrap:wrap}
+.zk{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.zk>div{background:var(--surface);padding:10px 14px}
+.zk .l{font-size:.78rem;color:var(--muted)}
+.zk .v{font-weight:600}
+.zk-msg{font-size:.9rem}
+.toasts{position:fixed;inset-inline:0;bottom:0;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:grid;gap:8px;justify-items:center;pointer-events:none;z-index:20}
+.toast{pointer-events:auto;background:var(--fg);color:var(--bg);border-radius:10px;padding:10px 16px;font-size:.9rem;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:520px;display:flex;gap:12px;align-items:center}
+.toast button{background:none;border:0;color:inherit;padding:0 4px;font-size:1.1rem}
+/* settings dialog */
+#settings{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--surface);color:var(--fg);width:min(520px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+#settings::backdrop{background:rgba(10,16,14,.5)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
+.dlg-sec{padding:16px 18px;display:grid;gap:12px;border-bottom:1px solid var(--line)}
+.dlg-sec:last-child{border-bottom:0}
+.dlg-sec h3{margin:0;font:500 1.02rem/1.3 var(--display);display:flex;align-items:center;gap:8px}
+.field{display:grid;gap:4px;font-size:.84rem;color:var(--muted)}
+.field input,.field select{font-size:.95rem}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.checks{display:grid;gap:8px;font-size:.9rem}
+.checks label{display:flex;gap:10px;align-items:center}
+/* swipeable insight cards */
+.tabs{display:flex;gap:4px;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px}
+.tabs button{border:0;border-radius:8px;padding:5px 12px;font-size:.84rem;background:none;color:var(--muted)}
+.tabs button[aria-selected=true]{background:var(--surface);color:var(--fg);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.slides{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;overscroll-behavior-x:contain;gap:18px}
+.slides::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion:reduce){.slides{scroll-behavior:auto}}
+.slides{align-items:flex-start;transition:height .25s}
+.slide{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;display:grid;gap:12px;align-content:start}
+.slide-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.slide-head h3{margin:0;font:600 1.02rem/1.3 var(--display)}
+.dots-nav{display:flex;justify-content:center;gap:8px}
+.dots-nav i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:width .2s,background .2s}
+.dots-nav i.on{width:20px;border-radius:4px;background:var(--accent)}
+section.card.collapsed .tabs{display:none}
+
+/* monthly reports */
+.reports{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.reports:empty{display:none}
+.rep-card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--bg);display:grid;gap:4px;text-align:start;color:inherit}
+.rep-card:hover{border-color:var(--accent)}
+.rep-card .mn{font:600 1rem/1.3 var(--display)}
+.rep-card .nv{font-size:1.15rem;font-weight:600}
+.rep-card .go{color:var(--accent);font-size:.82rem;margin-top:4px}
+.rep-empty{font-size:.9rem;color:var(--muted);border:1px dashed var(--line);border-radius:12px;padding:16px}
+#report{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--surface);color:var(--fg);width:min(840px,calc(100% - 24px));max-height:calc(100dvh - 24px);overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+#report::backdrop{background:rgba(10,16,14,.5)}
+.rep{padding:22px 24px;display:grid;gap:22px}
+.rep-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--accent);padding-bottom:14px}
+.rep-brand{display:flex;gap:12px;align-items:center}
+.rep-brand img{width:44px;height:44px;border-radius:11px}
+.rep-brand b{display:block;font:700 1.35rem/1.1 var(--display);color:var(--accent)}
+.rep-brand small{color:var(--muted);font-size:.8rem}
+.rep-month{text-align:end}
+.rep-month b{display:block;font:700 1.25rem/1.2 var(--display)}
+.rep-month small{color:var(--muted);font-size:.78rem}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.kpis>div{background:var(--surface);padding:12px 14px;display:grid;gap:2px}
+.kpis .l{font-size:.75rem;color:var(--muted)}
+.kpis .v{font-size:1.15rem;font-weight:600}
+.kpis .s{font-size:.75rem;color:var(--muted)}
+.rep h4{margin:0 0 10px;font:600 .95rem var(--display)}
+.rep table{min-width:0;font-size:.9rem}
+.rep td,.rep th{padding:7px 8px}
+.rep tfoot td{font-weight:700;border-top:2px solid var(--line)}
+.rep .dotc{display:inline-block;width:9px;height:9px;border-radius:2px;margin-inline-end:8px}
+.rep-chart svg{display:block;width:100%;height:170px;direction:ltr}
+.hl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.hl>div{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:2px}
+.hl .l{font-size:.75rem;color:var(--muted)}
+.hl .v{font-weight:600}
+.rep-foot{font-size:.75rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.up-t{color:var(--up)}.down-t{color:var(--down)}
+.rep>*,.kpis>div,.hl>div{min-width:0}
+.kpis .v,.hl .v{overflow-wrap:anywhere}
+@media (max-width:640px){
+  .rep{padding:16px 14px;gap:18px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpis .v{font-size:1rem}
+  .rep-month{text-align:start}
+}
+@media print{
+  :root,:root[data-theme="dark"]{--bg:#fff;--surface:#fff;--fg:#151a18;--muted:#5d6662;--line:#dcdad2;--accent:#8a6420;--up:#1f7a45;--down:#b3372a;color-scheme:light}
+  @page{margin:14mm}
+  body{background:#fff}
+  body>*:not(#report){display:none!important}
+  #report{position:static;display:block;border:0;box-shadow:none;width:100%;max-width:none;max-height:none;overflow:visible;margin:0}
+  #report .dlg-head{display:none}
+  #report .m{filter:none!important}
+  .rep{padding:0}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+/* app lock */
+:root.locked .wrap,:root.locked .toasts{visibility:hidden}
+.lock{position:fixed;inset:0;z-index:40;background:var(--bg);display:grid;place-content:center;justify-items:center;gap:16px;
+  padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px))}
+.lock img{border-radius:14px}
+.lock h2{font-size:1.1rem;text-align:center}
+.dots{display:flex;gap:14px;direction:ltr}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted)}
+.dots i.on{background:var(--accent);border-color:var(--accent)}
+.dots.err{animation:shake .4s}
+.dots.err i{border-color:var(--down)}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@media (prefers-reduced-motion:reduce){.dots.err{animation:none}}
+.pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px;direction:ltr}
+.pad button{height:64px;border-radius:50%;font:500 1.5rem var(--body);background:var(--surface)}
+.pad span{display:block}
+.lock .row{justify-content:center}
+.bio-btn{display:flex;align-items:center;gap:8px;border-radius:999px;padding:10px 20px;border-color:var(--accent);color:var(--accent);font-weight:600}
+.bio-btn::before{content:"";width:20px;height:20px;background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 11v3M8.5 7.5A5 5 0 0 1 17 11v1.5M7 11v1c0 3 .8 5.4 2.4 7.4M17 15.5c-.2 1.6-.7 3-1.4 4.2M12 3a8 8 0 0 0-8 8v1M20 12v-1a8 8 0 0 0-3-6.2M12 14c0 2.6.6 4.8 1.8 6.6'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 11v3M8.5 7.5A5 5 0 0 1 17 11v1.5M7 11v1c0 3 .8 5.4 2.4 7.4M17 15.5c-.2 1.6-.7 3-1.4 4.2M12 3a8 8 0 0 0-8 8v1M20 12v-1a8 8 0 0 0-3-6.2M12 14c0 2.6.6 4.8 1.8 6.6'/%3E%3C/svg%3E") center/contain no-repeat}
+.lock .confirm{max-width:320px;text-align:center;justify-content:center}
+/* pull to refresh */
+body{overscroll-behavior-y:contain}
+.ptr{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translate(-50%,-60px);z-index:30;
+  background:var(--fg);color:var(--bg);border-radius:999px;padding:6px 16px;font-size:.85rem;box-shadow:0 4px 14px rgba(0,0,0,.2);pointer-events:none}
+.goal-plan{font-size:.85rem;color:var(--muted)}
+/* phones: each holding row becomes a card, so nothing needs sideways scrolling */
+@media (max-width:640px){
+  table:has(> tbody[id$="-rows"]){min-width:0}
+  table:has(> tbody[id$="-rows"]) thead{display:none}
+  tbody[id$="-rows"]{display:grid;gap:10px}
+  tbody[id$="-rows"] tr{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;position:relative;
+    border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg)}
+  tbody[id$="-rows"] td{display:block;padding:0;border:0;min-width:0!important;white-space:normal}
+  tbody[id$="-rows"] td[data-label]::before{content:attr(data-label);display:block;font-size:.72rem;color:var(--muted);margin-bottom:3px}
+  tbody[id$="-rows"] td.lead{grid-column:1/-1;padding-inline-end:34px}
+  tbody[id$="-rows"] td.lead::before{display:none}
+  tbody[id$="-rows"] td.del{position:absolute;top:8px;inset-inline-end:6px}
+  tbody[id$="-rows"] td.empty{grid-column:1/-1}
+  tbody[id$="-rows"] td.nosym{display:none}
+  tbody[id$="-rows"] td.num{font-weight:600}
+  tbody[id$="-rows"] .sname{max-width:100%}
+}
+/* collapsible sections: the head stays visible (with its total), everything else folds away */
+.sec-head h2{cursor:pointer;user-select:none}
+.fold{border:0;background:none;padding:0;width:26px;height:26px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);flex:none}
+.fold:hover{background:var(--bg);color:var(--fg)}
+.fold svg{transition:transform .2s}
+section.card.collapsed .fold svg{transform:rotate(90deg)}
+:root[dir="ltr"] section.card.collapsed .fold svg{transform:rotate(-90deg)}
+section.card.collapsed>:not(.sec-head){display:none}
+section.card.collapsed{gap:0}
+@media (prefers-reduced-motion:reduce){.fold svg{transition:none}}
+/* privacy mode: blur personal amounts, keep market prices readable */
+[data-private] .m,[data-private] .chart svg,[data-private] .tip,[data-private] tbody input[type=number]:not(:focus),[data-private] .goal-row input:not(:focus){filter:blur(7px);user-select:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 class="brand"><img src="icons/logo.svg" alt="" width="44" height="44"><span data-en="Namaa">نماء</span></h1>
+      <div class="hello" id="hello" hidden></div>
+    </div>
+    <div class="status">
+      <span id="live" class="live"></span><span id="stamp"></span>
+      <button id="refresh" type="button" data-en="Refresh">تحديث الآن</button>
+      <button id="btn-settings" type="button" class="btn-settings" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        <span data-en="Settings">الإعدادات</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="tools">
+    <button type="button" id="btn-private" class="toggle" aria-pressed="false"></button>
+    <span style="margin-inline-start:auto;display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" id="btn-collapse-all" data-en="Collapse all">طي كل الأقسام</button>
+      <button type="button" id="btn-expand-all" data-en="Expand all">فتح كل الأقسام</button>
+    </span>
+  </div>
+
+  <div class="install" id="install" hidden>
+    <img src="icons/icon-192.png" alt="">
+    <div class="grow"><b data-en="Install Namaa on your phone">ثبّت نماء على موبايلك</b><div class="note" id="install-hint"></div></div>
+    <button type="button" id="btn-install" data-en="Install">تثبيت</button>
+    <button type="button" class="x" id="btn-install-close" aria-label="إغلاق" data-en-label="Close">×</button>
+  </div>
+
+  <div class="ticker" id="ticker"></div>
+  <div class="note" id="market-note" hidden></div>
+
+  <div class="total">
+    <div>
+      <div class="note" data-en="Net worth">صافي الثروة</div>
+      <div class="big m" id="grand">—</div>
+      <div class="usd m" id="grandUsd"></div>
+      <div class="assets-line m" id="assets-line"></div>
+    </div>
+    <div class="bar" id="bar"></div>
+    <div class="legend" id="legend"></div>
+    <div class="note m" id="pl-total"></div>
+    <div class="goal">
+      <div class="goal-row">
+        <label for="goal" data-en="Your financial goal (EGP)">هدفك المالي (ج.م)</label>
+        <input id="goal" type="number" min="0" step="any" data-set="goal" placeholder="مثلاً 2000000" data-en-ph="e.g. 2000000">
+        <label for="goalDate" style="display:flex;align-items:center;gap:8px"><span data-en="by">بحلول</span> <input id="goalDate" type="date" data-set="goalDate" style="width:auto"></label>
+        <span class="m" id="goal-txt"></span>
+      </div>
+      <div class="prog" id="goal-prog" hidden><span></span></div>
+      <div class="goal-plan m" id="goal-plan" hidden></div>
+    </div>
+  </div>
+
+  <!-- three swipeable cards: history chart, monthly reports, yearly reports -->
+  <section class="card" id="sec-insights">
+    <div class="sec-head">
+      <h2><span data-en="Your wealth">ثروتك</span></h2>
+      <div class="tabs" id="insight-tabs" role="tablist">
+        <button type="button" role="tab" data-slide="0" data-en="Over time">على مر الوقت</button>
+        <button type="button" role="tab" data-slide="1" data-en="Monthly">التقارير الشهرية</button>
+        <button type="button" role="tab" data-slide="2" data-en="Yearly">التقرير السنوي</button>
+      </div>
+    </div>
+    <div class="slides" id="slides">
+    <div class="slide" id="sec-history" role="tabpanel">
+    <div class="slide-head">
+      <h3 data-en="Wealth over time">الثروة على مر الوقت</h3>
+      <div class="ranges" id="ranges">
+        <button type="button" data-range="7" data-en="Week">أسبوع</button>
+        <button type="button" data-range="30" data-en="Month">شهر</button>
+        <button type="button" data-range="90" data-en="3 months">3 شهور</button>
+        <button type="button" data-range="365" data-en="Year">سنة</button>
+        <button type="button" data-range="0" data-en="All">الكل</button>
+      </div>
+    </div>
+    <div class="chart" id="chart"></div>
+    <div class="legend" id="hist-legend"></div>
+    <div class="chart-foot">
+      <span class="note m" id="hist-delta"></span>
+      <span id="hist-clear-wrap"></span>
+    </div>
+    <div class="months" id="hist-months"></div>
+    <div class="note" data-en="The page records one value of your wealth per day (the last value on each day you open it). The current month stays open; finished months fold up and show their summary.">الصفحة بتسجّل قيمة واحدة لثروتك في اليوم (آخر قيمة في اليوم اللي فتحت فيه الصفحة). الشهر الحالي مفتوح، والشهور اللي خلصت بتتطوي ويظهر ملخصها.</div>
+    </div>
+
+    <div class="slide" id="sec-reports" role="tabpanel">
+      <div class="slide-head">
+        <h3 data-en="Monthly reports">التقارير الشهرية</h3>
+        <button type="button" id="btn-report-now" data-en="This month so far">الشهر الحالي لحد دلوقتي</button>
+      </div>
+      <div class="reports" id="reports-list"></div>
+      <div class="note" data-en="A report is made for each month as soon as it ends, and it stays saved here and in your backups.">بيتعمل تقرير لكل شهر لوحده أول ما الشهر يخلص، وبيفضل محفوظ هنا ومع النسخة الاحتياطية.</div>
+    </div>
+
+    <div class="slide" id="sec-years" role="tabpanel">
+      <div class="slide-head">
+        <h3 data-en="Yearly report">التقرير السنوي</h3>
+        <button type="button" id="btn-year-now" data-en="This year so far">السنة الحالية لحد دلوقتي</button>
+      </div>
+      <div class="reports" id="years-list"></div>
+      <div class="note" data-en="Each year's report is saved when the year ends: your wealth month by month, the best and worst months, and how each holding changed.">تقرير كل سنة بيتحفظ أول ما السنة تخلص: ثروتك شهر بشهر، وأحسن وأسوأ شهر، وكل بند اتغيّر قد إيه.</div>
+    </div>
+    </div>
+    <div class="dots-nav" id="slide-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+  </section>
+
+  <section class="card" id="sec-zakat">
+    <div class="sec-head"><h2><span data-en="Zakat">الزكاة</span></h2><span class="sec-sum m" id="zakat-sum"></span></div>
+    <div class="zk" id="zakat-grid"></div>
+    <div class="zk-msg" id="zakat-msg"></div>
+    <div class="settings">
+      <label><input type="checkbox" data-set="zExcludeWorn" id="zExcludeWorn"> <span data-en="Exclude worn gold (jewellery)">استبعاد الذهب الملبوس (للزينة)</span></label>
+      <label><input type="checkbox" data-set="zExcludeStocks" id="zExcludeStocks"> <span data-en="Exclude Egyptian stocks">استبعاد أسهم البورصة المصرية</span></label>
+      <label><input type="checkbox" data-set="zDeductDebts" id="zDeductDebts"> <span data-en="Deduct debts from the zakat base">خصم الديون من وعاء الزكاة</span></label>
+      <label for="zMode"><span data-en="Zakat year method">طريقة حساب الحول</span>
+        <select id="zMode" data-set="zMode">
+          <option value="majority" data-en="Breaks if wealth drops below nisab (majority view)">ينقطع لو المال نزل تحت النصاب (الجمهور)</option>
+          <option value="hanafi" data-en="Only the start and end of the year count (Hanafi)">العبرة بأول الحول وآخره (الحنفية)</option>
+          <option value="manual" data-en="Manual: I set the date myself">يدوي: أنا اللي بسجّل التاريخ</option>
+        </select></label>
+      <label for="zDate"><span data-en="Date wealth reached nisab">تاريخ بلوغ النصاب</span> <input type="date" data-set="zDate" id="zDate" style="width:auto"></label>
+      <button type="button" id="zToday" data-en="Today">النهارده</button>
+    </div>
+    <div class="note" data-en="The zakat year (hawl) is one lunar year (354 days) from the day your wealth reaches the nisab. Majority view: if the zakat base drops below the nisab at any point, the year breaks and a new one starts the day it reaches the nisab again. Hanafi view: dips during the year don't matter; zakat is due if the base is at or above the nisab at the year's end, and if it's below, no zakat is due and a new year starts once it reaches the nisab. In both, the page starts the year by itself. Property, cars and other assets for personal use are not included. This is an estimate; for special cases, ask a scholar.">الحول = سنة هجرية (354 يوم) من يوم ما المال يبلغ النصاب. رأي الجمهور: لو الوعاء نزل تحت النصاب في أي وقت الحول بينقطع، وبيبدأ حول جديد يوم ما يرجع للنصاب. رأي الحنفية: نزول المال في نص السنة مش بيأثر، والعبرة بآخر الحول: لو الوعاء فوق النصاب الزكاة واجبة، ولو تحته مفيش زكاة وبيبدأ حول جديد لما يرجع للنصاب. في الحالتين الصفحة بتبدأ الحول لوحدها. العقارات والسيارات والأصول الأخرى للاستخدام مش داخلة في الحساب. الحساب تقريبي، وفي الحالات الخاصة ارجع لأهل العلم.</div>
+  </section>
+
+  <section class="card" id="sec-gold">
+    <div class="sec-head"><h2><span class="dot" style="background:var(--gold)"></span><span data-en="Gold">الذهب</span></h2><span class="sec-sum m" id="sum-gold"></span></div>
+    <div class="settings">
+      <label for="goldSource"><span data-en="Price source">مصدر السعر</span>
+        <select id="goldSource" data-set="goldSource">
+          <option value="local" data-en="Egyptian jewellers' prices">أسعار الصاغة في مصر</option>
+          <option value="global" data-en="Global price × dollar rate">السعر العالمي × سعر الدولار</option>
+        </select></label>
+      <label for="priceSide" id="priceSide-wrap"><span data-en="Value at">التقييم على</span>
+        <select id="priceSide" data-set="priceSide">
+          <option value="buy" data-en="Shop buying price (what you'd get if you sell)">سعر البيع للمحل (اللي هتاخده لو بعت)</option>
+          <option value="sell" data-en="Shop selling price">سعر الشراء من المحل</option>
+        </select></label>
+      <label for="goldPremium" id="goldPremium-wrap"><span data-en="Local market premium (%)">فرق السوق المحلي (٪)</span><input id="goldPremium" type="number" step="0.1" data-set="goldPremium"></label>
+    </div>
+    <div class="note" id="source-note"></div>
+    <div class="tbl-wrap"><table class="gold-tbl"><thead><tr><th data-en="Karat">العيار</th><th data-en="Weight / count">الوزن / العدد</th><th data-en="Price">السعر</th><th data-en="Value">القيمة</th><th data-en="Total paid">اشتريته بكام (إجمالي)</th><th data-en="Profit / loss">الربح / الخسارة</th><th data-en="Worn">ملبوس</th><th></th></tr></thead><tbody id="gold-rows"></tbody></table></div>
+    <button class="add" type="button" data-add="gold" data-en="+ Add gold">+ إضافة ذهب</button>
+  </section>
+
+  <section class="card" id="sec-silver">
+    <div class="sec-head"><h2><span class="dot" style="background:var(--silver)"></span><span data-en="Silver">الفضة</span></h2><span class="sec-sum m" id="sum-silver"></span></div>
+    <div class="settings" id="silverPremium-wrap">
+      <label for="silverPremium"><span data-en="Local market premium (%)">فرق السوق المحلي (٪)</span><input id="silverPremium" type="number" step="0.1" data-set="silverPremium"></label>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th data-en="Purity">العيار</th><th data-en="Weight (g)">الوزن (جرام)</th><th data-en="Price per gram">سعر الجرام</th><th data-en="Value">القيمة</th><th data-en="Total paid">اشتريتها بكام (إجمالي)</th><th data-en="Profit / loss">الربح / الخسارة</th><th></th></tr></thead><tbody id="silver-rows"></tbody></table></div>
+    <button class="add" type="button" data-add="silver" data-en="+ Add silver">+ إضافة فضة</button>
+  </section>
+
+  <section class="card" id="sec-cash">
+    <div class="sec-head"><h2><span class="dot" style="background:var(--cash)"></span><span data-en="Cash">الكاش</span></h2><span class="sec-sum m" id="sum-cash"></span></div>
+    <div class="tbl-wrap"><table class="cash-tbl"><thead><tr><th data-en="Bank">البنك</th><th data-en="Currency">العملة</th><th data-en="Amount">المبلغ</th><th data-en="Rate in EGP">السعر بالجنيه</th><th data-en="Value">القيمة</th><th></th></tr></thead><tbody id="cash-rows"></tbody></table></div>
+    <button class="add" type="button" data-add="cash" data-en="+ Add amount">+ إضافة مبلغ</button>
+    <div id="cash-banks"></div>
+  </section>
+
+  <section class="card" id="sec-stocks">
+    <div class="sec-head"><h2><span class="dot" style="background:var(--stocks)"></span><span data-en="Egyptian stocks (EGX)">أسهم البورصة المصرية</span> <span class="pill due" id="egx-status"></span></h2><span class="sec-sum m" id="sum-stocks"></span></div>
+    <div class="tbl-wrap"><table class="stocks-tbl"><thead><tr><th data-en="Ticker">الرمز</th><th data-en="Shares">عدد الأسهم</th><th data-en="Price">السعر</th><th data-en="Average buy price">متوسط سعر الشراء</th><th data-en="Value">القيمة</th><th data-en="Profit / loss">الربح / الخسارة</th><th></th></tr></thead><tbody id="stocks-rows"></tbody></table></div>
+    <datalist id="egx-list"></datalist>
+    <button class="add" type="button" data-add="stocks" data-en="+ Add stock">+ إضافة سهم</button>
+    <div class="note" data-en="Type the EGX ticker (e.g. COMI for CIB, TMGH for Talaat Moustafa). Stock prices are delayed about 15 minutes.">اكتب رمز السهم كما في البورصة (مثل COMI لبنك CIB، TMGH لطلعت مصطفى). أسعار الأسهم متأخرة حوالي 15 دقيقة.</div>
+  </section>
+
+  <section class="card" id="sec-other">
+    <div class="sec-head"><h2><span class="dot" style="background:var(--other)"></span><span data-en="Other assets">أصول أخرى</span></h2><span class="sec-sum m" id="sum-other"></span></div>
+    <div class="tbl-wrap"><table><thead><tr><th data-en="Description">الوصف</th><th data-en="Type">النوع</th><th data-en="Estimated value (EGP)">القيمة التقديرية (ج.م)</th><th></th></tr></thead><tbody id="other-rows"></tbody></table></div>
+    <button class="add" type="button" data-add="other" data-en="+ Add asset">+ إضافة أصل</button>
+  </section>
+
+  <section class="card" id="sec-debts">
+    <div class="sec-head"><h2><span class="dot" style="background:var(--down)"></span><span data-en="Debts and instalments">الديون والأقساط</span></h2><span class="sec-sum m" id="sum-debts"></span></div>
+    <div class="sub-sum m" id="debts-inst"></div>
+    <div class="tbl-wrap"><table><thead><tr><th data-en="Description">الوصف</th><th data-en="Remaining (EGP)">المبلغ المتبقي (ج.م)</th><th data-en="Monthly instalment (EGP)">القسط الشهري (ج.م)</th><th></th></tr></thead><tbody id="debts-rows"></tbody></table></div>
+    <button class="add" type="button" data-add="debts" data-en="+ Add debt or instalment">+ إضافة دين أو قسط</button>
+  </section>
+
+  <section class="card" id="sec-alerts">
+    <div class="sec-head"><h2><span data-en="Price alerts">تنبيهات الأسعار</span></h2></div>
+    <div class="tbl-wrap"><table class="alerts-tbl"><thead><tr><th data-en="Alert me when">نبهني لما</th><th data-en="Ticker">رمز السهم</th><th data-en="Goes">يبقى</th><th data-en="Price">السعر</th><th data-en="Current price">السعر الحالي</th><th data-en="Status">الحالة</th><th></th></tr></thead><tbody id="alerts-rows"></tbody></table></div>
+    <button class="add" type="button" data-add="alerts" data-en="+ Add alert">+ إضافة تنبيه</button>
+    <div class="note"><span data-en="Each alert fires once and can be re-armed. To get it as a phone or computer notification, turn notifications on in">كل تنبيه بيشتغل مرة واحدة، وتقدر تعيد تفعيله. عشان يوصلك كإشعار على الموبايل أو الكمبيوتر، فعّل الإشعارات من</span> <button type="button" class="linkish" data-open-settings="notify" data-en="Settings">الإعدادات</button>.</div>
+  </section>
+
+  <p class="note" data-en="Sources: iSagha isagha.com (gold and silver prices in Egypt), TradingView (global prices, currencies and EGX stocks). Prices refresh every minute. Your data is stored on this device only, so back it up from time to time. Figures are for guidance and are not investment advice.">المصادر: آي صاغة isagha.com (أسعار الذهب والفضة في مصر)، TradingView (الأسعار العالمية والعملات وأسهم EGX). التحديث تلقائي كل دقيقة. بياناتك تُحفظ على هذا الجهاز فقط، فاعمل نسخة احتياطية من وقت للتاني. الأرقام للاسترشاد وليست نصيحة استثمارية.</p>
+</div>
+
+<dialog id="settings" aria-labelledby="settings-title">
+  <div class="dlg-head">
+    <h2 id="settings-title"><span data-en="Settings">الإعدادات</span></h2>
+    <button type="button" class="x" id="settings-close" aria-label="إغلاق" data-en-label="Close">×</button>
+  </div>
+
+  <div class="dlg-sec">
+    <h3 data-en="You">بياناتك الشخصية</h3>
+    <label class="field" for="userName"><span data-en="Your name">اسمك</span>
+      <input id="userName" type="text" data-set="userName" placeholder="مثلاً: محمد" data-en-ph="e.g. Mohamed" autocomplete="given-name" maxlength="40"></label>
+    <label class="field" for="lang"><span data-en="Language">اللغة</span>
+      <select id="lang" data-set="lang">
+        <option value="ar">العربية</option>
+        <option value="en">English</option>
+      </select></label>
+  </div>
+
+  <div class="dlg-sec">
+    <h3 data-en="Appearance">المظهر</h3>
+    <label class="field" for="digits"><span data-en="Digits">شكل الأرقام</span>
+      <select id="digits" data-set="digits">
+        <option value="auto" data-en="Match the language">حسب اللغة</option>
+        <option value="ar" data-en="Arabic ١٢٣">عربية ١٢٣</option>
+        <option value="en" data-en="English 123">إنجليزية 123</option>
+      </select></label>
+    <div class="theme" id="theme" role="group" aria-label="المظهر" data-en-label="Appearance">
+      <button type="button" data-theme-set="light" data-en="☀ Light">☀ فاتح</button>
+      <button type="button" data-theme-set="system" data-en="Auto">تلقائي</button>
+      <button type="button" data-theme-set="dark" data-en="☾ Dark">☾ داكن</button>
+    </div>
+  </div>
+
+  <div class="dlg-sec">
+    <h3><span data-en="App lock">قفل التطبيق</span> <span class="pill idle" id="pin-pill"></span></h3>
+    <div class="row">
+      <button type="button" id="btn-pin-set"></button>
+      <button type="button" id="btn-pin-off" data-en="Turn off lock">إيقاف القفل</button>
+    </div>
+    <label class="checks" id="bio-row" hidden><span style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="bio-toggle"> <span data-en="Unlock with fingerprint or Face ID">الفتح بالبصمة أو Face ID</span></span></label>
+    <div class="note" data-en="The app asks for a 4-digit PIN every time you open it, or when you come back after more than a minute away.">التطبيق هيطلب رقم سري من 4 أرقام كل ما تفتحه، أو لما ترجعله بعد ما سبته أكتر من دقيقة.</div>
+    <div class="note" id="bio-note" hidden data-en="With fingerprint or Face ID on, the app asks for it first; the PIN stays as a backup. Your phone may offer to save a passkey named Namaa for this, that's expected.">لما تفعّل البصمة أو Face ID، التطبيق هيطلبها الأول، والرقم السري هيفضل بديل. ممكن الموبايل يسألك تحفظ "مفتاح مرور" باسم Namaa، ودا طبيعي.</div>
+  </div>
+
+  <div class="dlg-sec" id="notify-box">
+    <h3><span data-en="Notifications">الإشعارات</span> <span class="pill idle" id="notify-pill"></span></h3>
+    <div class="row">
+      <button type="button" id="btn-notify"></button>
+      <button type="button" id="btn-notify-test" data-en="Send a test notification">إرسال إشعار تجريبي</button>
+    </div>
+    <div class="checks" id="notify-opts">
+      <label><input type="checkbox" data-set="nPrice" id="nPrice"> <span data-en="Price alerts">تنبيهات الأسعار</span></label>
+      <label><input type="checkbox" data-set="nZakat" id="nZakat"> <span data-en="Zakat (year starts, breaks and completes)">الزكاة (بداية الحول وانقطاعه وموعده)</span></label>
+      <label><input type="checkbox" data-set="nBackup" id="nBackup"> <span data-en="Backup reminder after a month">تذكير بالنسخة الاحتياطية لو عدّى شهر</span></label>
+      <label><input type="checkbox" data-set="nMonthly" id="nMonthly"> <span data-en="Monthly summary of your wealth">ملخص شهري لثروتك</span></label>
+    </div>
+    <div class="note" id="notify-note"></div>
+  </div>
+
+  <div class="dlg-sec">
+    <h3 data-en="Your data">النسخة الاحتياطية</h3>
+    <div class="row">
+      <button type="button" id="btn-export" data-en="⬇ Back up">⬇ نسخة احتياطية</button>
+      <button type="button" id="btn-import" data-en="⬆ Restore a backup">⬆ استرجاع نسخة</button>
+      <input type="file" id="file-import" accept="application/json,.json" hidden>
+    </div>
+    <span class="note" id="backup-note"></span>
+    <span id="import-confirm"></span>
+    <div class="note" data-en="Your data lives only in this browser on this device. A backup file lets you move it to your phone or keep it safe.">بياناتك محفوظة في المتصفح دا على الجهاز دا بس. ملف النسخة الاحتياطية بيخليك تنقلها لموبايلك أو تحتفظ بيها في أمان.</div>
+  </div>
+</dialog>
+
+<dialog id="report" aria-labelledby="rep-title">
+  <div class="dlg-head">
+    <h2 id="rep-title"><span data-en="Monthly report">التقرير الشهري</span></h2>
+    <div class="row">
+      <button type="button" id="rep-print" data-en="🖨 Print / PDF">🖨 طباعة / PDF</button>
+      <button type="button" class="x" id="rep-close" aria-label="إغلاق" data-en-label="Close">×</button>
+    </div>
+  </div>
+  <div class="rep" id="rep-body"></div>
+</dialog>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="ptr" id="ptr" hidden></div>
+
+<div class="lock" id="lock" hidden role="dialog" aria-modal="true" aria-labelledby="lock-title">
+  <img src="icons/logo.svg" alt="" width="64" height="64">
+  <h2 id="lock-title"></h2>
+  <div class="dots" id="lock-dots"><i></i><i></i><i></i><i></i></div>
+  <div class="pad" id="lock-pad">
+    <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+    <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+    <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+    <span></span><button type="button" data-k="0">0</button><button type="button" data-k="back" aria-label="مسح" data-en-label="Delete">⌫</button>
+  </div>
+  <button type="button" id="lock-bio" class="bio-btn" hidden data-en="Unlock with fingerprint / Face ID">افتح بالبصمة أو Face ID</button>
+  <div class="row">
+    <button type="button" class="linkish" id="lock-forgot" data-en="Forgot your PIN?">نسيت الرقم السري؟</button>
+    <button type="button" class="linkish" id="lock-cancel" data-en="Cancel">إلغاء</button>
+  </div>
+  <div id="lock-confirm"></div>
+</div>
+
+<script>
+const OZ = 31.1034768, DAY = 864e5, HAWL_DAYS = 354;
+const GOLD_KARATS = [
+  {id:'24', label:'عيار 24', en:'24 karat', purity:24/24},
+  {id:'21', label:'عيار 21', en:'21 karat', purity:21/24},
+  {id:'18', label:'عيار 18', en:'18 karat', purity:18/24},
+  {id:'14', label:'عيار 14', en:'14 karat', purity:14/24},
+  {id:'pound', label:'جنيه ذهب (8 جم عيار 21)', en:'Gold pound (8 g, 21k)', purity:21/24, grams:8},
+];
+const SILVER_KARATS = [
+  {id:'999', label:'فضة 999', en:'Silver 999', purity:.999},
+  {id:'925', label:'فضة 925', en:'Silver 925', purity:.925},
+  {id:'800', label:'فضة 800', en:'Silver 800', purity:.800},
+];
+const CURRENCIES = [
+  {id:'EGP', label:'جنيه مصري', en:'Egyptian pound', tv:null},
+  {id:'USD', label:'دولار أمريكي', en:'US dollar', tv:'FX_IDC:USDEGP'},
+  {id:'EUR', label:'يورو', en:'Euro', tv:'FX_IDC:EUREGP'},
+  {id:'SAR', label:'ريال سعودي', en:'Saudi riyal', tv:'FX_IDC:SAREGP'},
+  {id:'AED', label:'درهم إماراتي', en:'UAE dirham', tv:'FX_IDC:AEDEGP'},
+  {id:'KWD', label:'دينار كويتي', en:'Kuwaiti dinar', tv:'FX_IDC:KWDEGP'},
+  {id:'GBP', label:'جنيه إسترليني', en:'British pound', tv:'FX_IDC:GBPEGP'},
+];
+const OTHER_TYPES = [
+  {id:'realestate', label:'عقار / شقة', en:'Property / flat'}, {id:'land', label:'أرض', en:'Land'}, {id:'car', label:'سيارة', en:'Car'},
+  {id:'gamaeya', label:'جمعية', en:'Savings circle (gamʿiya)'}, {id:'valuables', label:'مقتنيات', en:'Valuables'}, {id:'misc', label:'أخرى', en:'Other'},
+];
+const ALERT_TARGETS = [
+  {id:'g21', label:'جرام ذهب عيار 21', en:'21k gold gram'}, {id:'g24', label:'جرام ذهب عيار 24', en:'24k gold gram'}, {id:'g18', label:'جرام ذهب عيار 18', en:'18k gold gram'},
+  {id:'pound', label:'الجنيه الذهب', en:'Gold pound'}, {id:'s999', label:'جرام فضة 999', en:'Silver 999 gram'}, {id:'usd', label:'الدولار', en:'US dollar'}, {id:'stock', label:'سهم', en:'Stock'},
+];
+const ALERT_OPS = [{id:'below', label:'أقل من', en:'below'}, {id:'above', label:'أعلى من', en:'above'}];
+// Egyptian banks. Logo: tv = TradingView logo id (listed banks), fav = website for its icon, ab = fallback letters
+const BANKS = [
+  {id:'home',   label:'كاش في البيت', en:'Cash at home', home:true},
+  {id:'NBE',    label:'البنك الأهلي المصري', en:'National Bank of Egypt', fav:'nbe.com.eg', ab:'NBE'},
+  {id:'BM',     label:'بنك مصر', en:'Banque Misr', fav:'banquemisr.com', ab:'BM'},
+  {id:'BDC',    label:'بنك القاهرة', en:'Banque du Caire', fav:'bdc.com.eg', ab:'BDC'},
+  {id:'CIB',    label:'البنك التجاري الدولي CIB', en:'Commercial International Bank (CIB)', tv:'commercial-international-bank-egypt', ab:'CIB'},
+  {id:'QNB',    label:'بنك QNB مصر', en:'QNB Egypt', tv:'qatar-national-bank-alahly', ab:'QNB'},
+  {id:'ALEX',   label:'بنك الإسكندرية', en:'Bank of Alexandria', fav:'alexbank.com', ab:'ALEX'},
+  {id:'AAIB',   label:'البنك العربي الأفريقي الدولي', en:'Arab African International Bank', ab:'AAIB'},
+  {id:'HSBC',   label:'بنك HSBC مصر', en:'HSBC Egypt', fav:'hsbc.com.eg', ab:'HSBC'},
+  {id:'ENBD',   label:'بنك الإمارات دبي الوطني مصر', en:'Emirates NBD Egypt', fav:'emiratesnbd.com.eg', ab:'ENBD'},
+  {id:'CAE',    label:'بنك كريدي أجريكول مصر', en:'Crédit Agricole Egypt', fav:'ca-egypt.com', ab:'CA'},
+  {id:'FAISAL', label:'بنك فيصل الإسلامي المصري', en:'Faisal Islamic Bank of Egypt', tv:'faisal-islamic-bank-of-egypt-in-egp', ab:'FIB'},
+  {id:'ADIB',   label:'مصرف أبوظبي الإسلامي مصر', en:'Abu Dhabi Islamic Bank Egypt', tv:'abu-dhabi-islamic-bank-egypt', ab:'ADIB'},
+  {id:'BARAKA', label:'بنك البركة مصر', en:'Al Baraka Bank Egypt', tv:'al-baraka-bank-egypt', ab:'ABE'},
+  {id:'EGB',    label:'البنك المصري الخليجي', en:'Egyptian Gulf Bank', tv:'egyptian-gulf-bank', ab:'EGB'},
+  {id:'NBK',    label:'بنك الكويت الوطني مصر', en:'National Bank of Kuwait Egypt', tv:'national-bank-of-kuwait', ab:'NBK'},
+  {id:'HDB',    label:'بنك التعمير والإسكان', en:'Housing & Development Bank', tv:'housing-and-development-bank', ab:'HDB'},
+  {id:'SAIB',   label:'بنك saib', en:'saib Bank', tv:'societe-arabe-internationale-de-banque-saib', ab:'SAIB'},
+  {id:'EDBE',   label:'البنك المصري لتنمية الصادرات', en:'Export Development Bank of Egypt', tv:'export-development-bank-of-egypt-edbe', ab:'EDB'},
+  {id:'SCB',    label:'بنك قناة السويس', en:'Suez Canal Bank', tv:'suez-canal-bank-sae', ab:'SCB'},
+  {id:'ARAB',   label:'البنك العربي', en:'Arab Bank', fav:'arabbank.com.eg', ab:'AB'},
+  {id:'MASHREQ',label:'بنك المشرق مصر', en:'Mashreq Bank Egypt', fav:'mashreqbank.com', ab:'MSQ'},
+  {id:'FAB',    label:'بنك أبوظبي الأول مصر', en:'First Abu Dhabi Bank Egypt', fav:'www.bankfab.com', ab:'FAB'},
+  {id:'ATTI',   label:'التجاري وفا بنك مصر', en:'Attijariwafa Bank Egypt', fav:'attijariwafabank.com.eg', ab:'AWB'},
+  {id:'AIB',    label:'المصرف العربي الدولي aiBANK', en:'aiBANK', fav:'www.aibegypt.com', ab:'AIB'},
+  {id:'ABE',    label:'البنك الزراعي المصري', en:'Agricultural Bank of Egypt', ab:'ABE'},
+  {id:'UB',     label:'المصرف المتحد', en:'The United Bank', ab:'UB'},
+  {id:'IDB',    label:'بنك التنمية الصناعية', en:'Industrial Development Bank', ab:'IDB'},
+  {id:'MID',    label:'ميد بنك', en:'MIDBANK', ab:'MID'},
+  {id:'POST',   label:'البريد المصري (توفير)', en:'Egypt Post (savings)', ab:'بريد'},
+  {id:'OTHER',  label:'بنك آخر', en:'Other bank', ab:'؟'},
+];
+const ASSETS = ['gold','silver','cash','stocks','other'];
+const COLORS = {gold:'var(--gold)', silver:'var(--silver)', cash:'var(--cash)', certs:'var(--certs)', stocks:'var(--stocks)', other:'var(--other)', debts:'var(--down)'};
+const NAMES_AR = {gold:'الذهب', silver:'الفضة', cash:'الكاش', certs:'الشهادات والودائع', stocks:'الأسهم', other:'أصول أخرى', debts:'الديون'};
+const NAMES_EN = {gold:'Gold', silver:'Silver', cash:'Cash', certs:'Certificates & deposits', stocks:'Stocks', other:'Other assets', debts:'Debts'};
+
+const today = () => dayKey(Date.now());   // local date, not UTC, so it flips at midnight Cairo time
+const NEW_ROW = {
+  gold:   () => ({k:'21', w:0, cost:'', worn:false}),
+  silver: () => ({k:'999', w:0, cost:''}),
+  cash:   () => ({b:'NBE', c:'EGP', a:0}),
+  stocks: () => ({s:'', q:0, cost:''}),
+  other:  () => ({name:'', type:'realestate', v:0}),
+  debts:  () => ({name:'', a:0, inst:''}),
+  alerts: () => ({what:'g21', sym:'', op:'below', val:'', done:false}),
+};
+const DEFAULT_STATE = {
+  gold:[{k:'21', w:0}], silver:[{k:'999', w:0}], cash:[{b:'home', c:'EGP', a:0}], stocks:[{s:'COMI', q:0}],
+  other:[], debts:[], alerts:[],
+  goal:'', goldPremium:0, silverPremium:0, goldSource:'local', priceSide:'buy',
+  zExcludeWorn:true, zExcludeStocks:false, zDeductDebts:true, zDate:'', lastBackup:null,
+  notifyOn:false, nPrice:true, nZakat:true, nBackup:true, zNotified:'', backupNotifiedAt:0,
+  goalDate:'', nMonthly:true, monthlySent:'', reports:{}, yearReports:{},
+  userName:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:''
+};
+
+let state = load();
+let prices = {};      // TradingView symbol -> {close, change}
+let stockPx = {};     // EGX symbol -> {close, change, desc, logo}
+let egxNames = {}, egxLogos = {};
+let local = null, localAt = 0, localErr = false, localBoardTime = '';   // jewellers' prices from isagha.com
+let priceStatus = 'loading', lastUpdate = 0;
+
+function withDefaults(s){
+  const d = Object.assign(structuredClone(DEFAULT_STATE), s||{});
+  // the earlier on/off "track the nisab automatically" switch became the method list
+  if(s && s.zMode===undefined && s.zAuto===false) d.zMode = 'manual';
+  delete d.zAuto;
+  return d;
+}
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem('wealth-v1')); if(s && s.gold) return withDefaults(s); }catch(e){}
+  return structuredClone(DEFAULT_STATE);
+}
+function save(){ try{ localStorage.setItem('wealth-v1', JSON.stringify(state)); }catch(e){} }
+
+/* ---------- language ---------- */
+let LANG = state.lang==='en' ? 'en' : 'ar';
+const L = (ar, en) => LANG==='en' ? en : ar;
+// digits follow the language unless the viewer picked Arabic (١٢٣) or English (123) digits in settings
+const arabDigits = () => state.digits==='ar' || (state.digits!=='en' && LANG!=='en');
+const LOC = () => (LANG==='en' ? 'en-US' : 'ar-EG') + (arabDigits() ? '-u-nu-arab' : '-u-nu-latn');
+const lbl = o => (LANG==='en' && o.en) || o.label;
+const NAMES = new Proxy({}, {get:(_, k) => (LANG==='en' ? NAMES_EN : NAMES_AR)[k]});
+const PCT = () => arabDigits() ? '٪' : '%';
+
+const fmt = (n, d=2) => isFinite(n) ? n.toLocaleString(LOC(),{minimumFractionDigits:d, maximumFractionDigits:d}) : '—';
+const egp = n => isFinite(n) ? fmt(n) + L(' ج.م', ' EGP') : '—';
+const chg = c => c==null || !isFinite(c) ? '' : `<span class="chg ${c>=0?'up':'down'}">${c>=0?'▲':'▼'} ${Math.abs(c).toFixed(2)}%</span>`;
+const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dateFmt = d => d.toLocaleDateString(LOC(),{day:'numeric', month:'short', year:'numeric'});
+const num = v => +v || 0;
+
+// static text carries its English in data-en (text), data-en-ph (placeholder) and data-en-label (aria-label)
+function applyStatic(){
+  const swap = (sel, read, write, enKey, arKey) => document.querySelectorAll(sel).forEach(el=>{
+    if(el.dataset[arKey]===undefined) el.dataset[arKey] = read(el);
+    write(el, LANG==='en' ? el.dataset[enKey] : el.dataset[arKey]);
+  });
+  swap('[data-en]', el=>el.textContent, (el,v)=>{ el.textContent = v; }, 'en', 'ar');
+  swap('[data-en-ph]', el=>el.placeholder, (el,v)=>{ el.placeholder = v; }, 'enPh', 'arPh');
+  swap('[data-en-label]', el=>el.getAttribute('aria-label'), (el,v)=>el.setAttribute('aria-label', v), 'enLabel', 'arLabel');
+}
+function applyLang(){
+  LANG = state.lang==='en' ? 'en' : 'ar';
+  const root = document.documentElement;
+  root.lang = LANG; root.dir = LANG==='en' ? 'ltr' : 'rtl';
+  document.title = L('نماء', 'Namaa');
+  applyStatic();
+  document.querySelectorAll('.fold').forEach(b=>b.setAttribute('aria-label', L('طي أو فتح القسم', 'Collapse or expand section')));
+  document.getElementById('install-hint').textContent = isIOS && !installEvt
+    ? L('من Safari اضغط زرار المشاركة ⬆︎ وبعدين "إضافة إلى الشاشة الرئيسية".', 'In Safari, tap Share ⬆︎ then "Add to Home Screen".')
+    : L('افتحه زي أي تطبيق من الشاشة الرئيسية.', 'Open it like any app from your home screen.');
+  resetClearButton();
+  renderHello(); renderNotify(); renderPin(); applyPrivate(isPrivate());
+}
+function renderHello(){
+  const el = document.getElementById('hello'), name = (state.userName||'').trim();
+  el.hidden = !name;
+  if(!name) return;
+  const morning = new Date().getHours() < 12;
+  el.textContent = morning ? L(`صباح الخير يا ${name}`, `Good morning, ${name}`) : L(`مساء الخير يا ${name}`, `Good evening, ${name}`);
+}
+
+/* ---------- logos ---------- */
+const logoUrl = id => `https://s3-symbol-logo.tradingview.com/${id}.svg`;
+const bankById = id => BANKS.find(b=>b.id===id) || BANKS[0];
+const HOUSE_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>';
+function imgOr(src, ph, cls='logo'){
+  return `<img class="${cls}" src="${src}" alt="" loading="lazy" onerror="this.outerHTML='${ph.replace(/"/g,'&quot;')}'">`;
+}
+function logoHtml(sym){
+  const id = stockPx[sym]?.logo || egxLogos[sym];
+  const ph = `<span class="logo ph">${sym ? esc(sym.slice(0,2)) : '?'}</span>`;
+  return id ? imgOr(logoUrl(id), ph) : ph;
+}
+function bankLogoHtml(id){
+  const b = bankById(id);
+  if(b.home) return `<span class="logo ph">${HOUSE_SVG}</span>`;
+  const ph = `<span class="logo ph">${b.ab}</span>`;
+  if(b.tv) return imgOr(logoUrl(b.tv), ph);
+  if(b.fav) return imgOr(`https://www.google.com/s2/favicons?domain=${b.fav}&sz=64`, ph, 'logo fav');
+  return ph;
+}
+
+/* ---------- prices ---------- */
+async function tvScan(market, tickers, columns){
+  const r = await fetch(`https://scanner.tradingview.com/${market}/scan`, {
+    method:'POST', headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify({symbols:{tickers}, columns})
+  });
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return (await r.json()).data || [];
+}
+
+async function loadEgxList(){
+  try{
+    const r = await fetch('https://scanner.tradingview.com/egypt/scan', {method:'POST', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({filter:[], columns:['name','description','logoid'], range:[0,500], sort:{sortBy:'name', sortOrder:'asc'}})});
+    const j = await r.json();
+    const dl = document.getElementById('egx-list');
+    dl.innerHTML = '';
+    for(const row of j.data){
+      const [n, d, lg] = row.d; egxNames[n] = d; if(lg) egxLogos[n] = lg;
+      const o = document.createElement('option'); o.value = n; o.label = d; dl.appendChild(o);
+    }
+  }catch(e){}
+}
+
+// jewellers' board on isagha.com: rows carry data-unit (24, 21, 18, pound, 999, 925, 800) with buy/sell/change cells
+async function fetchLocal(){
+  if(local && Date.now()-localAt < 3*60e3) return;
+  try{
+    // www.isagha.com redirects here without CORS headers, so call the final host directly
+    const html = await (await fetch('https://market.isagha.com/', {cache:'no-store'})).text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const out = {gold:{}, silver:{}};
+    const n = s => parseFloat(String(s||'').replace('−','-').replace(/[^\d.\-]/g,''));
+    doc.querySelectorAll('tr[data-testid="board-row"]').forEach(tr=>{
+      const unit = tr.dataset.unit, metal = ['999','925','800'].includes(unit) ? 'silver' : 'gold';
+      const buy = n(tr.querySelector('[data-testid="board-buy"]')?.textContent);
+      const sell = n(tr.querySelector('[data-testid="board-sell"]')?.textContent);
+      const ch = n(tr.querySelector('[data-testid="board-change"]')?.textContent);
+      if(unit && isFinite(buy) && isFinite(sell)) out[metal][unit] = {buy, sell, change: isFinite(ch) ? ch : null};
+    });
+    if(!out.gold['21'] || !out.gold['24']) throw new Error('board not found');
+    // the board's own price time, e.g. "أسعار الساعة 9:03 ص", so a quiet market isn't mistaken for a stuck page
+    localBoardTime = (/أسعار الساعة\s*([0-9٠-٩]{1,2}[:：][0-9٠-٩]{2}\s*[صم]?)/.exec(doc.body?.textContent || '') || [])[1] || '';
+    local = out; localAt = Date.now(); localErr = false;
+  }catch(e){ localErr = true; }
+}
+
+async function refresh(){
+  try{
+    const fx = CURRENCIES.filter(c=>c.tv).map(c=>c.tv);
+    const [rows] = await Promise.all([tvScan('global', ['TVC:GOLD','TVC:SILVER', ...fx], ['close','change']), fetchLocal()]);
+    for(const r of rows) prices[r.s] = {close:r.d[0], change:r.d[1]};
+    const syms = [...new Set([...state.stocks.map(s=>s.s), ...state.alerts.filter(a=>a.what==='stock').map(a=>a.sym)]
+      .map(s=>(s||'').trim().toUpperCase()).filter(Boolean))];
+    if(syms.length){
+      const sr = await tvScan('egypt', syms.map(s=>'EGX:'+s), ['close','change','description','logoid']);
+      stockPx = {};
+      for(const r of sr) stockPx[r.s.split(':')[1]] = {close:r.d[0], change:r.d[1], desc:r.d[2], logo:r.d[3]};
+    }
+    priceStatus = 'ok'; lastUpdate = Date.now();
+    checkAlerts();
+    trackNisab();
+    checkReminders();
+    recordSnapshot();
+    checkMonthly();
+  }catch(e){
+    priceStatus = 'err';
+  }
+  render();
+}
+// Cairo clock, whatever the device's time zone
+function cairoNow(){
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', {timeZone:'Africa/Cairo', weekday:'short', hour:'2-digit', minute:'2-digit', hourCycle:'h23'})
+    .formatToParts(new Date()).map(x=>[x.type, x.value]));
+  return {day: p.weekday, mins: (+p.hour)*60 + (+p.minute)};
+}
+// EGX trades Sunday to Thursday, 10:00 to 14:30 Cairo time; banks (and so the official dollar rate) rest Friday and Saturday
+function renderMarket(){
+  const {day, mins} = cairoNow(), weekend = day==='Fri' || day==='Sat';
+  const open = !weekend && mins >= 600 && mins < 870;
+  const pill = document.getElementById('egx-status');
+  pill.className = 'pill ' + (open ? 'ok' : 'due');
+  pill.textContent = open ? L('البورصة مفتوحة','Market open') : L('البورصة مقفولة','Market closed');
+  const note = document.getElementById('market-note');
+  note.hidden = !weekend;
+  note.textContent = L('النهارده إجازة البورصة والبنوك، فأسعار الأسهم والدولار غالباً هتفضل ثابتة لحد يوم الأحد، وأسعار الصاغة بتتحرك قليل. أوقية الذهب العالمية بس اللي بتتحرك لحد ما السوق العالمي يقفل مساء الجمعة.',
+                       "The stock exchange and banks are closed today, so stock and dollar prices will likely stay flat until Sunday, and jewellers' prices move little. Only the global gold ounce keeps moving until world markets close Friday evening.");
+}
+function renderStamp(){
+  document.getElementById('live').className = 'live' + (priceStatus==='ok' ? ' on' : priceStatus==='err' ? ' err' : '');
+  document.getElementById('stamp').textContent =
+    priceStatus==='ok' ? L('آخر تحديث ', 'Updated ') + new Date(lastUpdate).toLocaleTimeString(LOC())
+    : priceStatus==='err' ? L('تعذّر تحديث الأسعار — تأكد من الاتصال بالإنترنت', "Couldn't refresh prices — check your connection")
+    : L('جاري تحميل الأسعار…', 'Loading prices…');
+}
+
+function usdEgp(){ return prices['FX_IDC:USDEGP']?.close; }
+const useLocal = () => state.goldSource==='local' && !!local;
+function gram24Global(){ return prices['TVC:GOLD']?.close*usdEgp()/OZ * (1 + num(state.goldPremium)/100); }
+function gramSilverGlobal(){ return prices['TVC:SILVER']?.close*usdEgp()/OZ * (1 + num(state.silverPremium)/100); }
+// price per gram (or per coin for the gold pound)
+function goldPrice(kid){
+  const k = GOLD_KARATS.find(x=>x.id===kid) || GOLD_KARATS[1];
+  if(useLocal()){
+    if(local.gold[kid]) return local.gold[kid][state.priceSide];
+    return local.gold['24'][state.priceSide]*k.purity*(k.grams||1);
+  }
+  return gram24Global()*k.purity*(k.grams||1);
+}
+function silverPrice(kid){
+  const k = SILVER_KARATS.find(x=>x.id===kid) || SILVER_KARATS[0];
+  if(useLocal() && local.silver[kid]) return local.silver[kid][state.priceSide];
+  return gramSilverGlobal()*k.purity;
+}
+function goldChange(kid){ return useLocal() ? local.gold[kid]?.change : prices['TVC:GOLD']?.change; }
+function rate(cur){ if(cur==='EGP') return 1; const c = CURRENCIES.find(x=>x.id===cur); return prices[c?.tv]?.close; }
+
+/* ---------- values ---------- */
+function rowValue(sec, r){
+  switch(sec){
+    case 'gold':   return goldPrice(r.k)*num(r.w);
+    case 'silver': return silverPrice(r.k)*num(r.w);
+    case 'cash':   return rate(r.c)*num(r.a);
+    case 'stocks': { const sp = stockPx[(r.s||'').trim().toUpperCase()]; return (sp?.close||0)*num(r.q); }
+    case 'other':  return num(r.v);
+    case 'debts':  return num(r.a);
+  }
+  return 0;
+}
+function rowCost(sec, r){
+  if(sec==='stocks') return num(r.cost)*num(r.q);
+  if(sec==='gold' || sec==='silver') return num(r.cost);
+  return 0;
+}
+function sectionTotal(sec, filter){
+  return state[sec].reduce((t,r)=>{ if(filter && !filter(r)) return t; const v = rowValue(sec,r); return t + (isFinite(v)?v:0); }, 0);
+}
+function plHtml(v, cost){
+  if(!(cost>0) || !isFinite(v)) return '<span class="note">—</span>';
+  const d = v-cost, pct = d/cost*100, s = d>=0 ? '+' : '−';
+  return `<span class="pl m ${d>=0?'up':'down'}"><bdi>${s}${egp(Math.abs(d))}</bdi> <small><bdi>(${s}${fmt(Math.abs(pct),1)}${PCT()})</bdi></small></span>`;
+}
+
+/* ---------- table rows ---------- */
+function opts(list, sel){ return list.map(o=>`<option value="${o.id}" ${o.id===sel?'selected':''}>${lbl(o)}</option>`).join(''); }
+const ctl = (sec,i,f) => `data-sec="${sec}" data-i="${i}" data-f="${f}" id="${sec}-${f}-${i}"`;
+const nIn = (sec,i,f,v,step='any',ph='') => `<input type="number" min="0" step="${step}" ${ctl(sec,i,f)} value="${esc(v)}"${ph?` placeholder="${ph}"`:''}>`;
+const tIn = (sec,i,f,v,ph='') => `<input type="text" ${ctl(sec,i,f)} value="${esc(v)}" placeholder="${ph}">`;
+const sIn = (sec,i,f,list,v) => `<select ${ctl(sec,i,f)}>${opts(list,v)}</select>`;
+const del = (sec,i) => `<td class="del"><button class="x" type="button" data-del="${sec}" data-i="${i}" aria-label="${L('حذف','Delete')}">×</button></td>`;
+// every cell carries its column name, which the phone card layout shows above the value
+const T = (label, html, attrs='') => `<td ${attrs} data-label="${esc(label)}">${html}</td>`;
+const LB = {
+  karat: () => L('العيار','Karat'), weight: () => L('الوزن / العدد','Weight / count'), weightG: () => L('الوزن (جرام)','Weight (g)'),
+  price: () => L('السعر','Price'), value: () => L('القيمة','Value'), paid: () => L('اشتريته بكام (إجمالي)','Total paid'),
+  pl: () => L('الربح / الخسارة','Profit / loss'), worn: () => L('ملبوس','Worn'), bank: () => L('البنك','Bank'),
+  cur: () => L('العملة','Currency'), amount: () => L('المبلغ','Amount'), rate: () => L('السعر بالجنيه','Rate in EGP'),
+  ticker: () => L('الرمز','Ticker'), shares: () => L('عدد الأسهم','Shares'), avg: () => L('متوسط سعر الشراء','Average buy price'),
+  desc: () => L('الوصف','Description'), type: () => L('النوع','Type'), est: () => L('القيمة التقديرية','Estimated value'),
+  remain: () => L('المبلغ المتبقي','Remaining'), inst: () => L('القسط الشهري','Monthly instalment'),
+  when: () => L('نبهني لما','Alert me when'), goes: () => L('يبقى','Goes'), target: () => L('السعر','Price'),
+  now: () => L('السعر الحالي','Current price'), status: () => L('الحالة','Status'),
+};
+const EMPTY = {
+  other: () => L('ضيف هنا الشقة أو العربية أو الجمعية بقيمتها التقديرية.', 'Add your flat, car or savings circle here at its estimated value.'),
+  debts: () => L('لو عليك ديون أو أقساط، ضيفها هنا عشان تتخصم من صافي الثروة.', 'Add any debts or instalments here so they come off your net worth.'),
+  alerts: () => L('مثلاً: نبهني لما جرام عيار 21 يبقى أقل من سعر معين.', 'For example: alert me when the 21k gold gram drops below a price.'),
+};
+const COLS = {gold:8, silver:7, cash:6, stocks:7, other:4, debts:4, alerts:7};
+const OPTIONAL = () => L('اختياري', 'optional');
+
+function rowHtml(sec, r, i){
+  const v = rowValue(sec, r);
+  const val = T(LB.value(), egp(v), 'class="num m" data-c');
+  switch(sec){
+    case 'gold': {
+      const k = GOLD_KARATS.find(x=>x.id===r.k) || GOLD_KARATS[1];
+      const unit = k.grams ? L('عدد الجنيهات', 'coins') : L('جرام', 'grams');
+      return `<tr>${T(LB.karat(), sIn(sec,i,'k',GOLD_KARATS,r.k), 'class="lead"')}${T(LB.weight(), nIn(sec,i,'w',r.w,'any',unit))}
+        ${T(LB.price(), fmt(goldPrice(r.k)), 'class="num" data-c')}${val}${T(LB.paid(), nIn(sec,i,'cost',r.cost??'','any',OPTIONAL()))}
+        ${T(LB.pl(), plHtml(v, rowCost(sec,r)), 'data-c')}${T(LB.worn(), `<input type="checkbox" ${ctl(sec,i,'worn')} ${r.worn?'checked':''} aria-label="${LB.worn()}">`)}${del(sec,i)}</tr>`;
+    }
+    case 'silver':
+      return `<tr>${T(LB.karat(), sIn(sec,i,'k',SILVER_KARATS,r.k), 'class="lead"')}${T(LB.weightG(), nIn(sec,i,'w',r.w))}
+        ${T(LB.price(), fmt(silverPrice(r.k)), 'class="num" data-c')}${val}${T(LB.paid(), nIn(sec,i,'cost',r.cost??'','any',OPTIONAL()))}
+        ${T(LB.pl(), plHtml(v, rowCost(sec,r)), 'data-c')}${del(sec,i)}</tr>`;
+    case 'cash': {
+      const bk = r.b || 'home';
+      return `<tr>${T(LB.bank(), `<div class="stk">${bankLogoHtml(bk)}<div class="stk-in">${sIn(sec,i,'b',BANKS,bk)}</div></div>`, 'class="lead"')}
+        ${T(LB.cur(), sIn(sec,i,'c',CURRENCIES,r.c))}${T(LB.amount(), nIn(sec,i,'a',r.a))}${T(LB.rate(), fmt(rate(r.c)), 'class="num" data-c')}${val}${del(sec,i)}</tr>`;
+    }
+    case 'stocks': {
+      const sym = (r.s||'').trim().toUpperCase(), sp = stockPx[sym], nm = sp?.desc || egxNames[sym];
+      const extra = sym ? (sp ? `<span class="sname" title="${esc(nm)}">${esc(nm)}</span>` : `<span class="sname bad">${L('رمز غير معروف أو جاري التحميل', 'Unknown ticker or still loading')}</span>`) : '';
+      return `<tr>${T(LB.ticker(), `<div class="stk">${logoHtml(sym)}<div class="stk-in"><input class="sym" list="egx-list" ${ctl(sec,i,'s')} value="${esc(sym)}" placeholder="COMI">${extra}</div></div>`, 'class="lead"')}
+        ${T(LB.shares(), nIn(sec,i,'q',r.q,'1'))}${T(LB.price(), `${fmt(sp?.close)} ${chg(sp?.change)}`, 'class="num" data-c')}
+        ${T(LB.avg(), nIn(sec,i,'cost',r.cost??'','any',OPTIONAL()))}${val}${T(LB.pl(), plHtml(v, rowCost(sec,r)), 'data-c')}${del(sec,i)}</tr>`;
+    }
+    case 'other':
+      return `<tr>${T(LB.desc(), tIn(sec,i,'name',r.name,L('مثلاً: شقة التجمع','e.g. New Cairo flat')), 'class="lead"')}${T(LB.type(), sIn(sec,i,'type',OTHER_TYPES,r.type))}${T(LB.est(), nIn(sec,i,'v',r.v))}${del(sec,i)}</tr>`;
+    case 'debts':
+      return `<tr>${T(LB.desc(), tIn(sec,i,'name',r.name,L('مثلاً: قسط العربية','e.g. car loan')), 'class="lead"')}${T(LB.remain(), nIn(sec,i,'a',r.a))}${T(LB.inst(), nIn(sec,i,'inst',r.inst??'','any',OPTIONAL()))}${del(sec,i)}</tr>`;
+    case 'alerts': {
+      const cur = alertCurrent(r);
+      const st = r.done ? `<span class="pill ok">${L('اتحقق ✓','Triggered ✓')}</span> <button type="button" class="x" style="font-size:.8rem" data-rearm="${i}">${L('إعادة تفعيل','Re-arm')}</button>`
+        : num(r.val) > 0 ? `<span class="pill idle">${L('مستني','Waiting')}</span>` : `<span class="note">${L('حط السعر','Set a price')}</span>`;
+      return `<tr>${T(LB.when(), sIn(sec,i,'what',ALERT_TARGETS,r.what), 'class="lead"')}
+        ${T(LB.ticker(), `<input class="sym" list="egx-list" ${ctl(sec,i,'sym')} value="${esc(r.sym)}" placeholder="COMI" ${r.what==='stock'?'':'disabled'}>`, r.what==='stock' ? '' : 'class="nosym"')}
+        ${T(LB.goes(), sIn(sec,i,'op',ALERT_OPS,r.op))}${T(LB.target(), nIn(sec,i,'val',r.val))}
+        ${T(LB.now(), fmt(cur), 'class="num" data-c')}${T(LB.status(), st, 'data-c')}${del(sec,i)}</tr>`;
+    }
+  }
+}
+function rowsHtml(sec){
+  if(!state[sec].length && EMPTY[sec]) return `<tr><td colspan="${COLS[sec]}" class="empty">${EMPTY[sec]()}</td></tr>`;
+  return state[sec].map((r,i)=>rowHtml(sec,r,i)).join('');
+}
+
+/* ---------- alerts ---------- */
+function alertCurrent(a){
+  switch(a.what){
+    case 'g21': return goldPrice('21');
+    case 'g24': return goldPrice('24');
+    case 'g18': return goldPrice('18');
+    case 'pound': return goldPrice('pound');
+    case 's999': return silverPrice('999');
+    case 'usd': return usdEgp();
+    case 'stock': return stockPx[(a.sym||'').trim().toUpperCase()]?.close;
+  }
+}
+function checkAlerts(){
+  let changed = false;
+  state.alerts.forEach(a=>{
+    const cur = alertCurrent(a), target = num(a.val);
+    if(a.done || !(target>0) || !isFinite(cur)) return;
+    if(a.op==='below' ? cur <= target : cur >= target){
+      a.done = true; changed = true;
+      const what = a.what==='stock' ? L(`سهم ${a.sym.toUpperCase()}`, `${a.sym.toUpperCase()} stock`) : lbl(ALERT_TARGETS.find(t=>t.id===a.what));
+      const msg = L(`${what} بقى ${fmt(cur)} (${a.op==='below'?'أقل من':'أعلى من'} ${fmt(target)})`,
+                    `${what} is now ${fmt(cur)} (${a.op==='below'?'below':'above'} ${fmt(target)})`);
+      if(state.nPrice) notify(msg, 'price-' + a.what + (a.sym||'')); else toast('🔔 ' + msg);
+    }
+  });
+  if(changed) save();
+}
+function toast(text){
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span></span><button type="button" aria-label="${L('إغلاق','Close')}">×</button>`;
+  t.firstChild.textContent = text;
+  t.querySelector('button').onclick = () => t.remove();
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>t.remove(), 10000);
+}
+
+/* ---------- summary ---------- */
+function totals(){
+  const t = {};
+  for(const s of ASSETS) t[s] = sectionTotal(s);
+  t.assets = ASSETS.reduce((a,s)=>a+t[s],0);
+  t.debts = sectionTotal('debts');
+  t.net = t.assets - t.debts;
+  return t;
+}
+
+function renderTicker(){
+  const lc = useLocal() ? L(' (صاغة)', ' (jewellers)') : '';
+  const items = [
+    [L('دولار / جنيه','USD / EGP'), usdEgp(), prices['FX_IDC:USDEGP']?.change, 2],
+    [L('جرام 21','21k gram')+lc, goldPrice('21'), goldChange('21'), 0],
+    [L('جرام 24','24k gram')+lc, goldPrice('24'), goldChange('24'), 0],
+    [L('جرام 18','18k gram')+lc, goldPrice('18'), goldChange('18'), 0],
+    [L('جرام فضة 999','Silver 999 gram')+lc, silverPrice('999'), useLocal() ? local.silver['999']?.change : prices['TVC:SILVER']?.change, 2],
+    [L('أوقية ذهب $','Gold ounce $'), prices['TVC:GOLD']?.close, prices['TVC:GOLD']?.change, 2],
+  ];
+  document.getElementById('ticker').innerHTML = items.map(([l,v,c,d]) =>
+    `<div class="tk"><div class="l">${l}</div><div class="v">${fmt(v,d)} ${chg(c)}</div></div>`).join('');
+}
+
+function renderTotals(){
+  const t = totals();
+  for(const s of [...ASSETS,'debts']) document.getElementById('sum-'+s).textContent = egp(t[s]);
+  // the currency sits smaller beside the headline figure so the number leads
+  document.getElementById('grand').innerHTML = isFinite(t.net) ? `${fmt(t.net)}<span class="cur">${L('ج.م','EGP')}</span>` : '—';
+  const u = usdEgp();
+  // net worth also in 21k gold grams: the familiar Egyptian way to see value apart from the pound's moves
+  const g21 = goldPrice('21');
+  document.getElementById('grandUsd').textContent = [
+    u ? '≈ $' + (t.net/u).toLocaleString('en-US',{maximumFractionDigits:0}) : '',
+    isFinite(g21) && g21 > 0 && t.net > 0 ? L(`≈ ${fmt(t.net/g21,1)} جرام ذهب عيار 21`, `≈ ${fmt(t.net/g21,1)} g of 21k gold`) : '',
+  ].filter(Boolean).join('  ·  ');
+  document.getElementById('assets-line').textContent = t.debts > 0 ? L(`الأصول ${egp(t.assets)} − الديون ${egp(t.debts)}`, `Assets ${egp(t.assets)} − debts ${egp(t.debts)}`) : '';
+  const shown = ASSETS.filter(s=>t[s]>0);
+  document.getElementById('bar').innerHTML = shown.map(s=>`<span style="width:${t[s]/t.assets*100}%;background:${COLORS[s]}"></span>`).join('');
+  document.getElementById('legend').innerHTML = ASSETS.map(s=>`<span><i style="background:${COLORS[s]}"></i>${NAMES[s]} ${t.assets?fmt(t[s]/t.assets*100,1):fmt(0,0)}${PCT()}</span>`).join('');
+
+  // profit / loss across rows that have a purchase price
+  let cost = 0, val = 0;
+  for(const s of ['gold','silver','stocks']) for(const r of state[s]){ const c = rowCost(s,r), v = rowValue(s,r); if(c>0 && isFinite(v)){ cost += c; val += v; } }
+  document.getElementById('pl-total').innerHTML = cost > 0 ? `${L('إجمالي الربح / الخسارة على الذهب والفضة والأسهم:', 'Total profit / loss on gold, silver and stocks:')} ${plHtml(val, cost)}` : '';
+
+  // goal
+  const goal = num(state.goal), prog = document.getElementById('goal-prog');
+  if(goal > 0){
+    const p = Math.max(0, Math.min(100, t.net/goal*100));
+    prog.hidden = false; prog.firstElementChild.style.width = p + '%';
+    document.getElementById('goal-txt').textContent = t.net >= goal
+      ? L(`وصلت لهدفك 🎉 (${fmt(t.net/goal*100,1)}${PCT()})`, `You reached your goal 🎉 (${fmt(t.net/goal*100,1)}${PCT()})`)
+      : L(`وصلت ${fmt(p,1)}${PCT()} — فاضلك ${egp(goal - t.net)}`, `${fmt(p,1)}${PCT()} there — ${egp(goal - t.net)} to go`);
+  } else { prog.hidden = true; document.getElementById('goal-txt').textContent = ''; }
+  renderGoalPlan(goal, t.net);
+
+  const inst = state.debts.reduce((a,r)=>a+num(r.inst),0);
+  document.getElementById('debts-inst').textContent = inst > 0 ? L(`إجمالي الأقساط الشهرية: ${egp(inst)}`, `Total monthly instalments: ${egp(inst)}`) : '';
+
+  renderCashBanks();
+  renderZakat(t);
+  renderSourceNote();
+}
+
+// what the goal needs per month by its date, and when the recent pace would reach it
+function renderGoalPlan(goal, net){
+  const el = document.getElementById('goal-plan'), lines = [];
+  if(goal > 0 && net < goal && isFinite(net)){
+    const left = goal - net;
+    if(state.goalDate){
+      const months = (new Date(state.goalDate) - Date.now()) / (30.44*DAY);
+      lines.push(months <= 0
+        ? L('تاريخ الهدف عدّى. حدّد تاريخ جديد.', 'The goal date has passed. Set a new one.')
+        : L(`عشان توصل لهدفك يوم ${dateFmt(new Date(state.goalDate))} محتاج تزوّد ثروتك حوالي ${egp(left / Math.max(months,1))} في الشهر (فاضل ${fmt(Math.max(1,Math.round(months)),0)} شهر).`,
+            `To reach your goal by ${dateFmt(new Date(state.goalDate))} you need to add about ${egp(left / Math.max(months,1))} a month (${fmt(Math.max(1,Math.round(months)),0)} months left).`));
+    }
+    // pace over the last 90 days of records, once they span at least two weeks
+    const recent = history.filter(p => p.t >= Date.now() - 90*DAY);
+    if(recent.length >= 2){
+      const days = (recent[recent.length-1].t - recent[0].t) / DAY;
+      if(days >= 14){
+        const perDay = (netOf(recent[recent.length-1]) - netOf(recent[0])) / days;
+        lines.push(perDay > 0
+          ? L(`بمعدل زيادة ثروتك في آخر ${fmt(Math.round(days),0)} يوم، هتوصل لهدفك حوالي ${dateFmt(new Date(Date.now() + left/perDay*DAY))}.`,
+              `At your pace over the last ${fmt(Math.round(days),0)} days, you'd reach your goal around ${dateFmt(new Date(Date.now() + left/perDay*DAY))}.`)
+          : L(`ثروتك ما زادتش في آخر ${fmt(Math.round(days),0)} يوم، فبالمعدل دا مش هتوصل للهدف.`, `Your wealth hasn't grown over the last ${fmt(Math.round(days),0)} days, so at this pace you won't reach the goal.`));
+      }
+    }
+  }
+  el.hidden = !lines.length;
+  el.innerHTML = lines.map(x => `<div>${x}</div>`).join('');
+}
+
+// cash grouped by bank, largest first
+function renderCashBanks(){
+  const by = {};
+  for(const r of state.cash){
+    const v = rate(r.c)*num(r.a);
+    if(isFinite(v) && v>0){ const k = r.b||'home'; by[k] = (by[k]||0) + v; }
+  }
+  const list = Object.entries(by).sort((a,b)=>b[1]-a[1]);
+  const all = list.reduce((t,[,v])=>t+v,0);
+  document.getElementById('cash-banks').innerHTML = list.length < 1 ? '' :
+    `<div class="note">${L('توزيع الكاش حسب البنك','Cash by bank')}</div><div class="bank-chips">` +
+    list.map(([k,v])=>`<div class="bank-chip">${bankLogoHtml(k)}<div><div class="bn">${lbl(bankById(k))}</div><div class="bv m">${egp(v)} · ${fmt(v/all*100,1)}${PCT()}</div></div></div>`).join('') + `</div>`;
+}
+
+function zakatBase(t){
+  return sectionTotal('gold', r => !(state.zExcludeWorn && r.worn)) + t.silver + t.cash
+    + (state.zExcludeStocks ? 0 : t.stocks) - (state.zDeductDebts ? t.debts : 0);
+}
+function renderZakat(t){
+  const nisab = goldPrice('24')*85, base = zakatBase(t);
+  const due = base * .025, reached = isFinite(nisab) && base >= nisab;
+  const cells = [
+    [L('وعاء الزكاة','Zakat base'), egp(base), true],
+    [L('النصاب (85 جم ذهب عيار 24)','Nisab (85 g of 24k gold)'), egp(nisab), false],
+    [`${L('الزكاة','Zakat')} (${fmt(2.5,1)}${PCT()})`, reached ? egp(due) : '—', true],
+  ];
+  let hawlDone = false;
+  if(state.zDate){
+    const end = new Date(new Date(state.zDate).getTime() + HAWL_DAYS*DAY), left = Math.ceil((end - Date.now())/DAY);
+    hawlDone = left <= 0;
+    const hawl = hawlDone ? L('حلّ الحول','Year complete') : L(`باقي ${fmt(left,0)} يوم`, `${fmt(left,0)} days left`);
+    cells.push([L('موعد الحول','Zakat year ends'), `${dateFmt(end)} · ${hawl}`, false]);
+  }
+  document.getElementById('zakat-grid').innerHTML = cells.map(([l,v,priv])=>`<div><div class="l">${l}</div><div class="v ${priv?'m':''}">${v}</div></div>`).join('');
+  let msg;
+  if(!isFinite(nisab)) msg = '';
+  else if(!reached && state.zMode==='hanafi' && state.zDate && !hawlDone)
+    msg = `<span class="pill warn">${L('تحت النصاب دلوقتي','Below nisab right now')}</span> ${L('على رأي الحنفية الحول مش بينقطع بنزول المال في نص السنة. العبرة بالوعاء يوم الموعد.', "In the Hanafi view a dip during the year doesn't break it. What counts is the base on the due date.")}`;
+  else if(!reached) msg = `<span class="pill idle">${L('أقل من النصاب','Below nisab')}</span> ${L('مفيش زكاة واجبة على الوعاء الحالي.','No zakat is due on the current base.')}`
+    + (state.zMode!=='manual' && state.zBrokenOn ? ' ' + (state.zBrokenWhy==='end'
+        ? L(`الحول خلص يوم ${dateFmt(new Date(state.zBrokenOn))} والوعاء تحت النصاب، فمفيش زكاة. هيبدأ حول جديد أول ما الوعاء يوصل للنصاب.`, `The zakat year ended on ${dateFmt(new Date(state.zBrokenOn))} with the base below the nisab, so no zakat was due. A new year starts once the base reaches the nisab.`)
+        : L(`الحول انقطع يوم ${dateFmt(new Date(state.zBrokenOn))}، وهيبدأ حول جديد أول ما الوعاء يوصل للنصاب.`, `The zakat year broke on ${dateFmt(new Date(state.zBrokenOn))}; a new one starts once the base reaches the nisab.`)) : '');
+  else if(!state.zDate) msg = `<span class="pill warn">${L('فوق النصاب','Above nisab')}</span> ${L('سجّل تاريخ بلوغ النصاب عشان نحسبلك موعد الحول.','Set the date your wealth reached the nisab to see when the zakat year ends.')}`;
+  else if(hawlDone) msg = `<span class="pill due">${L('حلّ الحول','Year complete')}</span> ${L('الزكاة المستحقة','Zakat due:')} <b class="m">${egp(due)}</b>. ${L('بعد إخراجها سجّل تاريخ جديد للحول.','After paying it, set a new start date.')}`;
+  else msg = `<span class="pill ok">${L('فوق النصاب','Above nisab')}</span> ${L('الزكاة لما الحول يحل حوالي','When the year ends, zakat will be about')} <b class="m">${egp(due)}</b> ${L('لو الثروة فضلت كده.','if your wealth stays the same.')}`;
+  document.getElementById('zakat-msg').innerHTML = msg;
+  document.getElementById('zakat-sum').textContent = reached ? egp(due) : '';
+}
+
+function renderSourceNote(){
+  const global = state.goldSource==='global';
+  document.getElementById('goldPremium-wrap').hidden = !global;
+  document.getElementById('silverPremium-wrap').hidden = !global;
+  document.getElementById('priceSide-wrap').hidden = global;
+  document.getElementById('source-note').innerHTML = global
+    ? L('سعر الجرام محسوب من السعر العالمي × سعر الدولار. لو سعر الصاغة مختلف، عدّل النسبة.', 'Gram price = global price × dollar rate. If jewellers charge differently, adjust the premium.')
+    : local ? L('أسعار الصاغة من آي صاغة · اتجابت الساعة ', 'Jewellers’ prices from iSagha · fetched at ') + new Date(localAt).toLocaleTimeString(LOC())
+        + (localBoardTime ? L(` · سعر الصاغة المعلن الساعة ${localBoardTime}`, ` · board price as of ${localBoardTime}`) : '')
+    : localErr ? `<span class="bad">${L('تعذّر جلب أسعار الصاغة، فبنستخدم السعر العالمي مؤقتاً.', "Couldn't load jewellers' prices, using the global price for now.")}</span>`
+    : L('جاري تحميل أسعار الصاغة…', 'Loading jewellers’ prices…');
+}
+
+function renderBackupNote(){
+  const el = document.getElementById('backup-note');
+  if(!state.lastBackup){ el.textContent = L('لسه معملتش نسخة احتياطية', "You haven't made a backup yet"); el.className = 'note old'; return; }
+  const days = Math.floor((Date.now()-state.lastBackup)/DAY);
+  el.textContent = L('آخر نسخة احتياطية: ', 'Last backup: ') + (days < 1 ? L('النهارده','today') : L(`من ${fmt(days,0)} يوم`, `${fmt(days,0)} days ago`));
+  el.className = 'note' + (days > 30 ? ' old' : '');
+}
+
+const ROW_SECS = ['gold','silver','cash','stocks','other','debts','alerts'];
+function render(){
+  renderStamp();
+  renderMarket();
+  renderTicker();
+  for(const s of ROW_SECS) document.getElementById(s+'-rows').innerHTML = rowsHtml(s);
+  renderTotals();
+  renderBackupNote();
+  renderReportsList();
+  renderYearsList();
+  drawChart();
+  if(typeof fitSlide==='function') fitSlide();
+}
+
+/* ---------- history ---------- */
+const HKEY = 'wealth-history-v1', MAXPTS = 6000;
+// 'certs' stays so days recorded while the certificates section existed still add up
+const STACK = ['cash','certs','gold','silver','stocks','other'];   // bottom -> top
+// local calendar day, so a day ends at midnight Cairo time rather than UTC
+const dayKey = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+// keep only the last point of each day (older versions recorded every 10 minutes)
+function toDaily(list){
+  const out = [];
+  for(const p of list){
+    if(out.length && dayKey(out[out.length-1].t)===dayKey(p.t)) out[out.length-1] = p; else out.push(p);
+  }
+  return out;
+}
+let history = [];
+try{ history = toDaily(JSON.parse(localStorage.getItem(HKEY)) || []); }catch(e){}
+let range = 30;
+try{ const r = localStorage.getItem('wealth-range'); if(r!==null) range = +r; }catch(e){}
+if(range===1) range = 7;   // the "day" range no longer exists with one point per day
+
+function pricesComplete(){
+  if(!isFinite(goldPrice('24')) || !isFinite(silverPrice('999'))) return false;
+  if(state.cash.some(r=>num(r.a)>0 && !isFinite(rate(r.c)))) return false;
+  if(state.stocks.some(r=>num(r.q)>0 && r.s && !stockPx[r.s.trim().toUpperCase()])) return false;
+  return true;
+}
+function saveHistory(){ try{ localStorage.setItem(HKEY, JSON.stringify(history)); }catch(e){} }
+function recordSnapshot(){
+  if(!pricesComplete()) return;
+  const t = totals(), p = {t:Date.now()};
+  for(const s of STACK) p[s] = Math.round(t[s]||0);
+  p.debts = Math.round(t.debts);
+  if(!STACK.some(s=>p[s]>0)) return;
+  const last = history[history.length-1];
+  // one point per day: today's point is replaced until the day ends
+  if(last && dayKey(last.t)===dayKey(p.t)) history[history.length-1] = p;
+  else history.push(p);
+  if(history.length > MAXPTS) history = history.slice(-MAXPTS);
+  saveHistory();
+}
+const assetsOf = p => STACK.reduce((t,s)=>t+(p[s]||0),0);
+const netOf = p => assetsOf(p) - (p.debts||0);
+const compact = n => n.toLocaleString(LOC(),{notation:'compact', maximumFractionDigits:1});
+
+function visiblePoints(){
+  if(!range) return history;
+  const from = Date.now() - range*DAY;
+  return history.filter(p=>p.t>=from);
+}
+
+function niceTicks(max, n=4){
+  const raw = max/n, mag = 10**Math.floor(Math.log10(raw)), f = raw/mag;
+  const step = (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*mag;
+  const ticks = []; for(let v=0; v<=max+step*.001; v+=step) ticks.push(v);
+  if(ticks[ticks.length-1] < max) ticks.push(ticks[ticks.length-1]+step);
+  return ticks;
+}
+
+function drawChart(){
+  const box = document.getElementById('chart');
+  document.querySelectorAll('#ranges button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.range===range));
+  const pts = visiblePoints();
+  const hasDebts = pts.some(p=>p.debts>0);
+  document.getElementById('hist-legend').innerHTML = [...STACK].reverse().filter(s=>pts.some(p=>p[s]>0)).map(s=>`<span><i style="background:${COLORS[s]}"></i>${NAMES[s]}</span>`).join('')
+    + (hasDebts ? `<span><i style="background:var(--fg)"></i>${L('صافي الثروة (بعد الديون)','Net worth (after debts)')}</span>` : '');
+  renderHistTable();
+  if(pts.length < 2){
+    box.innerHTML = `<div class="empty">${history.length<2
+      ? L('الرسم هيظهر بعد ما الصفحة تسجّل يومين على الأقل.<br>افتح الصفحة بكرة وهتلاقي أول خط في الرسم.', 'The chart appears once at least two days are recorded.<br>Open the page again tomorrow to see the first line.')
+      : L('مفيش تسجيلات كفاية في الفترة دي. جرّب فترة أطول.', 'Not enough records in this period. Try a longer one.')}</div>`;
+    document.getElementById('hist-delta').textContent = '';
+    return;
+  }
+  const W = box.clientWidth || 600, H = 260, m = {t:10, r:10, b:26, l:56};
+  const iw = W-m.l-m.r, ih = H-m.t-m.b;
+  const t0 = pts[0].t, t1 = pts[pts.length-1].t;
+  const maxV = Math.max(...pts.map(assetsOf));
+  const yt = niceTicks(maxV || 1), yMax = yt[yt.length-1];
+  const x = t => m.l + (t1===t0 ? iw/2 : (t-t0)/(t1-t0)*iw);
+  const y = v => m.t + ih - Math.max(0,v)/yMax*ih;
+
+  // stacked asset layers
+  const cum = pts.map(()=>0);
+  let layers = '';
+  for(const s of STACK){
+    const lower = cum.slice();
+    pts.forEach((p,i)=>cum[i]+=(p[s]||0));
+    if(pts.every(p=>!p[s])) continue;
+    const top = pts.map((p,i)=>`${x(p.t).toFixed(1)},${y(cum[i]).toFixed(1)}`);
+    const bot = pts.map((p,i)=>`${x(p.t).toFixed(1)},${y(lower[i]).toFixed(1)}`).reverse();
+    layers += `<path d="M${top.join('L')}L${bot.join('L')}Z" style="fill:${COLORS[s]};fill-opacity:.85;stroke:var(--surface);stroke-width:2;stroke-linejoin:round"/>`;
+  }
+  const line = (f, dash) => `<path d="M${pts.map(p=>`${x(p.t).toFixed(1)},${y(f(p)).toFixed(1)}`).join('L')}" style="fill:none;stroke:var(--fg);stroke-width:2;stroke-linejoin:round${dash?';stroke-dasharray:5 4':''}"/>`;
+  const lines = hasDebts ? line(netOf, true) : line(assetsOf, false);
+
+  const grid = yt.map(v=>`<line class="grid" x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${m.l-8}" y="${y(v)+4}" text-anchor="end">${compact(v)}</text>`).join('');
+  const span = t1-t0, nx = Math.max(2, Math.min(5, Math.floor(iw/110)));
+  const tfmt = span < 2*DAY ? {hour:'2-digit', minute:'2-digit'} : span < 400*DAY ? {day:'numeric', month:'short'} : {month:'short', year:'numeric'};
+  let xl = '';
+  for(let i=0;i<nx;i++){
+    const t = t0 + span*i/(nx-1);
+    const anchor = i===0 ? 'start' : i===nx-1 ? 'end' : 'middle';
+    xl += `<text class="axis" x="${x(t)}" y="${H-6}" text-anchor="${anchor}">${new Date(t).toLocaleString(LOC(), tfmt)}</text>`;
+  }
+  const lastP = pts[pts.length-1], headline = hasDebts ? netOf : assetsOf;
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${L('رسم الثروة على مر الوقت','Wealth over time chart')}">${grid}${layers}${lines}
+    <circle cx="${x(lastP.t)}" cy="${y(headline(lastP))}" r="4" style="fill:var(--fg);stroke:var(--surface);stroke-width:2"/>
+    ${xl}<g id="hover" style="display:none"><line id="hv" y1="${m.t}" y2="${m.t+ih}" style="stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3"/><circle id="hd" r="5" style="fill:var(--fg);stroke:var(--surface);stroke-width:2"/></g>
+    <rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent" id="hit"/></svg><div class="tip" id="tip" hidden></div>`;
+
+  const first = netOf(pts[0]), last = netOf(lastP), d = last-first, pct = first ? d/first*100 : 0, s = d>=0 ? '+' : '−';
+  document.getElementById('hist-delta').innerHTML = `${L('التغير في صافي الثروة خلال الفترة:','Change in net worth over this period:')} <span class="delta" style="color:${d>=0?'var(--up)':'var(--down)'}"><bdi>${s}${egp(Math.abs(d))}</bdi> <bdi>(${s}${fmt(Math.abs(pct),1)}${PCT()})</bdi></span>`;
+
+  const hit = box.querySelector('#hit'), tip = box.querySelector('#tip'), g = box.querySelector('#hover');
+  const move = ev => {
+    const rect = box.querySelector('svg').getBoundingClientRect();
+    const px = (ev.touches?ev.touches[0].clientX:ev.clientX) - rect.left;
+    const tt = t0 + (px-m.l)/iw*(t1-t0);
+    let best = pts[0]; for(const p of pts) if(Math.abs(p.t-tt) < Math.abs(best.t-tt)) best = p;
+    const cx = x(best.t), cy = y(headline(best));
+    g.style.display = '';
+    g.querySelector('#hv').setAttribute('x1',cx); g.querySelector('#hv').setAttribute('x2',cx);
+    g.querySelector('#hd').setAttribute('cx',cx); g.querySelector('#hd').setAttribute('cy',cy);
+    tip.innerHTML = `<div class="t">${new Date(best.t).toLocaleDateString(LOC(),{weekday:'short', day:'numeric', month:'short', year:'numeric'})}</div>`
+      + [...STACK].reverse().filter(s=>best[s]>0).map(s=>`<div class="r"><span><i style="background:${COLORS[s]}"></i>${NAMES[s]}</span><span>${egp(best[s])}</span></div>`).join('')
+      + (best.debts>0 ? `<div class="r"><span><i style="background:var(--down)"></i>${NAMES.debts}</span><span>−${egp(best.debts)}</span></div>` : '')
+      + `<div class="r tot"><span>${L('صافي الثروة','Net worth')}</span><span>${egp(netOf(best))}</span></div>`;
+    tip.hidden = false;
+    const tw = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(W-tw, cx + (cx > W/2 ? -tw-12 : 12))) + 'px';
+    tip.style.top = Math.max(0, cy - 40) + 'px';
+  };
+  const leave = () => { g.style.display='none'; tip.hidden = true; };
+  hit.addEventListener('mousemove', move); hit.addEventListener('touchmove', move, {passive:true});
+  hit.addEventListener('mouseleave', leave); hit.addEventListener('touchend', leave);
+}
+
+// daily log grouped by month, newest first; only the current month starts open
+const openMonths = {};   // months the viewer opened or closed by hand during this visit
+function renderHistTable(){
+  const box = document.getElementById('hist-months');
+  if(!history.length){ box.innerHTML = ''; return; }
+  const groups = new Map();
+  history.forEach((p,i)=>{
+    const k = dayKey(p.t).slice(0,7);
+    if(!groups.has(k)) groups.set(k, []);
+    groups.get(k).push({p, prev: history[i-1]});
+  });
+  const curMonth = dayKey(Date.now()).slice(0,7);
+  const delta = (a, b) => {
+    if(!b) return '';
+    const d = netOf(a) - netOf(b), pct = netOf(b) ? d/netOf(b)*100 : 0;
+    const s = d>=0 ? '+' : '−';
+    return `<span class="dchg ${d>=0?'up':'down'}"><bdi dir="ltr">${s}${fmt(Math.abs(d),0)}</bdi> <bdi dir="ltr">(${s}${fmt(Math.abs(pct),1)}${PCT()})</bdi></span>`;
+  };
+  box.innerHTML = [...groups.entries()].reverse().map(([k, days])=>{
+    const first = days[0], last = days[days.length-1].p;
+    const label = new Date(last.t).toLocaleDateString(LOC(),{month:'long', year:'numeric'});
+    const open = k in openMonths ? openMonths[k] : k===curMonth;
+    const rows = [...days].reverse().map(({p, prev})=>`<tr><td class="num">${new Date(p.t).toLocaleDateString(LOC(),{weekday:'short', day:'numeric', month:'short'})}</td><td class="num">${fmt(assetsOf(p),0)}</td><td class="num">${fmt(p.debts||0,0)}</td><td class="num"><b>${fmt(netOf(p),0)}</b></td><td class="num">${delta(p, prev)}</td></tr>`).join('');
+    return `<details class="month" data-month="${k}"${open?' open':''}>
+      <summary><span class="mn">${label}${k===curMonth?L(' (الشهر الحالي)',' (this month)'):''}</span>
+        <span class="ms">${L(`${fmt(days.length,0)} يوم مسجّل`, `${fmt(days.length,0)} days recorded`)}</span>
+        <span class="ms m">${k===curMonth?L('الصافي الآن','Net now'):L('الصافي في آخر الشهر','Net at month end')}: <b>${egp(netOf(last))}</b></span>
+        <span class="ms m">${L('التغير خلال الشهر','Change this month')}: ${delta(last, first.prev || first.p) || '—'}</span></summary>
+      <div class="tbl-wrap m"><table><thead><tr><th>${L('اليوم','Day')}</th><th>${L('الأصول','Assets')}</th><th>${L('الديون','Debts')}</th><th>${L('صافي الثروة','Net worth')}</th><th>${L('التغير عن اليوم السابق','Change from previous day')}</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </details>`;
+  }).join('');
+}
+document.getElementById('hist-months').addEventListener('toggle', e=>{
+  const m = e.target.dataset?.month; if(m) openMonths[m] = e.target.open;
+}, true);
+
+document.getElementById('ranges').addEventListener('click', e=>{
+  const r = e.target.dataset.range; if(r===undefined) return;
+  range = +r; try{ localStorage.setItem('wealth-range', r); }catch(err){}
+  drawChart();
+});
+function resetClearButton(){
+  document.getElementById('hist-clear-wrap').innerHTML = `<button type="button" id="hist-clear" class="x" style="font-size:.82rem">${L('مسح السجل','Clear history')}</button>`;
+}
+document.getElementById('hist-clear-wrap').addEventListener('click', e=>{
+  const wrap = document.getElementById('hist-clear-wrap');
+  if(e.target.id==='hist-clear'){
+    wrap.innerHTML = `<span class="confirm">${L('متأكد؟','Are you sure?')} <button type="button" id="hc-yes">${L('امسح','Clear')}</button><button type="button" id="hc-no">${L('إلغاء','Cancel')}</button></span>`;
+  } else if(e.target.id==='hc-yes' || e.target.id==='hc-no'){
+    if(e.target.id==='hc-yes'){ history = []; try{ localStorage.removeItem(HKEY); }catch(err){} drawChart(); }
+    resetClearButton();
+  }
+});
+let rz; window.addEventListener('resize', ()=>{ clearTimeout(rz); rz = setTimeout(()=>{ drawChart(); goSlide(slideIdx, false); }, 150); });
+
+/* ---------- editing ---------- */
+document.addEventListener('input', e=>{
+  const el = e.target;
+  if(el.dataset.set){
+    const key = el.dataset.set;
+    state[key] = el.type==='checkbox' ? el.checked : el.value;
+    save();
+    if(key==='userName'){ renderHello(); return; }
+    if(key==='lang') applyLang();
+    if(key==='zMode'){ state.zBrokenOn = ''; trackNisab(); }
+    render(); return;
+  }
+  const {sec,i,f} = el.dataset; if(!sec) return;
+  state[sec][i][f] = el.type==='checkbox' ? el.checked : (f==='s' ? el.value.toUpperCase() : el.value);
+  save();
+  if(el.tagName==='SELECT'){ render(); return; }
+  // refresh computed cells of this row without re-rendering its inputs (keeps the cursor)
+  renderTotals();
+  const row = el.closest('tr'), tmp = document.createElement('tbody');
+  tmp.innerHTML = rowHtml(sec, state[sec][i], +i);
+  const src = tmp.querySelectorAll('[data-c]'), dst = row.querySelectorAll('[data-c]');
+  dst.forEach((c,k)=>{ if(src[k]) c.innerHTML = src[k].innerHTML; });
+});
+document.addEventListener('change', e=>{ const f = e.target.dataset.f; if(f==='s' || f==='sym') refresh(); });
+document.addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.add){ state[b.dataset.add].push(NEW_ROW[b.dataset.add]()); save(); render(); }
+  else if(b.dataset.del){ state[b.dataset.del].splice(+b.dataset.i,1); save(); render(); }
+  else if(b.dataset.rearm!==undefined){ state.alerts[+b.dataset.rearm].done = false; save(); render(); }
+  else if(b.dataset.openSettings!==undefined){ openSettings(b.dataset.openSettings); }
+});
+document.getElementById('refresh').addEventListener('click', refresh);
+document.getElementById('zToday').addEventListener('click', ()=>{ state.zDate = today(); document.getElementById('zDate').value = state.zDate; save(); render(); });
+
+/* ---------- settings dialog ---------- */
+const dlg = document.getElementById('settings');
+function openSettings(part){
+  syncStatic(); renderBackupNote(); renderNotify();
+  if(!dlg.open) dlg.showModal();
+  if(part==='notify') document.getElementById('notify-box').scrollIntoView({block:'start'});
+}
+document.getElementById('btn-settings').addEventListener('click', ()=>openSettings());
+document.getElementById('settings-close').addEventListener('click', ()=>dlg.close());
+// clicking the dimmed backdrop closes the dialog
+dlg.addEventListener('click', e=>{ if(e.target===dlg) dlg.close(); });
+
+/* ---------- notifications ---------- */
+const canNotify = 'Notification' in window;
+const notifyOn = () => !!state.notifyOn && canNotify && Notification.permission==='granted';
+// always shows the in-page message; also sends a system notification when enabled.
+// Android Chrome only shows notifications sent through the service worker, so prefer it.
+async function notify(body, tag){
+  toast('🔔 ' + body);
+  if(!notifyOn()) return;
+  // badge: Android draws only its shape (alpha), so it's the logo in white on transparency
+  const opts = {body, tag, icon:'icons/icon-192.png', badge:'icons/badge-96.png', lang:LANG, dir:LANG==='en'?'ltr':'rtl'};
+  try{
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+    if(reg) await reg.showNotification(L('نماء','Namaa'), opts);
+    else new Notification(L('نماء','Namaa'), opts);
+  }catch(e){}
+}
+function renderNotify(){
+  const btn = document.getElementById('btn-notify'), test = document.getElementById('btn-notify-test');
+  const pill = document.getElementById('notify-pill'), note = document.getElementById('notify-note');
+  const perm = canNotify ? Notification.permission : 'unsupported', on = notifyOn();
+  pill.className = 'pill ' + (on ? 'ok' : 'idle');
+  pill.textContent = on ? L('مفعّلة','On') : L('مقفولة','Off');
+  btn.textContent = on ? L('إيقاف الإشعارات','Turn off notifications') : L('🔔 تفعيل الإشعارات','🔔 Turn on notifications');
+  btn.disabled = perm==='unsupported' || (perm==='denied' && !on);
+  test.disabled = !on;
+  document.querySelectorAll('#notify-opts input[type=checkbox]').forEach(c=>c.disabled = !on);
+  note.textContent = perm==='unsupported'
+      ? L('المتصفح دا مش بيدعم الإشعارات. على الآيفون لازم تثبّت التطبيق على الشاشة الرئيسية الأول، وبعدين تفعّلها من جوه التطبيق.',
+          "This browser doesn't support notifications. On iPhone, add the app to your home screen first, then turn them on from inside the app.")
+    : perm==='denied'
+      ? L('الإشعارات مقفولة من إعدادات المتصفح. افتح إعدادات الموقع (علامة القفل جنب العنوان) واسمح بالإشعارات، وبعدين ارجع هنا.',
+          'Notifications are blocked in your browser settings. Open the site settings (the lock next to the address), allow notifications, then come back here.')
+    : L('الإشعارات بتوصلك طول ما التطبيق أو الصفحة مفتوحة، حتى لو في الخلفية. لو قفلته خالص مش هتوصل لحد ما تفتحه تاني.',
+        "Notifications arrive while the app or page is open, even in the background. If you close it completely, they'll wait until you open it again.");
+}
+document.getElementById('btn-notify').addEventListener('click', async ()=>{
+  if(notifyOn()){ state.notifyOn = false; save(); renderNotify(); return; }
+  let perm = 'denied';
+  try{ perm = await Notification.requestPermission(); }catch(e){}
+  if(perm==='granted'){
+    state.notifyOn = true; save(); renderNotify();
+    notify(L('الإشعارات اتفعّلت. هنبعتلك هنا لما سعر يوصل للي حددته.', "Notifications are on. We'll let you know here when a price hits your target."), 'welcome');
+  } else {
+    renderNotify();
+    toast(L('المتصفح رفض الإشعارات. تقدر تسمح بيها من إعدادات الموقع.', 'The browser blocked notifications. You can allow them in the site settings.'));
+  }
+});
+document.getElementById('btn-notify-test').addEventListener('click', ()=>{
+  notify(L(`جرام عيار 21 دلوقتي ${egp(goldPrice('21'))} — دا إشعار تجريبي.`, `21k gold is now ${egp(goldPrice('21'))} a gram — this is a test notification.`), 'test');
+});
+
+// automatic hawl, by the chosen method. Both start a new year the day the base reaches the nisab.
+//   majority: dropping below the nisab at any time breaks the year
+//   hanafi:   dips mid-year are ignored; only the base on the due date decides
+// Runs only after a full price refresh, so a missing price can't fake a drop.
+function trackNisab(){
+  if(state.zMode==='manual' || !pricesComplete()) return;
+  const nisab = goldPrice('24')*85;
+  if(!isFinite(nisab)) return;
+  const base = zakatBase(totals());
+  const tell = (msg, tag) => state.nZakat ? notify(msg, tag) : toast('🔔 ' + msg);
+  const ended = state.zDate && Date.now() >= new Date(state.zDate).getTime() + HAWL_DAYS*DAY;
+  // 'end' keeps the real due date, which may be days ago if the page wasn't opened on that day
+  const breakYear = why => {
+    state.zBrokenOn = why==='end' ? dayKey(new Date(state.zDate).getTime() + HAWL_DAYS*DAY) : today();
+    state.zDate = ''; state.zNotified = ''; state.zBrokenWhy = why; save(); syncStatic();
+  };
+  if(base < nisab && state.zDate && state.zMode==='majority'){
+    breakYear('drop');
+    tell(L(`وعاء الزكاة نزل تحت النصاب (${egp(base)} من ${egp(nisab)})، فالحول انقطع. أول ما يرجع للنصاب هيبدأ حول جديد من يومها.`,
+           `Your zakat base fell below the nisab (${egp(base)} of ${egp(nisab)}), so the zakat year broke. A new one starts the day it reaches the nisab again.`), 'zakat-break');
+  } else if(base < nisab && ended && state.zMode==='hanafi'){
+    breakYear('end');
+    tell(L(`حلّ موعد الزكاة والوعاء تحت النصاب (${egp(base)} من ${egp(nisab)})، فمفيش زكاة السنة دي. أول ما يرجع للنصاب هيبدأ حول جديد من يومها.`,
+           `Your zakat year ended with the base below the nisab (${egp(base)} of ${egp(nisab)}), so no zakat is due this year. A new year starts the day it reaches the nisab again.`), 'zakat-end');
+  } else if(base >= nisab && !state.zDate){
+    state.zDate = today(); state.zNotified = ''; state.zBrokenOn = ''; state.zBrokenWhy = ''; save(); syncStatic();
+    const end = new Date(new Date(state.zDate).getTime() + HAWL_DAYS*DAY);
+    tell(L(`وعاء الزكاة وصل للنصاب، فبدأ حول جديد النهارده. موعد الزكاة الجديد يوم ${dateFmt(end)}.`,
+           `Your zakat base reached the nisab, so a new zakat year starts today. Zakat will be due on ${dateFmt(end)}.`), 'zakat-start');
+  }
+}
+
+// zakat year completed, or no backup for a month: each fires once, not on every refresh
+function checkReminders(){
+  const now = Date.now();
+  if(state.nZakat && state.zDate && state.zNotified !== state.zDate){
+    const nisab = goldPrice('24')*85, base = zakatBase(totals());
+    if(isFinite(nisab) && now >= new Date(state.zDate).getTime() + HAWL_DAYS*DAY){
+      state.zNotified = state.zDate; save();
+      if(base >= nisab) notify(L(`حلّ حول الزكاة. الزكاة المستحقة حوالي ${egp(base*.025)}.`, `Your zakat year is complete. Zakat due is about ${egp(base*.025)}.`), 'zakat');
+    }
+  }
+  if(state.nBackup && totals().assets > 0 && now - (state.lastBackup||0) > 30*DAY && now - (state.backupNotifiedAt||0) > 7*DAY){
+    state.backupNotifiedAt = now; save();
+    notify(state.lastBackup
+      ? L('عدّى أكتر من شهر من غير نسخة احتياطية. اعمل نسخة عشان بياناتك تفضل في أمان.', "It's been over a month since your last backup. Make one to keep your data safe.")
+      : L('لسه معملتش نسخة احتياطية. اعمل واحدة من الإعدادات عشان بياناتك متضيعش.', "You haven't made a backup yet. Make one from Settings so your data isn't lost."), 'backup');
+  }
+}
+
+/* ---------- monthly reports ---------- */
+const monthKey = t => dayKey(t).slice(0,7);
+const monthLabel = mk => new Date(+mk.slice(0,4), +mk.slice(5,7)-1, 15).toLocaleDateString(LOC(), {month:'long', year:'numeric'});
+const pickPoint = p => { const o = {t:p.t, debts:p.debts||0}; for(const k of STACK) o[k] = p[k]||0; return o; };
+
+// a month's report, built from the daily history: start is the last day before the month (or its first day)
+function buildReport(mk){
+  const pts = history.filter(p => monthKey(p.t)===mk);
+  if(!pts.length) return null;
+  const before = history.filter(p => monthKey(p.t) < mk);
+  const start = before.length ? before[before.length-1] : pts[0], end = pts[pts.length-1];
+  let high = pts[0], low = pts[0], best = null, worst = null;
+  pts.forEach((p,i)=>{
+    if(netOf(p) > netOf(high)) high = p;
+    if(netOf(p) < netOf(low)) low = p;
+    const prev = i ? pts[i-1] : (before.length ? start : null);
+    if(!prev) return;
+    const d = netOf(p) - netOf(prev);
+    if(!best || d > best.d) best = {t:p.t, d};
+    if(!worst || d < worst.d) worst = {t:p.t, d};
+  });
+  return {
+    month: mk, createdAt: Date.now(), days: pts.length, fromPrev: before.length > 0,
+    start: pickPoint(start), end: pickPoint(end),
+    high: {t:high.t, net:netOf(high)}, low: {t:low.t, net:netOf(low)}, best, worst,
+    series: pts.map(p => [p.t, netOf(p)]),
+    g21: goldPrice('21'), goal: num(state.goal),
+  };
+}
+// a year's report: the month report's measures over the year, plus net worth at each month's end
+function buildYearReport(y){
+  const inYear = p => dayKey(p.t).slice(0,4)===y;
+  const pts = history.filter(inYear);
+  if(!pts.length) return null;
+  const before = history.filter(p => dayKey(p.t).slice(0,4) < y);
+  const start = before.length ? before[before.length-1] : pts[0], end = pts[pts.length-1];
+  let high = pts[0], low = pts[0];
+  for(const p of pts){ if(netOf(p) > netOf(high)) high = p; if(netOf(p) < netOf(low)) low = p; }
+  const months = [];
+  let prevNet = netOf(start);
+  for(const mk of [...new Set(pts.map(p => monthKey(p.t)))]){
+    const last = pts.filter(p => monthKey(p.t)===mk).pop();
+    months.push({mk, net: netOf(last), d: netOf(last) - prevNet});
+    prevNet = netOf(last);
+  }
+  // the first month only has a change when the year has a baseline before it
+  const ranked = months.filter((m,i) => i > 0 || before.length);
+  const best = ranked.length ? ranked.reduce((a,b) => b.d > a.d ? b : a) : null;
+  const worst = ranked.length ? ranked.reduce((a,b) => b.d < a.d ? b : a) : null;
+  return {
+    year: y, createdAt: Date.now(), days: pts.length, fromPrev: before.length > 0,
+    start: pickPoint(start), end: pickPoint(end),
+    high: {t:high.t, net:netOf(high)}, low: {t:low.t, net:netOf(low)},
+    months, bestM: best, worstM: worst,
+    series: pts.map(p => [p.t, netOf(p)]),
+    g21: goldPrice('21'), goal: num(state.goal),
+  };
+}
+// every finished month and year in the history gets a stored report once; returns the months just added
+function generateReports(){
+  const cur = monthKey(Date.now()), curY = cur.slice(0,4), added = [];
+  state.reports = state.reports || {};
+  state.yearReports = state.yearReports || {};
+  let years = false;
+  for(const mk of new Set(history.map(p => monthKey(p.t)))){
+    if(mk < cur && !state.reports[mk]){ const r = buildReport(mk); if(r){ state.reports[mk] = r; added.push(mk); } }
+  }
+  for(const y of new Set(history.map(p => dayKey(p.t).slice(0,4)))){
+    if(y < curY && !state.yearReports[y]){ const r = buildYearReport(y); if(r){ state.yearReports[y] = r; years = true; } }
+  }
+  if(added.length || years) save();
+  return added;
+}
+
+function renderReportsList(){
+  const box = document.getElementById('reports-list'), keys = Object.keys(state.reports||{}).sort().reverse();
+  if(!keys.length){
+    box.innerHTML = `<div class="rep-empty">${L(
+      `أول تقرير هيتعمل لوحده أول ما يخلص شهر فيه تسجيلات. تقرير ${monthLabel(monthKey(Date.now()))} هيبقى جاهز أول الشهر الجاي. لحد ما يجهز، تقدر تشوف الشهر الحالي من الزرار اللي فوق.`,
+      `Your first report is made automatically when a month with records ends. The ${monthLabel(monthKey(Date.now()))} report will be ready at the start of next month. Until then, view this month so far with the button above.`)}</div>`;
+    return;
+  }
+  box.innerHTML = keys.map(mk => repCard(state.reports[mk], monthLabel(mk), mk)).join('');
+}
+function repCard(r, title, key){
+  const d = netOf(r.end) - netOf(r.start), pct = netOf(r.start) ? d/netOf(r.start)*100 : 0, s = d>=0 ? '+' : '−';
+  return `<button type="button" class="rep-card" data-report="${key}">
+    <span class="mn">${title}</span>
+    <span class="nv m">${egp(netOf(r.end))}</span>
+    <span class="${d>=0?'up-t':'down-t'} m"><bdi>${s}${egp(Math.abs(d))}</bdi> <bdi>(${s}${fmt(Math.abs(pct),1)}${PCT()})</bdi></span>
+    <span class="go">${L('عرض التقرير ←','View report →')}</span>
+  </button>`;
+}
+function renderYearsList(){
+  const box = document.getElementById('years-list'), keys = Object.keys(state.yearReports||{}).sort().reverse();
+  const y = dayKey(Date.now()).slice(0,4);
+  box.innerHTML = keys.length
+    ? keys.map(k => repCard(state.yearReports[k], L(`سنة ${fmt(+k,0).replace(/[٬,]/g,'')}`, `Year ${k}`), 'y:' + k)).join('')
+    : `<div class="rep-empty">${L(`أول تقرير سنوي هيتعمل لوحده أول ما سنة ${y} تخلص. لحد ساعتها، شوف السنة الحالية لحد دلوقتي من الزرار اللي فوق.`,
+                                    `Your first yearly report is made automatically when ${y} ends. Until then, view this year so far with the button above.`)}</div>`;
+}
+
+function reportChart(series){
+  const W = 760, H = 170, m = {t:12, r:12, b:24, l:62}, iw = W-m.l-m.r, ih = H-m.t-m.b;
+  if(series.length < 2) return `<div class="note">${L('محتاج يومين على الأقل في الشهر عشان يظهر الرسم.','At least two recorded days are needed to draw the chart.')}</div>`;
+  const vals = series.map(s=>s[1]), lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi-lo)*.15 || hi*.02 || 1;
+  const y0 = lo - pad, y1 = hi + pad, t0 = series[0][0], t1 = series[series.length-1][0];
+  const x = t => m.l + (t-t0)/(t1-t0||1)*iw, y = v => m.t + ih - (v-y0)/(y1-y0)*ih;
+  const line = series.map(([t,v])=>`${x(t).toFixed(1)},${y(v).toFixed(1)}`).join('L');
+  const area = `M${x(t0)},${m.t+ih}L${line}L${x(t1)},${m.t+ih}Z`;
+  const ticks = [y0+pad, (y0+y1)/2, y1-pad].map(v=>`<line x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--line)"/><text x="${m.l-8}" y="${y(v)+4}" text-anchor="end" style="fill:var(--muted);font-size:11px">${compact(v)}</text>`).join('');
+  const dl = t => new Date(t).toLocaleDateString(LOC(), {day:'numeric', month:'short'});
+  const last = series[series.length-1];
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${L('صافي الثروة يوم بيوم','Net worth day by day')}">${ticks}
+    <path d="${area}" style="fill:var(--accent);fill-opacity:.14"/>
+    <path d="M${line}" style="fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round"/>
+    <circle cx="${x(last[0])}" cy="${y(last[1])}" r="4.5" style="fill:var(--accent);stroke:var(--surface);stroke-width:2"/>
+    <text x="${m.l}" y="${H-6}" style="fill:var(--muted);font-size:11px">${dl(t0)}</text>
+    <text x="${W-m.r}" y="${H-6}" text-anchor="end" style="fill:var(--muted);font-size:11px">${dl(t1)}</text></svg>`;
+}
+
+function reportHtml(r, partial){
+  const sNet = netOf(r.start), eNet = netOf(r.end), d = eNet - sNet, pct = sNet ? d/sNet*100 : 0, sg = v => v>=0 ? '+' : '−';
+  const signed = (v, cls=true) => `<span class="${cls ? (v>=0?'up-t':'down-t') : ''}"><bdi>${sg(v)}${egp(Math.abs(v))}</bdi></span>`;
+  const dayL = t => new Date(t).toLocaleDateString(LOC(), {weekday:'long', day:'numeric', month:'long'});
+  const eAssets = STACK.reduce((a,k)=>a+r.end[k],0);
+  const cats = STACK.filter(k => r.start[k] || r.end[k]);
+  const moves = cats.map(k => ({k, c: r.end[k]-r.start[k]})).filter(m => m.c).sort((a,b)=>b.c-a.c);
+  const up = moves[0]?.c > 0 ? moves[0] : null, down = moves.length && moves[moves.length-1].c < 0 ? moves[moves.length-1] : null;
+  const name = (state.userName||'').trim();
+  const grams = r.g21 > 0 ? eNet / r.g21 : NaN;
+  const Y = !!r.year, P = (m, y) => Y ? y : m;   // pick the month or year wording
+  const yearLbl = y => L(`سنة ${fmt(+y,0).replace(/[٬,]/g,'')}`, `Year ${y}`);
+  const sinceLbl = r.fromPrev ? P(L('عن آخر الشهر اللي قبله','vs end of previous month'), L('عن آخر السنة اللي قبلها','vs end of previous year'))
+                              : P(L('من أول يوم مسجّل في الشهر','since the first recorded day'), L('من أول يوم مسجّل في السنة','since the first recorded day'));
+  const rows = cats.map(k => `<tr><td><span class="dotc" style="background:${COLORS[k]}"></span>${NAMES[k]}</td>
+      <td class="num m">${egp(r.start[k])}</td><td class="num m">${egp(r.end[k])}</td><td class="num m">${signed(r.end[k]-r.start[k])}</td>
+      <td class="num">${eAssets ? fmt(r.end[k]/eAssets*100,1) : fmt(0,0)}${PCT()}</td></tr>`).join('')
+    + (r.start.debts || r.end.debts ? `<tr><td><span class="dotc" style="background:var(--down)"></span>${NAMES.debts}</td>
+      <td class="num m">−${egp(r.start.debts)}</td><td class="num m">−${egp(r.end.debts)}</td><td class="num m">${signed(-(r.end.debts-r.start.debts))}</td><td></td></tr>` : '');
+  const hl = [
+    up && [L('أكبر زيادة','Biggest gain'), `${NAMES[up.k]} · ${signed(up.c)}`],
+    down && [L('أكبر نقص','Biggest drop'), `${NAMES[down.k]} · ${signed(down.c)}`],
+    r.best && r.best.d > 0 && [L('أحسن يوم','Best day'), `${dayL(r.best.t)} · ${signed(r.best.d)}`],
+    r.worst && r.worst.d < 0 && [L('أسوأ يوم','Worst day'), `${dayL(r.worst.t)} · ${signed(r.worst.d)}`],
+    r.bestM && r.bestM.d > 0 && [L('أحسن شهر','Best month'), `${monthLabel(r.bestM.mk)} · ${signed(r.bestM.d)}`],
+    r.worstM && r.worstM.d < 0 && [L('أسوأ شهر','Worst month'), `${monthLabel(r.worstM.mk)} · ${signed(r.worstM.d)}`],
+    [L('أيام مسجّلة','Days recorded'), L(`${fmt(r.days,0)} يوم`, `${fmt(r.days,0)} days`)],
+    r.goal > 0 && [L('الهدف المالي','Financial goal'), eNet >= r.goal
+      ? L(`وصلت لهدفك (${egp(r.goal)})`, `Goal reached (${egp(r.goal)})`)
+      : L(`${fmt(Math.max(0,eNet/r.goal*100),1)}${PCT()} من ${egp(r.goal)}`, `${fmt(Math.max(0,eNet/r.goal*100),1)}${PCT()} of ${egp(r.goal)}`)],
+  ].filter(Boolean);
+  return `
+  <div class="rep-hero">
+    <div class="rep-brand"><img src="icons/logo.svg" alt=""><div><b>${L('نماء','Namaa')}</b><small>${P(L('التقرير الشهري لثروتك','Your monthly wealth report'), L('التقرير السنوي لثروتك','Your yearly wealth report'))}${name ? ' · ' + esc(name) : ''}</small></div></div>
+    <div class="rep-month"><b>${Y ? yearLbl(r.year) : monthLabel(r.month)}</b><small>${partial
+      ? L(`لحد ${dateFmt(new Date(r.end.t))} · ${P('الشهر لسه ماخلصش','السنة لسه ماخلصتش')}`, `Through ${dateFmt(new Date(r.end.t))} · ${P('month in progress','year in progress')}`)
+      : L(`اتعمل يوم ${dateFmt(new Date(r.createdAt))}`, `Prepared ${dateFmt(new Date(r.createdAt))}`)}</small></div>
+  </div>
+  <div class="kpis">
+    <div><span class="l">${partial ? L('صافي الثروة دلوقتي','Net worth now') : P(L('صافي الثروة آخر الشهر','Net worth at month end'), L('صافي الثروة آخر السنة','Net worth at year end'))}</span><span class="v m">${egp(eNet)}</span>
+      ${isFinite(grams) ? `<span class="s m">${L(`≈ ${fmt(grams,1)} جرام عيار 21`, `≈ ${fmt(grams,1)} g of 21k gold`)}</span>` : ''}</div>
+    <div><span class="l">${P(L('التغير خلال الشهر','Change this month'), L('التغير خلال السنة','Change this year'))}</span><span class="v m">${signed(d)}</span><span class="s ${d>=0?'up-t':'down-t'}"><bdi>${sg(d)}${fmt(Math.abs(pct),1)}${PCT()}</bdi> · ${sinceLbl}</span></div>
+    <div><span class="l">${L('أعلى قيمة','Highest')}</span><span class="v m">${egp(r.high.net)}</span><span class="s">${dateFmt(new Date(r.high.t))}</span></div>
+    <div><span class="l">${L('أقل قيمة','Lowest')}</span><span class="v m">${egp(r.low.net)}</span><span class="s">${dateFmt(new Date(r.low.t))}</span></div>
+  </div>
+  <div class="rep-chart m"><h4>${L('صافي الثروة يوم بيوم','Net worth day by day')}</h4>${reportChart(r.series)}</div>
+  ${Y ? `<div><h4>${L('ثروتك شهر بشهر','Month by month')}</h4>
+    <div class="tbl-wrap"><table><thead><tr><th>${L('الشهر','Month')}</th><th>${L('صافي الثروة آخر الشهر','Net worth at month end')}</th><th>${L('التغير','Change')}</th></tr></thead>
+    <tbody>${r.months.map((mo,i)=>`<tr><td>${monthLabel(mo.mk)}</td><td class="num m">${egp(mo.net)}</td><td class="num m">${i || r.fromPrev ? signed(mo.d) : '—'}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
+  <div><h4>${L('توزيع الثروة','Breakdown')}</h4>
+    <div class="tbl-wrap"><table><thead><tr><th>${L('البند','Item')}</th><th>${P(L('أول الشهر','Start'), L('أول السنة','Start'))}</th><th>${P(L('آخر الشهر','End'), L('آخر السنة','End'))}</th><th>${L('التغير','Change')}</th><th>${L('النسبة','Share')}</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>${L('صافي الثروة','Net worth')}</td><td class="num m">${egp(sNet)}</td><td class="num m">${egp(eNet)}</td><td class="num m">${signed(d)}</td><td></td></tr></tfoot></table></div>
+  </div>
+  <div><h4>${P(L('أبرز حاجات الشهر','Highlights'), L('أبرز حاجات السنة','Highlights'))}</h4><div class="hl">${hl.map(([l,v])=>`<div><span class="l">${l}</span><span class="v m">${v}</span></div>`).join('')}</div></div>
+  <div class="rep-foot">${L('الأرقام مبنية على قيمة ثروتك في الأيام اللي فتحت فيها التطبيق خلال الفترة، والجرامات بسعر عيار 21 وقت عمل التقرير. الأسعار من آي صاغة وTradingView. التقرير للاسترشاد وليس نصيحة استثمارية.',
+    "Figures use your net worth on the days you opened the app this month; grams use the 21k price when the report was made. Prices from iSagha and TradingView. For guidance only, not investment advice.")}</div>`;
+}
+
+const repDlg = document.getElementById('report');
+// keys: a month ('2026-09'), 'now' (this month so far), 'y:2026' (a stored year) or 'y:now' (this year so far)
+function openReport(key){
+  const curY = dayKey(Date.now()).slice(0,4);
+  const partial = key==='now' || key==='y:now';
+  const r = key==='now' ? buildReport(monthKey(Date.now()))
+          : key==='y:now' ? buildYearReport(curY)
+          : key.startsWith('y:') ? state.yearReports?.[key.slice(2)]
+          : state.reports?.[key];
+  if(!r){ toast(L('مفيش تسجيلات كفاية للفترة دي لسه.', 'There are no records for this period yet.')); return; }
+  document.getElementById('rep-title').textContent = r.year ? L('التقرير السنوي','Yearly report') : L('التقرير الشهري','Monthly report');
+  document.getElementById('rep-body').innerHTML = reportHtml(r, partial);
+  if(!repDlg.open) repDlg.showModal();
+  repDlg.scrollTop = 0;
+}
+for(const id of ['reports-list','years-list'])
+  document.getElementById(id).addEventListener('click', e=>{ const k = e.target.closest('[data-report]')?.dataset.report; if(k) openReport(k); });
+document.getElementById('btn-report-now').addEventListener('click', ()=>openReport('now'));
+document.getElementById('btn-year-now').addEventListener('click', ()=>openReport('y:now'));
+
+/* ---------- swipeable insight cards ---------- */
+const slidesEl = document.getElementById('slides');
+const tabBtns = [...document.querySelectorAll('#insight-tabs button')], slideDots = [...document.querySelectorAll('#slide-dots i')];
+let slideIdx = 0;
+try{ slideIdx = Math.min(2, Math.max(0, +localStorage.getItem('wealth-slide') || 0)); }catch(e){}
+const slideStep = () => slidesEl.clientWidth + parseFloat(getComputedStyle(slidesEl).columnGap || 0);
+function markSlide(i){
+  slideIdx = i;
+  tabBtns.forEach((b,k)=>b.setAttribute('aria-selected', k===i));
+  slideDots.forEach((d,k)=>d.classList.toggle('on', k===i));
+  try{ localStorage.setItem('wealth-slide', i); }catch(e){}
+  fitSlide();
+}
+// the strip takes the height of the card in view, so a short card leaves no empty space under it
+function fitSlide(){ const s = slidesEl.children[slideIdx]; if(s) slidesEl.style.height = s.offsetHeight + 'px'; }
+document.getElementById('hist-months').addEventListener('toggle', ()=>fitSlide(), true);
+// scrollLeft runs negative in right-to-left pages, so move by the page direction
+function goSlide(i, smooth=true){
+  const dir = getComputedStyle(slidesEl).direction==='rtl' ? -1 : 1;
+  slidesEl.scrollTo({left: dir * i * slideStep(), behavior: smooth ? 'smooth' : 'instant'});
+  markSlide(i);
+}
+tabBtns.forEach((b,i)=>b.addEventListener('click', ()=>goSlide(i)));
+let slideT;
+slidesEl.addEventListener('scroll', ()=>{
+  clearTimeout(slideT);
+  slideT = setTimeout(()=>markSlide(Math.round(Math.abs(slidesEl.scrollLeft) / slideStep())), 80);
+}, {passive:true});
+document.getElementById('rep-close').addEventListener('click', ()=>repDlg.close());
+repDlg.addEventListener('click', e=>{ if(e.target===repDlg) repDlg.close(); });
+document.getElementById('rep-print').addEventListener('click', ()=>window.print());
+
+// once per calendar month: store the finished month's report and announce it with a short summary
+function checkMonthly(){
+  generateReports();
+  const cur = monthKey(Date.now());
+  if(!state.nMonthly || state.monthlySent===cur || !history.length) return;
+  const d0 = new Date(); d0.setDate(1); d0.setMonth(d0.getMonth()-1);
+  const prev = monthKey(d0), r = state.reports?.[prev];
+  state.monthlySent = cur; save();
+  if(!r || r.start.t===r.end.t) return;
+  const d = netOf(r.end) - netOf(r.start), pct = netOf(r.start) ? d/netOf(r.start)*100 : 0, s = d>=0 ? '+' : '−';
+  const month = new Date(r.end.t).toLocaleDateString(LOC(), {month:'long'});
+  notify(L(`تقرير شهر ${month} جاهز: ثروتك ${d>=0?'زادت':'قلّت'} ${egp(Math.abs(d))} (${s}${fmt(Math.abs(pct),1)}${PCT()}). افتحه من قسم التقارير الشهرية.`,
+           `Your ${month} report is ready: net worth ${d>=0?'rose':'fell'} ${egp(Math.abs(d))} (${s}${fmt(Math.abs(pct),1)}${PCT()}). Open it from Monthly reports.`), 'monthly');
+}
+
+/* ---------- app lock ---------- */
+const PINKEY = 'wealth-pin', LOCK_AFTER = 60e3;
+const lockEl = document.getElementById('lock'), lockDots = document.getElementById('lock-dots');
+let lockMode = null, lockBuf = '', lockFirst = '', afterVerify = null, hiddenAt = 0;
+const getPin = () => { try{ return localStorage.getItem(PINKEY); }catch(e){ return null; } };
+async function hashPin(p){
+  const data = new TextEncoder().encode('namaa:' + p);
+  if(crypto?.subtle){ const h = await crypto.subtle.digest('SHA-256', data); return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+  let h = 0; for(const c of 'namaa:' + p) h = (h*31 + c.charCodeAt(0)) | 0; return 'x' + h;
+}
+// modes: unlock (on open), verify (before changing or removing), set and confirm (choosing a new PIN)
+function showLock(mode){
+  if(dlg.open) dlg.close();
+  lockMode = mode; lockBuf = ''; renderDots();
+  document.getElementById('lock-title').textContent = {
+    unlock: L('اكتب الرقم السري','Enter your PIN'), verify: L('اكتب الرقم السري الحالي','Enter your current PIN'),
+    set: L('اختار رقم سري من 4 أرقام','Choose a 4-digit PIN'), confirm: L('اكتب الرقم تاني للتأكيد','Enter it again to confirm'),
+  }[mode];
+  document.getElementById('lock-forgot').hidden = mode!=='unlock';
+  document.getElementById('lock-cancel').hidden = mode==='unlock';
+  document.getElementById('lock-confirm').innerHTML = '';
+  document.getElementById('lock-bio').hidden = !(mode==='unlock' && getBio());
+  lockEl.hidden = false;
+  if(mode==='unlock'){
+    document.documentElement.classList.add('locked');
+    // ask for the fingerprint or face right away; if the browser wants a tap first, the button stays there
+    if(getBio()) setTimeout(tryBio, 250);
+  }
+}
+function hideLock(){ lockEl.hidden = true; lockMode = null; document.documentElement.classList.remove('locked'); }
+function renderDots(){ [...lockDots.children].forEach((d,i)=>d.classList.toggle('on', i < lockBuf.length)); }
+function lockWrong(){
+  lockDots.classList.add('err');
+  setTimeout(()=>{ lockDots.classList.remove('err'); lockBuf = ''; renderDots(); }, 450);
+}
+async function lockKey(k){
+  if(!lockMode) return;
+  if(k==='back') lockBuf = lockBuf.slice(0,-1);
+  else if(lockBuf.length < 4) lockBuf += k;
+  renderDots();
+  if(lockBuf.length < 4) return;
+  const pin = lockBuf;
+  if(lockMode==='unlock' || lockMode==='verify'){
+    if(await hashPin(pin) !== getPin()) return lockWrong();
+    const next = lockMode==='verify' ? afterVerify : null;
+    afterVerify = null; hideLock(); next && next();
+  } else if(lockMode==='set'){
+    lockFirst = pin; setTimeout(()=>showLock('confirm'), 150);
+  } else if(lockMode==='confirm'){
+    if(pin !== lockFirst){ lockWrong(); toast(L('الرقمين مش زي بعض، جرّب تاني.', "The PINs didn't match. Try again.")); setTimeout(()=>showLock('set'), 500); return; }
+    try{ localStorage.setItem(PINKEY, await hashPin(pin)); }catch(e){}
+    hideLock(); renderPin(); toast(L('اتفعّل قفل التطبيق.', 'App lock is on.'));
+  }
+}
+document.getElementById('lock-pad').addEventListener('click', e=>{ const k = e.target.closest('button')?.dataset.k; if(k) lockKey(k); });
+document.addEventListener('keydown', e=>{
+  if(lockEl.hidden) return;
+  if(/^[0-9]$/.test(e.key)) lockKey(e.key);
+  else if(e.key==='Backspace') lockKey('back');
+  else if(e.key==='Escape' && lockMode!=='unlock') hideLock();
+});
+document.getElementById('lock-cancel').addEventListener('click', ()=>{ afterVerify = null; hideLock(); });
+document.getElementById('lock-forgot').addEventListener('click', ()=>{
+  document.getElementById('lock-confirm').innerHTML = `<span class="confirm">${L('هتتمسح كل بياناتك من الجهاز دا، وتقدر ترجّعها من نسخة احتياطية. متأكد؟','This erases all your data on this device; you can bring it back from a backup. Continue?')} <button type="button" id="wipe-yes">${L('امسح','Erase')}</button><button type="button" id="wipe-no">${L('إلغاء','Cancel')}</button></span>`;
+});
+document.getElementById('lock-confirm').addEventListener('click', e=>{
+  if(e.target.id==='wipe-yes'){
+    try{ Object.keys(localStorage).filter(k=>k.startsWith('wealth-')).forEach(k=>localStorage.removeItem(k)); }catch(err){}
+    location.reload();
+  } else if(e.target.id==='wipe-no') document.getElementById('lock-confirm').innerHTML = '';
+});
+function renderPin(){
+  const on = !!getPin();
+  const pill = document.getElementById('pin-pill');
+  pill.className = 'pill ' + (on ? 'ok' : 'idle');
+  pill.textContent = on ? L('مفعّل','On') : L('مقفول','Off');
+  document.getElementById('btn-pin-set').textContent = on ? L('تغيير الرقم السري','Change PIN') : L('🔒 تفعيل القفل','🔒 Turn on lock');
+  document.getElementById('btn-pin-off').hidden = !on;
+  document.getElementById('bio-row').hidden = !(on && bioSupported);
+  document.getElementById('bio-note').hidden = !(on && bioSupported);
+  document.getElementById('bio-toggle').checked = !!getBio();
+}
+
+/* fingerprint / Face ID: a passkey kept on this device's own authenticator (WebAuthn).
+   There is no server, so it works like the PIN: a gate in front of data that stays on the device. */
+const BIOKEY = 'wealth-bio';
+let bioSupported = false, bioBusy = false;
+const getBio = () => { try{ return localStorage.getItem(BIOKEY); }catch(e){ return null; } };
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const unb64u = s => Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')), c => c.charCodeAt(0));
+(async ()=>{
+  try{ bioSupported = !!window.PublicKeyCredential && window.isSecureContext && location.protocol.startsWith('http')
+    && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); }catch(e){ bioSupported = false; }
+  renderPin();
+})();
+async function bioEnroll(){
+  const cred = await navigator.credentials.create({publicKey:{
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    rp: {name:'Namaa', id: location.hostname},
+    user: {id: crypto.getRandomValues(new Uint8Array(16)), name:'Namaa', displayName: L('قفل نماء','Namaa lock')},
+    pubKeyCredParams: [{type:'public-key', alg:-7}, {type:'public-key', alg:-257}],
+    authenticatorSelection: {authenticatorAttachment:'platform', userVerification:'required', residentKey:'discouraged'},
+    timeout: 60000, attestation: 'none',
+  }});
+  localStorage.setItem(BIOKEY, b64u(cred.rawId));
+}
+// true only when the device confirmed the person (the "user verified" flag in the authenticator data)
+async function bioCheck(){
+  const id = getBio(); if(!id) return false;
+  const a = await navigator.credentials.get({publicKey:{
+    challenge: crypto.getRandomValues(new Uint8Array(32)), rpId: location.hostname, timeout: 60000,
+    allowCredentials: [{type:'public-key', id: unb64u(id)}], userVerification: 'required',
+  }});
+  return !!a && (new Uint8Array(a.response.authenticatorData)[32] & 0x04) !== 0;
+}
+async function tryBio(){
+  if(bioBusy || lockMode!=='unlock') return;
+  bioBusy = true;
+  try{ if(await bioCheck()){ hideLock(); } }catch(e){}
+  bioBusy = false;
+}
+document.getElementById('lock-bio').addEventListener('click', tryBio);
+document.getElementById('bio-toggle').addEventListener('change', async e=>{
+  if(e.target.checked){
+    try{ await bioEnroll(); toast(L('اتفعّل الفتح بالبصمة أو Face ID.', 'Fingerprint / Face ID unlock is on.')); }
+    catch(err){ e.target.checked = false; toast(L('ما اتفعّلش. لازم توافق على البصمة أو الوش في الشباك اللي بيظهر.', "It wasn't turned on. Approve with your fingerprint or face when asked.")); }
+  } else {
+    try{ localStorage.removeItem(BIOKEY); }catch(err){}
+    toast(L('اتقفل الفتح بالبصمة، والرقم السري لسه شغال.', 'Fingerprint / Face ID unlock is off; the PIN still works.'));
+  }
+});
+document.getElementById('btn-pin-set').addEventListener('click', ()=>{
+  if(getPin()){ afterVerify = () => showLock('set'); showLock('verify'); } else showLock('set');
+});
+document.getElementById('btn-pin-off').addEventListener('click', ()=>{
+  afterVerify = () => { try{ localStorage.removeItem(PINKEY); localStorage.removeItem(BIOKEY); }catch(e){} renderPin(); toast(L('اتشال قفل التطبيق.', 'App lock is off.')); };
+  showLock('verify');
+});
+// lock again after the app has been in the background for more than a minute
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){ hiddenAt = Date.now(); return; }
+  if(getPin() && hiddenAt && Date.now() - hiddenAt > LOCK_AFTER && lockMode!=='unlock') showLock('unlock');
+});
+
+/* ---------- pull to refresh ---------- */
+const ptr = document.getElementById('ptr');
+let ptrStart = null, ptrDist = 0;
+window.addEventListener('touchstart', e=>{
+  if(window.scrollY > 0 || dlg.open || !lockEl.hidden || e.touches.length > 1) return;
+  ptrStart = e.touches[0].clientY; ptrDist = 0;
+}, {passive:true});
+window.addEventListener('touchmove', e=>{
+  if(ptrStart===null) return;
+  ptrDist = e.touches[0].clientY - ptrStart;
+  if(ptrDist < 10){ ptr.hidden = true; return; }
+  ptr.hidden = false;
+  ptr.style.transform = `translate(-50%, ${Math.min(ptrDist, 90) - 60}px)`;
+  ptr.textContent = ptrDist > 70 ? L('سيب عشان تحدّث','Release to refresh') : L('اسحب لتحت للتحديث','Pull down to refresh');
+}, {passive:true});
+window.addEventListener('touchend', async ()=>{
+  if(ptrStart===null) return;
+  const go = ptrDist > 70; ptrStart = null;
+  if(go){ ptr.textContent = L('جاري التحديث…','Refreshing…'); ptr.style.transform = 'translate(-50%, 20px)'; await refresh(); }
+  ptr.hidden = true; ptr.style.transform = '';
+});
+
+/* ---------- privacy ---------- */
+const privBtn = document.getElementById('btn-private');
+const isPrivate = () => 'private' in document.documentElement.dataset;
+function applyPrivate(on){
+  if(on) document.documentElement.dataset.private = ''; else delete document.documentElement.dataset.private;
+  privBtn.setAttribute('aria-pressed', on);
+  privBtn.textContent = on ? L('👁 إظهار المبالغ','👁 Show amounts') : L('👁 إخفاء المبالغ','👁 Hide amounts');
+  try{ localStorage.setItem('wealth-private', on ? '1' : '0'); }catch(e){}
+}
+privBtn.addEventListener('click', ()=>applyPrivate(!isPrivate()));
+
+/* ---------- backup ---------- */
+document.getElementById('btn-export').addEventListener('click', ()=>{
+  state.lastBackup = Date.now(); save();
+  const data = {app:'wealth-scale', version:1, savedAt:new Date().toISOString(), state, history};
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], {type:'application/json'}));
+  a.download = `${L('نماء','namaa')}-${today()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+  renderBackupNote();
+  toast(L('اتعملت نسخة احتياطية. احتفظ بالملف في مكان آمن.', 'Backup saved. Keep the file somewhere safe.'));
+});
+const fileIn = document.getElementById('file-import'), confirmBox = document.getElementById('import-confirm');
+document.getElementById('btn-import').addEventListener('click', ()=>fileIn.click());
+fileIn.addEventListener('change', async ()=>{
+  const f = fileIn.files[0]; fileIn.value = ''; if(!f) return;
+  let data;
+  try{ data = JSON.parse(await f.text()); if(!data?.state?.gold) throw 0; }
+  catch(e){ toast(L('الملف ده مش نسخة احتياطية من نماء.', "This file isn't a Namaa backup.")); return; }
+  const when = data.savedAt ? dateFmt(new Date(data.savedAt)) : L('تاريخ غير معروف','an unknown date');
+  confirmBox.innerHTML = `<span class="confirm">${L(`هتستبدل بياناتك الحالية بنسخة يوم ${when}. متأكد؟`, `This replaces your current data with the backup from ${when}. Continue?`)} <button type="button" id="imp-yes">${L('استرجاع','Restore')}</button><button type="button" id="imp-no">${L('إلغاء','Cancel')}</button></span>`;
+  confirmBox.onclick = ev=>{
+    if(ev.target.id==='imp-yes'){
+      state = withDefaults(data.state); history = Array.isArray(data.history) ? toDaily(data.history) : [];
+      save(); saveHistory(); syncStatic(); applyLang(); render(); refresh();
+      toast(L('اتسترجعت النسخة الاحتياطية.', 'Backup restored.'));
+    }
+    if(ev.target.id==='imp-yes' || ev.target.id==='imp-no'){ confirmBox.innerHTML = ''; confirmBox.onclick = null; }
+  };
+});
+
+/* ---------- theme ---------- */
+function applyTheme(t){
+  if(t==='light' || t==='dark') document.documentElement.dataset.theme = t;
+  else delete document.documentElement.dataset.theme;
+  try{ localStorage.setItem('wealth-theme', t); }catch(e){}
+  document.querySelectorAll('#theme button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.themeSet===t));
+}
+document.getElementById('theme').addEventListener('click', e=>{
+  const t = e.target.closest('button')?.dataset.themeSet; if(t) applyTheme(t);
+});
+
+/* ---------- collapsible sections ---------- */
+const CHEVRON = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M6 9l6 6 6-6"/></svg>';
+let collapsed = {};
+try{ collapsed = JSON.parse(localStorage.getItem('wealth-collapsed')) || {}; }catch(e){}
+function setCollapsed(sec, on){
+  sec.classList.toggle('collapsed', on);
+  sec.querySelector('.fold').setAttribute('aria-expanded', !on);
+  collapsed[sec.id] = on;
+  try{ localStorage.setItem('wealth-collapsed', JSON.stringify(collapsed)); }catch(e){}
+  if(!on && sec.id==='sec-insights'){ drawChart(); goSlide(slideIdx, false); }   // the chart and slides measure their width, so redo once visible
+}
+document.querySelectorAll('section.card').forEach(sec=>{
+  const h2 = sec.querySelector('.sec-head h2');
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'fold'; btn.innerHTML = CHEVRON;
+  h2.prepend(btn);
+  h2.addEventListener('click', ()=>setCollapsed(sec, !sec.classList.contains('collapsed')));
+  setCollapsed(sec, !!collapsed[sec.id]);
+});
+document.getElementById('btn-collapse-all').addEventListener('click', ()=>document.querySelectorAll('section.card').forEach(s=>setCollapsed(s, true)));
+document.getElementById('btn-expand-all').addEventListener('click', ()=>document.querySelectorAll('section.card').forEach(s=>setCollapsed(s, false)));
+
+// fill the static setting controls from state
+function syncStatic(){
+  document.querySelectorAll('[data-set]').forEach(el=>{
+    const v = state[el.dataset.set];
+    if(el.type==='checkbox') el.checked = !!v; else el.value = v ?? '';
+  });
+}
+
+/* ---------- install as an app ---------- */
+if('serviceWorker' in navigator && window.isSecureContext && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+let installEvt = null;
+const installBox = document.getElementById('install');
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+let installDismissed = false;
+try{ installDismissed = localStorage.getItem('wealth-install-dismissed')==='1'; }catch(e){}
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault(); installEvt = e;
+  if(!installDismissed) installBox.hidden = false;
+});
+// iPhone has no install prompt: explain the Share > Add to Home Screen route instead
+if(!standalone && !installDismissed && isIOS && location.protocol==='https:'){
+  document.getElementById('btn-install').hidden = true;
+  installBox.hidden = false;
+}
+document.getElementById('btn-install').addEventListener('click', async ()=>{
+  if(!installEvt) return;
+  installEvt.prompt();
+  const {outcome} = await installEvt.userChoice;
+  installEvt = null;
+  if(outcome==='accepted') installBox.hidden = true;
+});
+document.getElementById('btn-install-close').addEventListener('click', ()=>{
+  installBox.hidden = true;
+  try{ localStorage.setItem('wealth-install-dismissed','1'); }catch(e){}
+});
+window.addEventListener('appinstalled', ()=>{ installBox.hidden = true; toast(L('اتثبّت نماء على جهازك.', 'Namaa is installed on your device.')); });
+
+applyTheme(document.documentElement.dataset.theme || 'system');
+if(getPin()) showLock('unlock');
+syncStatic();
+applyLang();
+render();
+goSlide(slideIdx, false);
+loadEgxList();
+refresh();
+setInterval(()=>{ if(!document.hidden) refresh(); }, 30000);
+// phones pause timers while the app is in the background, so refresh right away when it comes back
+const refreshIfStale = () => { if(!document.hidden && Date.now() - lastUpdate > 15000) refresh(); };
+document.addEventListener('visibilitychange', refreshIfStale);
+window.addEventListener('focus', refreshIfStale);
+window.addEventListener('pageshow', refreshIfStale);
+setInterval(renderHello, 10*60e3);   // switch morning/evening greeting while the page stays open
+</script>
+</body>
+</html>

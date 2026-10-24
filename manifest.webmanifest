@@ -1,0 +1,20 @@
+{
+  "name": "Namaa",
+  "short_name": "Namaa",
+  "description": "احسب صافي ثروتك من الذهب والفضة والكاش وأسهم البورصة المصرية بأسعار محدّثة.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./wealth.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1f18",
+  "theme_color": "#0f2a22",
+  "categories": ["finance"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
