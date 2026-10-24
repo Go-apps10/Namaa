@@ -342,6 +342,99 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .sheet .go-btn{background:var(--accent);color:#14110a;border:0;font-weight:600;padding:12px;border-radius:12px;font-size:1rem}
 .sheet .back{justify-self:start}
+/* animated how-to for the background inbox: mock screens with a moving finger */
+.guide{width:min(480px,calc(100% - 24px));max-height:calc(100dvh - 24px);overflow:auto}
+.guide::backdrop{background:rgba(10,16,14,.6)}
+.guide h2{font:500 1.05rem/1.3 var(--display);margin:0}
+.g-bars{display:flex;gap:4px;padding:12px 16px 10px}
+.g-bars i{flex:1;height:3px;border-radius:2px;background:var(--line);overflow:hidden}
+.g-bars i b{display:block;height:100%;width:0;background:var(--accent)}
+.g-bars i.done b,.g-bars i.now.still b{width:100%}
+.g-bars i.now:not(.still) b{animation:gbar var(--d) linear forwards}
+@keyframes gbar{to{width:100%}}
+.g-stage{position:relative;height:280px;margin:0 16px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+.g-scene{position:absolute;inset:0;font-size:12px;line-height:1.45;animation:gin .35s ease}
+.g-scene [hidden]{display:none!important}
+@keyframes gin{from{opacity:0;transform:translateY(6px)}}
+.g-fill{position:absolute;inset:0}
+.g-ptr{position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:rgba(224,178,87,.55);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .3s;opacity:0;pointer-events:none;z-index:5}
+.g-ptr.on{opacity:1}
+.g-ptr.tap::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--accent);animation:gtap .5s ease-out}
+@keyframes gtap{to{transform:scale(2.4);opacity:0}}
+.g-scene .pressed{filter:brightness(.85);transform:scale(.95);transition:transform .15s}
+.g-cap{padding:12px 18px 4px;min-height:5.2em;font-size:.95rem;line-height:1.6}
+.g-cap small{display:block;color:var(--muted);font-size:.78rem;margin-bottom:2px}
+.g-ctl{display:flex;justify-content:space-between;gap:8px;padding:8px 16px 16px}
+/* Google's pages are always light, so their mock keeps fixed light colours in both themes */
+.g-g{position:absolute;inset:0;background:#fff;color:#1f1f1f;direction:ltr;text-align:left;display:flex;flex-direction:column;font-family:Arial,var(--body,sans-serif)}
+.g-bar{background:#f1f3f4;padding:6px 10px;border-bottom:1px solid #e0e0e0}
+.g-bar span{display:block;background:#fff;border-radius:12px;padding:2px 10px;color:#5f6368;font-size:11px}
+.g-body{flex:1;position:relative;display:flex;flex-direction:column;min-height:0}
+.g-split{flex:1;display:flex;min-height:0}
+.g-side{width:34%;border-right:1px solid #eee;padding:10px 8px;display:grid;gap:8px;align-content:start;color:#444}
+.g-main{flex:1;padding:12px;display:grid;gap:8px;align-content:start}
+.g-new{justify-self:start;border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,.3);padding:6px 12px;font-weight:600}
+.g-line{display:block;height:7px;border-radius:4px;background:currentColor;opacity:.13;width:90%}
+.g-line.s{width:60%}
+.g-tool{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px solid #eee}
+.g-sp{flex:1}
+.g-btn{background:#1a73e8;color:#fff;border-radius:16px;padding:4px 12px;font-weight:600}
+.g-file{display:flex;align-items:center;gap:6px;background:#e8f0fe;border-radius:6px;padding:4px 8px;color:#1a73e8}
+.g-dirty{width:7px;height:7px;border-radius:50%;background:#f29900}
+.g-code{flex:1;padding:10px;position:relative;font:11px/1.6 ui-monospace,Consolas,monospace;color:#3c4043}
+.g-code pre{margin:0;font:inherit;white-space:pre-wrap}
+.g-saved{position:absolute;right:10px;bottom:8px;color:#188038;font-family:Arial,sans-serif}
+.g-menu{position:absolute;right:10px;top:4px;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.25);border-radius:8px;padding:6px 0;display:grid;z-index:2;animation:gin .25s}
+.g-menu span{padding:6px 14px}
+.g-dim{position:absolute;inset:0;background:rgba(0,0,0,.35);display:grid;place-items:center;padding:12px}
+.g-dlg{background:#fff;border-radius:10px;padding:14px;width:100%;display:grid;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);position:relative}
+.g-f{display:flex;align-items:center;gap:8px;border-bottom:1px solid #eee;padding-bottom:6px}
+.g-f>span:first-child{color:#5f6368;flex:1}
+.g-f.col{flex-direction:column;align-items:flex-start}
+.g-f.col>span:first-child{flex:none}
+.g-v{font-weight:600}
+.g-v.hl{background:#fef7e0;border-radius:4px;padding:1px 6px}
+.g-opts{position:absolute;left:14px;right:14px;top:62px;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.25);border-radius:8px;display:grid;padding:4px 0;z-index:2;animation:gin .25s}
+.g-opts span{padding:6px 12px}
+.g-end{display:flex;justify-content:flex-end;align-items:center;gap:14px;color:#1a73e8}
+.g-link{color:#1a73e8;text-decoration:underline;justify-self:start}
+.g-warn{flex:1;padding:16px;display:grid;gap:10px;align-content:start}
+.g-warn b{font-size:14px}
+.g-url{font:11px ui-monospace,Consolas,monospace;color:#1a73e8;word-break:break-all}
+/* Namaa's own screens follow the app's theme */
+.g-app{position:absolute;inset:0;padding:12px;display:grid;gap:10px;align-content:start;background:var(--bg);color:var(--fg)}
+.g-ttl{font:600 14px var(--display)}
+.g-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:8px}
+.g-app>*,.g-card>*{min-width:0}
+.g-card b{font-family:var(--display);font-weight:500}
+.g-hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.g-pill{font-size:10px;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--muted)}
+.g-pill.ok{color:var(--up);border-color:var(--up)}
+.g-pill.warn{color:var(--warn);border-color:var(--warn)}
+.g-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.g-ab{border:1px solid var(--line);border-radius:8px;padding:5px 10px}
+.g-ab.go{background:var(--accent);color:#14110a;border-color:transparent;font-weight:600}
+.g-in{border:1px solid var(--line);border-radius:8px;padding:6px 8px;direction:ltr;text-align:left;color:var(--muted);min-height:28px;font-size:11px;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.g-in span{color:var(--fg)}
+.g-toast{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);border-radius:8px;padding:6px 14px;white-space:nowrap;animation:gin .3s}
+.g-tx{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.g-tx .a{color:var(--down);font-weight:600;direction:ltr}
+/* MacroDroid */
+.g-md{position:absolute;inset:0;background:#f4f5f7;color:#222;direction:ltr;text-align:left;display:flex;flex-direction:column}
+.g-mdh{background:#3949ab;color:#fff;padding:9px 12px;font-weight:600}
+.g-sec{padding:8px 12px;display:grid;gap:6px}
+.g-sec>small{color:#666;text-transform:uppercase;font-size:10px;letter-spacing:.05em}
+.g-item{background:#fff;border-radius:8px;padding:8px 10px;box-shadow:0 1px 3px rgba(0,0,0,.12);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.g-item b{color:#c62828;padding:0 4px}
+.g-item.new{display:block;border-left:3px solid #3949ab;animation:gin .3s}
+.g-add{justify-self:end;width:30px;height:30px;border-radius:50%;background:#3949ab;color:#fff;display:grid;place-items:center;font-size:16px}
+/* the phone getting the message */
+.g-phone{position:absolute;inset:0;background:linear-gradient(160deg,#1b3a30,#0f2a22)}
+.g-ntf{position:absolute;left:12px;right:12px;top:14px;background:rgba(255,255,255,.96);color:#222;border-radius:12px;padding:10px 12px;box-shadow:0 6px 18px rgba(0,0,0,.35);animation:gdown .5s ease}
+.g-ntf small{display:block;color:#666;font-size:10px}
+@keyframes gdown{from{transform:translateY(-130%)}}
+.g-quiet{position:absolute;left:12px;right:12px;bottom:22px;text-align:center;color:#e0b257;font-weight:600;font-size:13px;animation:gin .4s}
+@media (prefers-reduced-motion:reduce){.g-ptr{transition:none}.g-scene,.g-ntf,.g-quiet,.g-toast,.g-menu,.g-opts,.g-item.new{animation:none}.g-bars i.now:not(.still) b{animation:none;width:100%}}
 /* welcome */
 .welcome{border:1px solid var(--line);border-radius:18px;padding:0;background:var(--surface);color:var(--fg);width:min(460px,calc(100% - 28px));box-shadow:0 24px 60px rgba(0,0,0,.35)}
 .welcome::backdrop{background:var(--bg)}
@@ -868,6 +961,19 @@ section.card.collapsed{gap:0}
 <!-- welcome on first run -->
 <dialog id="welcome" class="welcome" aria-labelledby="wel-title">
   <div class="wel-body" id="wel-body"></div>
+</dialog>
+
+<!-- animated how-to for bank messages in the background -->
+<dialog id="guide" class="welcome guide" aria-labelledby="guide-title">
+  <div class="dlg-head"><h2 id="guide-title" data-en="Bank messages in the background: how-to">شرح رسايل البنك في الخلفية</h2><button type="button" class="x" id="guide-close" aria-label="إغلاق" data-en-label="Close">×</button></div>
+  <div class="g-bars" id="g-bars"></div>
+  <div class="g-stage" id="g-stage"><div class="g-scene" id="g-scene"></div><div class="g-ptr" id="g-ptr"></div></div>
+  <div class="g-cap" id="g-cap" aria-live="polite"></div>
+  <div class="g-ctl">
+    <button type="button" id="g-prev" data-en="Back">السابق</button>
+    <button type="button" id="g-play"></button>
+    <button type="button" id="g-next" class="go-btn sm"></button>
+  </div>
 </dialog>
 
 <!-- phone navigation -->
@@ -3068,6 +3174,7 @@ function renderInbox(){
   if(!inbox.url){
     box.innerHTML = `<div class="note">${L('MacroDroid يبعت رسالة البنك لصندوق صغير على حساب جوجل بتاعك، من غير ما يفتح التطبيق، ونماء يلمّها أول ما تفتحه. محدش بيشوف الصندوق غيرك.',
         "MacroDroid sends each bank message to a small inbox on your own Google account without opening the app; Namaa collects them when you open it. Only you can see the inbox.")}</div>
+      <button type="button" class="go-btn sm" data-inbox-guide style="justify-self:start">▶ ${L('شوف الشرح خطوة بخطوة','Watch the step-by-step guide')}</button>
       <div class="row"><button type="button" data-inbox-script>${showScript ? L('إخفاء السكريبت','Hide script') : L('1. اعرض السكريبت','1. Show the script')}</button>
         <button type="button" data-inbox-copy-script>${L('نسخ السكريبت','Copy script')}</button></div>
       ${scriptBox}
@@ -3084,6 +3191,7 @@ function renderInbox(){
       <button type="button" class="go-btn sm" data-inbox-copy-link>${L('نسخ رابط MacroDroid','Copy MacroDroid link')}</button>
       <button type="button" data-inbox-now>${L('شوف الصندوق دلوقتي','Check now')}</button>
       <button type="button" data-inbox-script>${showScript ? L('إخفاء السكريبت','Hide script') : L('السكريبت','Script')}</button>
+      <button type="button" data-inbox-guide>▶ ${L('الشرح','Guide')}</button>
     </div>
     ${scriptBox}
     <div class="note">${L('شغّل دا على موبايلك بس. الرابط فيه مفتاح سري، متديهوش لحد.', "Use this on your phone only. The link carries a secret key; don't share it.")}</div>
@@ -3105,9 +3213,123 @@ document.getElementById('inbox-box').addEventListener('click', async e=>{
       toast(L('دا مش رابط Web app. لازم يبدأ بـ https://script.google.com/macros/s/ ويخلص بـ /exec', "That isn't a Web app link. It starts with https://script.google.com/macros/s/ and ends with /exec")); return; }
     inbox.url = url; saveInbox(); showScript = false; await pullInbox(true);
   }
+  else if(d.inboxGuide!==undefined) openGuide();
   else if(d.inboxNow!==undefined) pullInbox(true);
   else if(d.inboxOff!==undefined){ inbox = {key: inbox.key}; saveInbox(); inboxErr = ''; inboxLast = 0; renderInbox(); }
 });
+
+/* the step-by-step guide: each scene is a mock screen plus a timeline of [ms, 'tap'|'show'|'hide', name].
+   tap moves the finger to [data-t=name] and presses it; show/hide toggle [data-s=name]. */
+const gGoogle = (url, body) => `<div class="g-g"><div class="g-bar"><span>🔒 ${url}</span></div><div class="g-body">${body}</div></div>`;
+const gEditor = (code, extra='') => gGoogle('script.google.com', `<div class="g-tool"><b>Untitled project</b><span class="g-sp"></span><span data-t="save">💾</span><span>▶ Run</span><span class="g-btn" data-t="deploy">Deploy ▾</span></div>
+  <div class="g-split" style="position:relative"><div class="g-side"><span class="g-file">Code.gs<i class="g-dirty" data-s="dirty" hidden></i></span></div><div class="g-code" data-t="code">${code}</div>${extra}</div>`);
+const gScript = `<pre>// Namaa bank-message inbox\nconst KEY = '••••••••••';\n\nfunction doGet(e) {\n  …\n}</pre>`;
+const gNamaa = inner => `<div class="g-app"><div class="g-ttl">⚙ ${L('الإعدادات','Settings')}</div><div class="g-card">${inner}</div></div>`;
+const gInboxHead = (pill, cls='') => `<div class="g-hd"><b>${L('رسايل البنك في الخلفية','Bank messages in the background')}</b><span class="g-pill ${cls}">${pill}</span></div>`;
+const GUIDE = [
+  { cap: ['في نماء: الإعدادات ← «رسايل البنك في الخلفية» ← «نسخ السكريبت». ابعته لنفسك عشان تفتحه على اللاب.',
+          'In Namaa: Settings → "Bank messages in the background" → "Copy script". Send it to yourself to open on a laptop.'],
+    html: () => gNamaa(`${gInboxHead(L('مقفول','Off'))}<i class="g-line"></i><i class="g-line s"></i>
+      <div class="g-row"><span class="g-ab">${L('1. اعرض السكريبت','1. Show the script')}</span><span class="g-ab go" data-t="copy">${L('نسخ السكريبت','Copy script')}</span></div>
+      <small style="color:var(--muted)">${L('2. الصق رابط الـ Web app هنا','2. Paste the Web app link here')}</small><div class="g-in"></div>`) + `<div class="g-toast" data-s="toast" hidden>${L('اتنسخ.','Copied.')}</div>`,
+    acts: [[700,'tap','copy'], [1400,'show','toast']], dur: 4800 },
+  { cap: ['على اللاب افتح script.google.com بحساب جوجل بتاعك، ودوس New project.',
+          'On a laptop open script.google.com with your Google account and click New project.'],
+    html: () => gGoogle('script.google.com', `<div class="g-split"><div class="g-side"><span class="g-new" data-t="new">＋ New project</span><span>My Projects</span><span>Shared with me</span><span>Trash</span></div>
+      <div class="g-main"><b>My Projects</b><i class="g-line"></i><i class="g-line s"></i><i class="g-line"></i></div></div>`),
+    acts: [[700,'tap','new']], dur: 3800 },
+  { cap: ['امسح الكود اللي في Code.gs كله، والصق السكريبت، ودوس 💾 عشان يتحفظ. لازم النقطة البرتقاني تختفي.',
+          'Delete everything in Code.gs, paste the script, and click 💾 to save. The orange dot must disappear.'],
+    html: () => gEditor(`<pre data-s="old">function myFunction() {\n\n}</pre><div data-s="new" hidden>${gScript}</div><span class="g-saved" data-s="saved" hidden>Saved ✓</span>`),
+    acts: [[700,'tap','code'], [1500,'hide','old'], [1500,'show','new'], [1500,'show','dirty'], [2600,'tap','save'], [3300,'hide','dirty'], [3300,'show','saved']], dur: 5600 },
+  { cap: ['دوس Deploy فوق، واختار New deployment.', 'Click Deploy at the top, then New deployment.'],
+    html: () => gEditor(gScript, `<div class="g-menu" data-s="menu" hidden><span data-t="newdep">New deployment</span><span>Manage deployments</span><span>Test deployments</span></div>`),
+    acts: [[600,'tap','deploy'], [1300,'show','menu'], [2200,'tap','newdep']], dur: 4400 },
+  { cap: ['دوس ⚙ واختار Web app. خلّي Execute as على Me، وWho has access على Anyone، ودوس Deploy.',
+          'Click ⚙ and pick Web app. Set Execute as to Me and Who has access to Anyone, then click Deploy.'],
+    html: () => gGoogle('script.google.com', `<div class="g-dim"><div class="g-dlg"><b>New deployment</b>
+      <div class="g-f"><span>Select type</span><span class="g-v" data-s="wa" hidden>Web app</span><span data-t="type">⚙</span></div>
+      <div class="g-opts" data-s="opts" hidden><span data-t="webapp">Web app</span><span>API Executable</span><span>Add-on</span><span>Library</span></div>
+      <div data-s="cfg" hidden style="display:grid;gap:10px"><div class="g-f"><span>Execute as</span><span class="g-v hl">Me</span></div><div class="g-f"><span>Who has access</span><span class="g-v hl">Anyone</span></div></div>
+      <div class="g-end"><span>Cancel</span><span class="g-btn" data-t="dep">Deploy</span></div></div></div>`),
+    acts: [[600,'tap','type'], [1300,'show','opts'], [2100,'tap','webapp'], [2800,'hide','opts'], [2800,'show','wa'], [2800,'show','cfg'], [4300,'tap','dep']], dur: 6400 },
+  { cap: ['لو جوجل حذّرك: Advanced ← Go to … (unsafe) ← Allow. دا طبيعي، لأن السكريبت بتاعك انت ومحدش راجعه.',
+          "If Google warns you: Advanced → Go to … (unsafe) → Allow. That's expected; the script is yours and nobody reviewed it."],
+    html: () => gGoogle('accounts.google.com', `<div class="g-warn" data-s="w1"><b>⚠ Google hasn't verified this app</b><i class="g-line"></i><i class="g-line s"></i>
+        <span class="g-link" data-t="adv">Advanced</span><span class="g-link" data-s="go" data-t="go" hidden>Go to Untitled project (unsafe)</span><div class="g-end"><span class="g-btn">BACK TO SAFETY</span></div></div>
+      <div class="g-warn" data-s="w2" hidden><b>Untitled project wants to access your Google Account</b><i class="g-line"></i><i class="g-line s"></i><div class="g-end"><span>Cancel</span><span class="g-btn" data-t="allow">Allow</span></div></div>`),
+    acts: [[600,'tap','adv'], [1300,'show','go'], [2200,'tap','go'], [2900,'hide','w1'], [2900,'show','w2'], [3700,'tap','allow']], dur: 5800 },
+  { cap: ['انسخ الـ Web app URL. ارجع لنماء على الموبايل، الصقه في الخانة ودوس حفظ، وهيظهر «شغال ✓».',
+          'Copy the Web app URL. Back in Namaa on your phone, paste it in the box and tap Save; it shows "On ✓".'],
+    html: () => `<div class="g-fill" data-s="a">${gGoogle('script.google.com', `<div class="g-dim"><div class="g-dlg"><b>New deployment ✓</b>
+        <div class="g-f col"><span>Web app URL</span><span class="g-url">https://script.google.com/macros/s/AKfy…/exec</span></div>
+        <div class="g-end"><span class="g-link" data-t="cp">Copy</span><span class="g-btn">Done</span></div></div></div>`)}</div>
+      <div class="g-fill" data-s="b" hidden>${gNamaa(`<div data-s="off">${gInboxHead(L('مقفول','Off'))}</div><div data-s="ok" hidden>${gInboxHead(L('شغال ✓','On ✓'),'ok')}</div>
+        <small style="color:var(--muted)">${L('2. الصق رابط الـ Web app هنا','2. Paste the Web app link here')}</small>
+        <div class="g-row" style="flex-wrap:nowrap"><div class="g-in" data-t="inp"><span data-s="typed" hidden>https://script.google.com/macros/s/AKfy…/exec</span></div><span class="g-ab" data-t="sv">${L('حفظ','Save')}</span></div>`)}</div>`,
+    acts: [[600,'tap','cp'], [1700,'hide','a'], [1700,'show','b'], [2300,'tap','inp'], [3000,'show','typed'], [3600,'tap','sv'], [4300,'hide','off'], [4300,'show','ok']], dur: 6400 },
+  { cap: ['دوس «نسخ رابط MacroDroid». في الماكرو امسح أكشن فتح الصفحة، وضيف Web Interactions ← HTTP Request ‏(GET) والصق الرابط.',
+          'Tap "Copy MacroDroid link". In the macro delete the open-page action and add Web Interactions → HTTP Request (GET) with the link.'],
+    html: () => `<div class="g-fill" data-s="a">${gNamaa(`${gInboxHead(L('شغال ✓','On ✓'),'ok')}<div class="g-in">…/exec?key=•••&amp;from=[sms_number]&amp;sms=[sms_message]</div>
+        <div class="g-row"><span class="g-ab go" data-t="cml">${L('نسخ رابط MacroDroid','Copy MacroDroid link')}</span><span class="g-ab">${L('شوف الصندوق دلوقتي','Check now')}</span></div>`)}</div>
+      <div class="g-fill" data-s="b" hidden><div class="g-md"><div class="g-mdh">MacroDroid · ${L('رسايل البنك','Bank SMS')}</div>
+        <div class="g-sec"><small>Triggers</small><span class="g-item">✉ SMS Received</span></div>
+        <div class="g-sec"><small>Actions</small><span class="g-item" data-s="old">🌐 Open Website / URL <b data-t="del">✕</b></span>
+          <span class="g-item new" data-s="http" hidden>⇅ HTTP Request · GET<br><span class="g-url">…/exec?key=•••&amp;from=[sms_number]&amp;sms=[sms_message]</span></span>
+          <span class="g-add" data-t="add">＋</span></div></div></div>`,
+    acts: [[600,'tap','cml'], [1600,'hide','a'], [1600,'show','b'], [2300,'tap','del'], [3000,'hide','old'], [3600,'tap','add'], [4300,'show','http']], dur: 6800 },
+  { cap: ['خلاص! رسالة البنك بتروح للصندوق من غير ما حاجة تفتح، وأول ما تفتح نماء هتلاقيها في المصاريف مستنية تصنيف.',
+          "Done! Bank messages go to the inbox without anything opening, and when you open Namaa they're waiting in Spending."],
+    html: () => `<div class="g-phone"><div class="g-ntf" data-s="n"><small>✉ CIB</small>${L('تم خصم 250.00 ج.م من بطاقتك لدى CARREFOUR','EGP 250.00 charged to your card at CARREFOUR')}</div>
+        <div class="g-quiet" data-s="q" hidden>${L('مفيش حاجة فتحت ✓ الرسالة راحت للصندوق','Nothing opened ✓ the message went to the inbox')}</div></div>
+      <div class="g-fill" data-s="app" hidden><div class="g-app"><div class="g-ttl">${L('المصاريف والدخل','Spending and income')}</div>
+        <div class="g-card"><div class="g-hd"><b>${L('رسايل البنك — مستنية تصنيف','Bank messages to file')}</b><span class="g-pill warn">${fmt(1,0)}</span></div>
+        <div class="g-tx"><span>CARREFOUR · CIB</span><span class="a">−${fmt(250)}</span></div><div class="g-row"><span class="g-ab go">✓ ${L('سجّل','File it')}</span><span class="g-ab">${L('تجاهل','Ignore')}</span></div></div></div>
+        <div class="g-toast">💳 ${L(`${fmt(1,0)} مستنية تصنيف`,'1 waiting to be filed')}</div></div>`,
+    acts: [[1800,'show','q'], [3600,'hide','q'], [3600,'show','app']], dur: 7000 },
+];
+const guideDlg = document.getElementById('guide'), gStage = document.getElementById('g-stage'), gPtr = document.getElementById('g-ptr');
+let gIdx = 0, gTimers = [], gAuto = true;
+function gTap(el){
+  if(!el) return;
+  const r = el.getBoundingClientRect(), s = gStage.getBoundingClientRect();
+  gPtr.classList.add('on');
+  gPtr.style.transform = `translate(${r.left - s.left + r.width/2 - 12}px,${r.top - s.top + r.height/2 - 12}px)`;
+  gTimers.push(setTimeout(()=>{ gPtr.classList.remove('tap'); void gPtr.offsetWidth; gPtr.classList.add('tap'); el.classList.add('pressed'); }, 650),
+    setTimeout(()=>el.classList.remove('pressed'), 950));
+}
+function gShow(i){
+  gTimers.forEach(clearTimeout); gTimers = [];
+  gIdx = Math.max(0, Math.min(GUIDE.length - 1, i));
+  const sc = GUIDE[gIdx], box = document.getElementById('g-scene');
+  // a fresh node restarts the entrance animation
+  const fresh = box.cloneNode(false); fresh.innerHTML = sc.html(); box.replaceWith(fresh);
+  gPtr.classList.remove('on','tap'); gPtr.style.transform = `translate(${gStage.clientWidth/2 - 12}px,${gStage.clientHeight - 40}px)`;
+  document.getElementById('g-bars').innerHTML = GUIDE.map((_, k)=>`<i class="${k < gIdx ? 'done' : k===gIdx ? 'now' + (gAuto ? '' : ' still') : ''}" style="--d:${sc.dur}ms"><b></b></i>`).join('');
+  document.getElementById('g-cap').innerHTML = `<small>${L(`خطوة ${fmt(gIdx+1,0)} من ${fmt(GUIDE.length,0)}`, `Step ${gIdx+1} of ${GUIDE.length}`)}</small>${esc(L(...sc.cap))}`;
+  const last = gIdx===GUIDE.length - 1;
+  document.getElementById('g-prev').disabled = gIdx===0;
+  document.getElementById('g-next').textContent = last ? L('تمام، فهمت','Got it') : L('التالي','Next');
+  document.getElementById('g-play').textContent = gAuto ? '⏸ ' + L('إيقاف','Pause') : '▶ ' + L('تشغيل','Play');
+  for(const [t, act, name] of sc.acts){
+    gTimers.push(setTimeout(()=>{
+      if(act==='tap') gTap(fresh.querySelector(`[data-t="${name}"]`));
+      else fresh.querySelectorAll(`[data-s="${name}"]`).forEach(el=>el.hidden = act==='hide');
+    }, t));
+  }
+  if(gAuto && !last) gTimers.push(setTimeout(()=>gShow(gIdx + 1), sc.dur));
+  if(gAuto && last) gTimers.push(setTimeout(()=>{ gAuto = false; document.querySelector('#g-bars .now')?.classList.add('still'); document.getElementById('g-play').textContent = '↻ ' + L('من الأول','Again'); }, sc.dur));
+}
+function openGuide(){ gAuto = true; guideDlg.showModal(); gShow(0); }
+document.getElementById('g-next').addEventListener('click', ()=>{ if(gIdx===GUIDE.length - 1) guideDlg.close(); else gShow(gIdx + 1); });
+document.getElementById('g-prev').addEventListener('click', ()=>gShow(gIdx - 1));
+document.getElementById('g-play').addEventListener('click', ()=>{
+  const ended = !gAuto && gIdx===GUIDE.length - 1 && document.getElementById('g-play').textContent.startsWith('↻');
+  gAuto = ended ? true : !gAuto; gShow(ended ? 0 : gIdx);
+});
+gStage.addEventListener('click', ()=>gShow(gIdx));   // tap the screen to replay this step
+document.getElementById('guide-close').addEventListener('click', ()=>guideDlg.close());
+guideDlg.addEventListener('close', ()=>{ gTimers.forEach(clearTimeout); gTimers = []; });
 
 /* ---------- cloud sync with a shared code ----------
    One secret code links devices. From it come two separate things:
