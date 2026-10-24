@@ -23,6 +23,10 @@
     const saved = JSON.parse(localStorage.getItem('wealth-v1')) || {};
     if(saved.lang==='en'){ document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr'; }
     if(+saved.fontScale > 0) document.documentElement.style.fontSize = (+saved.fontScale * 100) + '%';
+    // the logo animation plays once each time the app is opened (not on reloads), and never for reduced motion
+    if(!sessionStorage.getItem('wealth-splashed') && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+      document.documentElement.classList.add('splashing'); sessionStorage.setItem('wealth-splashed', '1');
+    }
     // hide amounts until the PIN is entered, unless this tab was already unlocked and not left in the background too long
     const unlocked = sessionStorage.getItem('wealth-unlocked'), hidAt = +sessionStorage.getItem('wealth-hidden-at') || 0;
     if(localStorage.getItem('wealth-pin') && !(unlocked && (!hidAt || Date.now() - hidAt < 60e3))) document.documentElement.classList.add('locked');
@@ -79,8 +83,12 @@ button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(-
 button:hover{border-color:var(--accent)}
 button:disabled{opacity:.5;cursor:not-allowed}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.btn-settings{display:inline-flex;align-items:center;gap:6px;font-weight:500}
-.btn-settings svg{flex:none}
+/* header: name, then the price status, then the settings gear at the far end; on phones the status drops to its own line */
+header>div:first-child{flex:1;min-width:0}
+.btn-settings{order:3;width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center;flex:none;color:var(--fg)}
+.btn-settings:hover{color:var(--accent)}
+.status{order:2}
+@media (max-width:640px){ .status{order:4;width:100%} }
 .theme{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;justify-self:start}
 .theme button{border:0;border-radius:0;padding:6px 12px;font-size:.85rem;background:var(--surface)}
 .theme button+button{border-inline-start:1px solid var(--line)}
@@ -437,6 +445,25 @@ section.card.collapsed .tabs{display:none}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 
+/* opening animation: the ingot rises, the price line draws itself, the dot lands, then the name */
+.splash{display:none}
+:root.splashing .splash{display:grid;position:fixed;inset:0;z-index:70;place-content:center;justify-items:center;gap:18px;
+  background:radial-gradient(circle at 50% 40%,#173f31,#0a1c16 70%);animation:sp-out .4s ease-in 1.75s forwards;cursor:pointer}
+.splash svg{width:132px;height:132px;overflow:visible}
+.splash .s-box{transform-box:fill-box;transform-origin:center;animation:sp-pop .45s cubic-bezier(.2,.9,.3,1.3) both}
+.splash .s-bar{transform-box:fill-box;transform-origin:center bottom;animation:sp-rise .45s ease-out .3s both}
+.splash .s-line{stroke-dasharray:1;stroke-dashoffset:1;animation:sp-draw .6s ease-out .6s forwards}
+.splash .s-dot{transform-box:fill-box;transform-origin:center;animation:sp-dot .35s cubic-bezier(.2,.9,.3,1.6) 1.15s both}
+.splash .s-name{font:700 2.1rem/1 "Alexandria","IBM Plex Sans Arabic",Tahoma,sans-serif;color:#e0b257;letter-spacing:.02em;animation:sp-name .45s ease-out 1.05s both}
+.splash .s-name .en,:root[lang="en"] .splash .s-name .ar{display:none}
+:root[lang="en"] .splash .s-name .en{display:inline}
+@keyframes sp-pop{from{transform:scale(.6);opacity:0}}
+@keyframes sp-rise{from{transform:translateY(46px) scaleY(.4);opacity:0}}
+@keyframes sp-draw{to{stroke-dashoffset:0}}
+@keyframes sp-dot{from{transform:scale(0)}}
+@keyframes sp-name{from{transform:translateY(10px);opacity:0}}
+@keyframes sp-out{to{opacity:0;visibility:hidden}}
+
 /* app lock */
 :root.locked .wrap,:root.locked .toasts{visibility:hidden}
 .lock{position:fixed;inset:0;z-index:40;background:var(--bg);display:grid;place-content:center;justify-items:center;gap:16px;
@@ -492,10 +519,22 @@ section.card.collapsed>:not(.sec-head){display:none}
 section.card.collapsed{gap:0}
 @media (prefers-reduced-motion:reduce){.fold svg{transition:none}}
 /* privacy mode: blur personal amounts, keep market prices readable */
-[data-private] .m,[data-private] .chart svg,[data-private] .tip,[data-private] tbody input[type=number]:not(:focus),[data-private] .goal-row input:not(:focus){filter:blur(7px);user-select:none}
+[data-private] .m,[data-private] .chart svg,[data-private] .tip,[data-private] tbody input[type=number]:not(:focus),[data-private] .goal-row input:not(:focus),
+[data-private] .pend-raw div{filter:blur(12px);user-select:none}
+/* the big net-worth figure needs more to stay unreadable at its size */
+[data-private] .total .big{filter:blur(18px)}
 </style>
 </head>
 <body>
+<div class="splash" id="splash" aria-hidden="true">
+  <svg viewBox="0 0 512 512">
+    <rect class="s-box" width="512" height="512" rx="112" fill="#0f2a22"/>
+    <path class="s-bar" d="M150 360L184 288H328L362 360Z" fill="#e0b257" stroke="#e0b257" stroke-width="10" stroke-linejoin="round"/>
+    <path class="s-line" d="M146 236L222 190L280 214L366 146" pathLength="1" fill="none" stroke="#e0b257" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle class="s-dot" cx="366" cy="146" r="20" fill="#e0b257"/>
+  </svg>
+  <div class="s-name"><span class="ar">نماء</span><span class="en">Namaa</span></div>
+</div>
 <div class="wrap">
   <header>
     <div>
@@ -506,11 +545,10 @@ section.card.collapsed{gap:0}
       <span id="live" class="live"></span><span id="stamp"></span>
       <button type="button" class="sync-ind" id="sync-ind" hidden data-open-settings="sync"></button>
       <button id="refresh" type="button" data-en="Refresh">تحديث الآن</button>
-      <button id="btn-settings" type="button" class="btn-settings" aria-haspopup="dialog">
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-        <span data-en="Settings">الإعدادات</span>
-      </button>
     </div>
+    <button id="btn-settings" type="button" class="btn-settings" aria-haspopup="dialog" aria-label="الإعدادات" data-en-label="Settings" title="الإعدادات">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
   </header>
 
   <div class="tools" data-tab="home">
@@ -2172,7 +2210,7 @@ document.getElementById('btn-year-now').addEventListener('click', ()=>openReport
 const slidesEl = document.getElementById('slides');
 const tabBtns = [...document.querySelectorAll('#insight-tabs button')], slideDots = [...document.querySelectorAll('#slide-dots i')];
 let slideIdx = 0;
-try{ slideIdx = Math.min(2, Math.max(0, +localStorage.getItem('wealth-slide') || 0)); }catch(e){}
+// the cards also start on the first one (wealth over time) each visit
 const slideStep = () => slidesEl.clientWidth + parseFloat(getComputedStyle(slidesEl).columnGap || 0);
 function markSlide(i){
   slideIdx = i;
@@ -2245,7 +2283,8 @@ function showLock(mode){
     try{ sessionStorage.removeItem('wealth-unlocked'); }catch(e){}
     document.documentElement.classList.add('locked');
     // ask for the fingerprint or face right away; if the browser wants a tap first, the button stays there
-    if(getBio()) setTimeout(tryBio, 250);
+    // wait for the opening animation to finish so the fingerprint prompt doesn't cover it
+    if(getBio()) setTimeout(tryBio, document.documentElement.classList.contains('splashing') ? 2300 : 250);
   }
 }
 function hideLock(){ lockEl.hidden = true; lockMode = null; document.documentElement.classList.remove('locked'); }
@@ -2399,13 +2438,12 @@ window.addEventListener('touchend', async ()=>{
 /* ---------- phone navigation: one area at a time ---------- */
 const TABS = ['home','assets','money','reports','zakat','alerts'];
 let tab = 'home';
-try{ tab = localStorage.getItem('wealth-tab') || 'home'; }catch(e){}
+// every visit starts on Home; the last tab isn't remembered
 function setTab(t, scroll=true){
   if(!TABS.includes(t)) t = 'home';
   tab = t;
   document.querySelectorAll('.wrap > [data-tab]').forEach(el=>el.classList.toggle('tab-off', el.dataset.tab!==t));
   document.querySelectorAll('#bnav button').forEach(b=>b.setAttribute('aria-current', b.dataset.goto===t ? 'page' : 'false'));
-  try{ localStorage.setItem('wealth-tab', t); }catch(e){}
   if(scroll) window.scrollTo({top:0});
   if(t==='reports'){ drawChart(); goSlide(slideIdx, false); }   // the chart measures its width, which is 0 while hidden
 }
@@ -3451,6 +3489,12 @@ document.getElementById('btn-install-close').addEventListener('click', ()=>{
 window.addEventListener('appinstalled', ()=>{ installBox.hidden = true; toast(L('اتثبّت نماء على جهازك.', 'Namaa is installed on your device.')); });
 
 applyTheme(document.documentElement.dataset.theme || 'system');
+// take the opening animation away once it has played (a tap skips it)
+if(document.documentElement.classList.contains('splashing')){
+  const endSplash = () => document.documentElement.classList.remove('splashing');
+  setTimeout(endSplash, 2200);
+  document.getElementById('splash').addEventListener('click', endSplash);
+}
 if(getPin() && !sessionUnlocked()) showLock('unlock');
 syncStatic();
 applyLang();
