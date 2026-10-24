@@ -244,6 +244,17 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .bud.warn .bar2 span{background:var(--warn)}.bud.over .bar2 span{background:var(--down)}
 .bud.over .top span:last-child{color:var(--down);font-weight:600}
 .tx-day{font-size:.78rem;color:var(--muted);margin:6px 0 2px}
+.tx-fold{border:1px solid var(--line);border-radius:12px;background:var(--bg);margin-top:8px}
+.tx-fold>summary{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;padding:10px 14px;color:var(--fg);font-size:.88rem}
+.tx-fold>summary::-webkit-details-marker{display:none}
+.tx-fold>summary::before{content:"";width:7px;height:7px;border:solid var(--muted);border-width:0 2px 2px 0;transform:rotate(135deg);transition:transform .2s;flex:none}
+:root[dir="ltr"] .tx-fold>summary::before{transform:rotate(-45deg)}
+.tx-fold[open]>summary::before,:root[dir="ltr"] .tx-fold[open]>summary::before{transform:rotate(45deg)}
+@media (prefers-reduced-motion:reduce){.tx-fold>summary::before{transition:none}}
+.tx-fold .dl{font-weight:600}
+.tx-fold .dn{color:var(--muted);font-size:.8rem}
+.tx-fold .ds{margin-inline-start:auto;font-weight:600;font-size:.85rem;white-space:nowrap}
+.tx-in{padding:0 14px 6px}
 .tx{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .tx:last-child{border-bottom:0}
 .tx i{width:10px;height:10px;border-radius:3px}
@@ -263,6 +274,15 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .chips button{display:flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:.85rem;background:var(--bg)}
 .chips button i{width:9px;height:9px;border-radius:50%}
 .chips button[aria-pressed=true]{border-color:var(--fg);background:var(--fg);color:var(--bg)}
+.bud-sum{display:grid;gap:6px;font-size:.88rem}
+.bud-sum:empty{display:none}
+.bud-sum .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.bud-sum .bar2{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bud-sum .bar2 span{display:block;height:100%;background:var(--accent);border-radius:4px}
+.bud-sum.full b{color:var(--up)}
+.bud-sum.over b,.bud-sum .warnline{color:var(--down);font-weight:600}
+.bud-sum.over .bar2 span{background:var(--down)}
+.bud.total .top{font-weight:600}
 .bud-edit{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:8px 12px;align-items:center;font-size:.9rem}
 .bud-edit span{display:flex;align-items:center;gap:8px;min-width:0}
 .bud-edit i{width:9px;height:9px;border-radius:50%;flex:none}
@@ -908,7 +928,7 @@ const DEFAULT_STATE = {
   notifyOn:false, nPrice:true, nZakat:true, nBackup:true, zNotified:'', backupNotifiedAt:0,
   goalDate:'', nMonthly:true, monthlySent:'', reports:{}, yearReports:{},
   tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'',
-  pending:[], merchantCats:{}, autoKnown:true,
+  pending:[], merchantCats:{}, autoKnown:true, budgetTotal:'',
   userName:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
 };
 
@@ -2479,6 +2499,7 @@ const acctById = id => state.cash.find(r=>r.id===id);
 const acctName = r => r ? `${lbl(bankById(r.b||'home'))} · ${lbl(CURRENCIES.find(c=>c.id===r.c) || CURRENCIES[0])}` : L('من غير حساب','No account');
 const monthOf = d => d.slice(0,7);
 let moneyMonth = monthKey(Date.now());
+const openDays = {};   // days the viewer opened or closed by hand during this visit
 
 // move the account balance: spending takes from it, income adds to it; sign -1 undoes a transaction
 function applyTx(tx, sign){
@@ -2492,8 +2513,9 @@ function addTx(t){
   const tx = {id: newId('t'), type:t.type, amount: num(t.amount), cur, egp: Math.round(num(t.amount) * (isFinite(r) ? r : 1) * 100) / 100,
               cat:t.cat, note:(t.note||'').trim(), date:t.date || today(), acct: row ? row.id : '', recId: t.recId || ''};
   const spentBefore = tx.type==='exp' ? catSpent(tx.cat, monthOf(tx.date)) : 0;
+  const totalBefore = tx.type==='exp' ? monthSpent(monthOf(tx.date)) : 0;
   state.tx.push(tx); applyTx(tx, 1);
-  if(tx.type==='exp') budgetCheck(tx.cat, monthOf(tx.date), spentBefore);
+  if(tx.type==='exp'){ budgetCheck(tx.cat, monthOf(tx.date), spentBefore); totalBudgetCheck(monthOf(tx.date), totalBefore); }
   if(row && num(row.a) < 0) toast(L(`رصيد ${acctName(row)} بقى بالسالب.`, `${acctName(row)} balance is now negative.`));
   return tx;
 }
@@ -2506,6 +2528,18 @@ function delTx(id){
 const monthTx = mk => state.tx.filter(t=>monthOf(t.date)===mk);
 const catSpent = (cat, mk) => monthTx(mk).filter(t=>t.type==='exp' && t.cat===cat).reduce((a,t)=>a+txEgp(t),0);
 
+const monthSpent = mk => monthTx(mk).filter(t=>t.type==='exp').reduce((a,t)=>a+txEgp(t),0);
+// the same 80% / 100% warnings for the month's total budget
+function totalBudgetCheck(mk, before){
+  const b = num(state.budgetTotal); if(!(b > 0) || mk !== monthKey(Date.now())) return;
+  const after = monthSpent(mk), hit = [1, .8].find(th => before < b*th && after >= b*th);
+  if(!hit) return;
+  const msg = hit===1
+    ? (after > b ? L(`عدّيت الميزانية الكلية للشهر: صرفت ${egp(after)} من ${egp(b)}.`, `You've gone over this month's total budget: ${egp(after)} of ${egp(b)}.`)
+                 : L(`خلّصت الميزانية الكلية للشهر (${egp(b)}).`, `You've used all of this month's total budget (${egp(b)}).`))
+    : L(`صرفت ${fmt(after/b*100,0)}${PCT()} من الميزانية الكلية للشهر (${egp(after)} من ${egp(b)}).`, `You've used ${fmt(after/b*100,0)}${PCT()} of this month's total budget (${egp(after)} of ${egp(b)}).`);
+  state.nBudget ? notify(msg, 'budget-total') : toast('🔔 ' + msg);
+}
 // tell once at 80% and once at 100% of a category's monthly budget
 function budgetCheck(cat, mk, before){
   const b = num(state.budgets[cat]); if(!(b > 0) || mk !== monthKey(Date.now())) return;
@@ -2513,7 +2547,8 @@ function budgetCheck(cat, mk, before){
   const hit = [1, .8].find(th => before < b*th && after >= b*th);
   if(!hit) return;
   const msg = hit===1
-    ? L(`عدّيت ميزانية ${name} الشهر دا: صرفت ${egp(after)} من ${egp(b)}.`, `You've gone over your ${name} budget: ${egp(after)} of ${egp(b)}.`)
+    ? (after > b ? L(`عدّيت ميزانية ${name} الشهر دا: صرفت ${egp(after)} من ${egp(b)}.`, `You've gone over your ${name} budget: ${egp(after)} of ${egp(b)}.`)
+                 : L(`خلّصت ميزانية ${name} الشهر دا (${egp(b)}).`, `You've used all of your ${name} budget (${egp(b)}).`))
     : L(`قرّبت تخلّص ميزانية ${name}: صرفت ${egp(after)} من ${egp(b)} (${fmt(after/b*100,0)}${PCT()}).`, `You're close to your ${name} budget: ${egp(after)} of ${egp(b)} (${fmt(after/b*100,0)}${PCT()}).`);
   state.nBudget ? notify(msg, 'budget-' + cat) : toast('🔔 ' + msg);
 }
@@ -2570,16 +2605,32 @@ function renderMoney(){
                                            : L(`صرفت أكتر من دخلك الشهر دا بـ ${egp(-saved)}.`, `You spent ${egp(-saved)} more than you earned this month.`));
   // budgets
   const budIds = Object.keys(state.budgets).filter(k=>num(state.budgets[k]) > 0);
-  const buds = budIds.map(id=>{ const b = num(state.budgets[id]), s = byCat[id]||0, p = s/b;
+  const bTotal = num(state.budgetTotal), bSplit = budIds.reduce((a,k)=>a+num(state.budgets[k]),0);
+  const totalBar = bTotal > 0 ? (()=>{ const p = exp/bTotal;
+    return `<div class="bud total ${p>=1?'over':p>=.8?'warn':''}"><div class="top"><span>${L('الميزانية الكلية','Total budget')}</span><span class="m">${egp(exp)} / ${egp(bTotal)}</span></div>
+      <div class="bar2"><span style="width:${Math.min(100,p*100)}%"></span></div>
+      <span class="note">${p>=1 ? L(`عدّيت الميزانية بـ ${egp(exp-bTotal)}`, `${egp(exp-bTotal)} over budget`) : L(`فاضل ${egp(bTotal-exp)} للشهر`, `${egp(bTotal-exp)} left this month`)}${
+        bSplit > bTotal ? ' · ' + L(`التوزيع على الفئات أكتر من الكلية بـ ${egp(bSplit-bTotal)}`, `categories add up to ${egp(bSplit-bTotal)} more than the total`)
+        : bSplit < bTotal && bSplit > 0 ? ' · ' + L(`${egp(bTotal-bSplit)} مش موزّعة على فئات`, `${egp(bTotal-bSplit)} not split into categories`) : ''}</span></div>`; })() : '';
+  const buds = totalBar + budIds.map(id=>{ const b = num(state.budgets[id]), s = byCat[id]||0, p = s/b;
     return `<div class="bud ${p>=1?'over':p>=.8?'warn':''}"><div class="top"><span>${catName(catById(id))}</span><span class="m">${egp(s)} / ${egp(b)}</span></div>
       <div class="bar2"><span style="width:${Math.min(100,p*100)}%"></span></div></div>`; }).join('');
   // transactions by day, newest first
   const days = {}; [...txs].sort((a,b)=>b.date.localeCompare(a.date)).forEach(t=>{ (days[t.date] = days[t.date] || []).push(t); });
-  const list = Object.entries(days).map(([d, ts])=>`<div class="tx-day">${new Date(d+'T12:00').toLocaleDateString(LOC(),{weekday:'long', day:'numeric', month:'long'})}</div>`
+  // one fold per day: its total in the summary, the transactions inside; only today starts open
+  const tdy = today();
+  const list = Object.entries(days).map(([d, ts])=>{
+    const dOut = ts.filter(t=>t.type==='exp').reduce((a,t)=>a+txEgp(t),0), dIn = ts.filter(t=>t.type==='inc').reduce((a,t)=>a+txEgp(t),0);
+    const open = d in openDays ? openDays[d] : d===tdy;
+    return `<details class="tx-fold" data-day="${d}"${open?' open':''}><summary>
+      <span class="dl">${d===tdy ? L('النهارده','Today') + ' · ' : ''}${new Date(d+'T12:00').toLocaleDateString(LOC(),{weekday:'long', day:'numeric', month:'long'})}</span>
+      <span class="dn">${L(`${fmt(ts.length,0)} عملية`, `${fmt(ts.length,0)} item${ts.length>1?'s':''}`)}</span>
+      <span class="ds m">${dOut ? `<bdi class="down-t">−${egp(dOut)}</bdi>` : ''}${dIn && dOut ? ' · ' : ''}${dIn ? `<bdi class="up-t">+${egp(dIn)}</bdi>` : ''}</span></summary>
+      <div class="tx-in">`
     + ts.map(t=>{ const c = catById(t.cat), row = acctById(t.acct);
       return `<div class="tx"><i style="background:${c.color}"></i><div class="nm"><b>${esc(t.note || catName(c))}</b><small>${t.note ? catName(c) + ' · ' : ''}${row ? acctName(row) : L('من غير خصم','Not linked')}${t.recId ? ' · ' + L('متكرر','recurring') : ''}</small></div>
         <span class="amt m ${t.type==='exp'?'down-t':'up-t'}"><bdi>${t.type==='exp'?'−':'+'}${fmt(t.amount)} ${t.cur==='EGP' ? L('ج.م','EGP') : t.cur}</bdi></span>
-        <button type="button" class="x" data-txdel="${t.id}" aria-label="${L('حذف','Delete')}">×</button></div>`; }).join('')).join('');
+        <button type="button" class="x" data-txdel="${t.id}" aria-label="${L('حذف','Delete')}">×</button></div>`; }).join('') + `</div></details>`; }).join('');
   const recs = state.recurring.map(r=>{ const c = catById(r.cat);
     return `<div class="rec-row"><span>${esc(r.note || catName(c))} · ${L(`يوم ${fmt(r.day,0)} كل شهر`, `day ${r.day} monthly`)}</span>
       <span class="m ${r.type==='exp'?'down-t':'up-t'}"><bdi>${r.type==='exp'?'−':'+'}${fmt(r.amount)}</bdi> <button type="button" class="x" data-recdel="${r.id}" aria-label="${L('إيقاف','Stop')}">×</button></span></div>`; }).join('');
@@ -2594,12 +2645,13 @@ function renderMoney(){
     <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button></div>
     ${parts.length ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
     ${notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : ''}
-    <div class="m-sub"><h3>${L('الميزانيات','Budgets')}</h3><button type="button" data-budedit>${budIds.length ? L('تعديل الميزانيات','Edit budgets') : L('حدّد ميزانية','Set budgets')}</button></div>
-    ${budIds.length ? `<div class="budgets">${buds}</div>` : `<div class="note">${L('حدّد مبلغ لكل فئة في الشهر، والتطبيق ينبهك لما تقرّب منه.', "Set a monthly amount per category and you'll be warned as you get close.")}</div>`}
+    <div class="m-sub"><h3>${L('الميزانيات','Budgets')}</h3><button type="button" data-budedit>${budIds.length || bTotal ? L('تعديل الميزانيات','Edit budgets') : L('حدّد ميزانية','Set budgets')}</button></div>
+    ${budIds.length || bTotal ? `<div class="budgets">${buds}</div>` : `<div class="note">${L('حدّد مبلغ لكل فئة في الشهر، والتطبيق ينبهك لما تقرّب منه.', "Set a monthly amount per category and you'll be warned as you get close.")}</div>`}
     ${list ? `<div><div class="m-sub"><h3>${L('العمليات','Transactions')}</h3></div>${list}</div>` : ''}
     <div><div class="m-sub"><h3>${L('المتكرر كل شهر','Monthly repeats')}</h3></div>
       ${recs || `<div class="note">${L('الإيجار والمرتب والأقساط: سجّلهم مرة واحدة وعلّم على "يتكرر كل شهر"، وهيتسجّلوا لوحدهم في يومهم.', 'Rent, salary, instalments: add them once with "repeat every month" and they record themselves on their day.')}</div>`}</div>`;
 }
+document.getElementById('money-body').addEventListener('toggle', e=>{ const d = e.target.dataset?.day; if(d) openDays[d] = e.target.open; }, true);
 document.getElementById('money-nav').addEventListener('click', e=>{
   const d = +e.target.closest('[data-mnav]')?.dataset.mnav; if(!d) return;
   moneyMonth = monthKey(new Date(+moneyMonth.slice(0,4), +moneyMonth.slice(5,7)-1+d, 15).getTime()); renderMoney(); buzz(6);
@@ -2657,11 +2709,37 @@ function txSave(){
 function openBudgets(){
   sheetSec = 'bud';
   document.getElementById('sheet-title').textContent = L('الميزانية الشهرية','Monthly budgets');
-  sheetBody.innerHTML = `<div class="note">${L('سيب الخانة فاضية للفئات اللي مش عايز لها ميزانية.', 'Leave a category empty for no budget.')}</div>
+  sheetBody.innerHTML = `
+    ${fld(L('الميزانية الكلية للشهر','Total monthly budget'), `<input id="bud-total" class="amt-in" type="number" min="0" step="any" inputmode="decimal" value="${esc(state.budgetTotal ?? '')}" placeholder="0">`)}
+    <div class="bud-sum" id="bud-sum"></div>
+    <div class="note">${L('وزّع الميزانية على الفئات. سيب الخانة فاضية للفئات اللي مش عايز لها ميزانية.', 'Split it across categories. Leave a category empty for no budget.')}</div>
     <div class="bud-edit">${cats('exp').map(c=>`<span><i style="background:${c.color}"></i>${esc(catName(c))}</span><input type="number" min="0" step="any" inputmode="decimal" data-bud="${c.id}" value="${esc(state.budgets[c.id] ?? '')}" placeholder="—">`).join('')}</div>
     <button type="button" class="go-btn" data-budsave>${L('حفظ','Save')}</button>`;
+  budOver = false; renderBudSum();
   if(!sheet.open) sheet.showModal();
 }
+// live tally while splitting: how much is allocated, what's left, and a warning the moment it goes over the total
+let budOver = false;
+function renderBudSum(){
+  const box = document.getElementById('bud-sum'); if(!box) return;
+  const total = num(document.getElementById('bud-total').value);
+  const split = [...sheetBody.querySelectorAll('[data-bud]')].reduce((a,i)=>a+num(i.value),0);
+  const save = sheetBody.querySelector('[data-budsave]');
+  if(!(total > 0)){
+    box.className = 'bud-sum'; box.innerHTML = split ? L(`موزّع ${egp(split)} من غير ميزانية كلية.`, `${egp(split)} split, no total set.`) : '';
+    save.textContent = L('حفظ','Save'); budOver = false; return;
+  }
+  const left = total - split, over = left < 0, p = Math.min(100, split/total*100);
+  box.className = 'bud-sum' + (over ? ' over' : left === 0 ? ' full' : '');
+  box.innerHTML = `<div class="top"><span>${L(`موزّع ${egp(split)} من ${egp(total)}`, `${egp(split)} of ${egp(total)} split`)}</span>
+      <b>${over ? L(`زيادة ${egp(-left)}`, `${egp(-left)} over`) : left === 0 ? L('اتوزعت كلها ✓','All split ✓') : L(`فاضل ${egp(left)}`, `${egp(left)} left`)}</b></div>
+    <div class="bar2"><span style="width:${p}%"></span></div>
+    ${over ? `<div class="warnline">⚠ ${L('التوزيع عدّى الميزانية الكلية. قلّل من الفئات أو زوّد الميزانية الكلية.', 'Your split is over the total. Lower some categories or raise the total.')}</div>` : ''}`;
+  save.textContent = over ? L('حفظ برضه','Save anyway') : L('حفظ','Save');
+  if(over && !budOver){ buzz([30,40,30]); toast(L(`عدّيت الميزانية الكلية بـ ${egp(-left)} وانت بتوزّع.`, `You've split ${egp(-left)} more than your total.`)); }
+  budOver = over;
+}
+sheetBody.addEventListener('input', e=>{ if(sheetSec==='bud' && (e.target.dataset.bud!==undefined || e.target.id==='bud-total')) renderBudSum(); });
 sheetBody.addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.txtype){ txDraft.type = b.dataset.txtype; txDraft.cat = cats(txDraft.type)[0].id; renderTxSheet(); }
@@ -2678,6 +2756,7 @@ sheetBody.addEventListener('click', e=>{
   else if(b.dataset.txsave!==undefined) txSave();
   else if(b.dataset.budsave!==undefined){
     sheetBody.querySelectorAll('[data-bud]').forEach(i=>{ const v = num(i.value); if(v > 0) state.budgets[i.dataset.bud] = v; else delete state.budgets[i.dataset.bud]; });
+    const tot = num(document.getElementById('bud-total').value); state.budgetTotal = tot > 0 ? tot : '';
     save(); render(); sheet.close(); buzz(); toast(L('اتحفظت الميزانيات.', 'Budgets saved.'));
   }
 });
