@@ -632,7 +632,8 @@ section.card.collapsed .tabs{display:none}
   @page{size:A4;@bottom-center{content:counter(page) " / " counter(pages);font:9pt 'IBM Plex Sans Arabic',sans-serif;color:#8a8f8c}}
 }
 #pdf-host{display:none}
-
+.zk-hl{border-radius:6px;padding:2px 6px;margin-inline-start:-6px;animation:zk-hl 5s ease forwards}
+@keyframes zk-hl{0%,70%{background:color-mix(in srgb,var(--accent) 35%,transparent);box-shadow:0 0 0 2px var(--accent)}100%{background:transparent;box-shadow:0 0 0 2px transparent}}
 /* opening animation: the ingot rises, the price line draws itself, the dot lands, then the name */
 .splash{display:none}
 :root.splashing .splash{display:grid;position:fixed;inset:0;z-index:70;place-content:center;justify-items:center;gap:18px;
@@ -1810,6 +1811,7 @@ function renderCashBanks(){
 }
 
 const STOCK_ZAKAT = 0.02577;
+let zStocksHlAt = 0;   // when "exclude stocks" was last ticked
 function zakatBase(t){
   return sectionTotal('gold', r => !(state.zExcludeWorn && r.worn)) + t.silver + t.cash
     + (state.zExcludeStocks ? 0 : t.stocks) - (state.zDeductDebts ? t.debts : 0);
@@ -1830,18 +1832,18 @@ function renderZakat(t){
     cells.push([L('موعد الحول','Zakat year ends'), `${dateFmt(end)} · ${hawl}`, false]);
   }
   // stocks taken out of the hawl: their zakat follows the companies' financial year, which ends on 31 December,
-  // at 2.577% (2.5% scaled from the lunar to the solar year) of the value held on that day
+  // at 2.577% (2.5% scaled from the lunar to the solar year). The amount itself depends on each company's
+  // statements, so the app explains the rule and sends the person to Borsa Halal rather than estimating it.
   const yEnd = new Date(new Date().getFullYear(), 11, 31), yLeft = Math.ceil((yEnd - Date.now())/DAY);
-  const stockZ = t.stocks * STOCK_ZAKAT;
-  if(state.zExcludeStocks && t.stocks > 0)
-    cells.push([L(`زكاة الأسهم (${fmt(STOCK_ZAKAT*100,3)}${PCT()} في ${fmt(31,0)} ديسمبر)`, `Stocks zakat (${fmt(STOCK_ZAKAT*100,3)}${PCT()} on 31 Dec)`), egp(stockZ), true]);
+  // just ticked: the heading glows for 5 seconds (kept in step across re-renders by a negative delay)
+  const hlAgo = Date.now() - zStocksHlAt, hl = hlAgo < 5000 ? ` class="zk-hl" style="animation-delay:-${hlAgo}ms"` : '';
   document.getElementById('zakat-stocks').innerHTML = state.zExcludeStocks
-    ? `<div class="note"><b>📈 ${L('زكاة الأسهم لوحدها','Stocks have their own zakat')}</b><br>
+    ? `<div class="note"><b${hl}>📈 ${L('زكاة الأسهم لوحدها','Stocks have their own zakat')}</b><br>
         ${L(`الأسهم مستبعدة من وعاء الزكاة وحولها، لأن زكاتها بتتبع حول الشركات، وده بيخلص في <b>آخر السنة الميلادية (${fmt(31,0)} ديسمبر)</b>. النسبة <b>${fmt(STOCK_ZAKAT*100,3)}${PCT()}</b> بدل ${fmt(2.5,1)}${PCT()} لأن السنة الميلادية أطول من الهجرية، وبتتحسب على قيمة الأسهم اللي في إيدك آخر يوم في السنة.`,
             `Stocks are left out of the zakat base and its year, because their zakat follows the companies' financial year, which ends on <b>31 December</b>. The rate is <b>${fmt(STOCK_ZAKAT*100,3)}${PCT()}</b> instead of ${fmt(2.5,1)}${PCT()} because the solar year is longer than the lunar one, and it applies to the value of the shares you hold on the last day of the year.`)}
-        ${t.stocks > 0 ? `<br>${L(`لو أسهمك فضلت بقيمتها دلوقتي (<b class="m">${egp(t.stocks)}</b>)، زكاتها هتبقى حوالي <b class="m">${egp(stockZ)}</b> يوم ${dateFmt(yEnd)}`, `If your shares keep today's value (<b class="m">${egp(t.stocks)}</b>), their zakat will be about <b class="m">${egp(stockZ)}</b> on ${dateFmt(yEnd)}`)}${yLeft > 0 ? L(` · باقي ${fmt(yLeft,0)} يوم`, ` · ${yLeft} days left`) : ''}.` : ''}
-        <br>🔗 ${L(`لحساب زكاة كل شركة بدقة حسب قوائمها المالية، ارجع لموقع <a href="https://www.borsahalal.com/" target="_blank" rel="noopener">بورصة حلال</a>.`,
-                  `For each company's exact zakat from its financial statements, see <a href="https://www.borsahalal.com/" target="_blank" rel="noopener">Borsa Halal</a>.`)}</div>`
+        ${yLeft > 0 ? `<br>${L(`حول الشركات بيخلص بعد ${fmt(yLeft,0)} يوم (${dateFmt(yEnd)}).`, `The companies' year ends in ${yLeft} days (${dateFmt(yEnd)}).`)}` : ''}
+        <br>🔗 ${L(`زكاة كل سهم بتختلف حسب القوائم المالية للشركة، فاحسب زكاة أسهمك من موقع <a href="https://www.borsahalal.com/" target="_blank" rel="noopener">بورصة حلال</a>.`,
+                  `Each share's zakat depends on the company's financial statements, so work out your stocks zakat on <a href="https://www.borsahalal.com/" target="_blank" rel="noopener">Borsa Halal</a>.`)}</div>`
     : '';
   document.getElementById('zakat-grid').innerHTML = cells.map(([l,v,priv])=>`<div><div class="l">${l}</div><div class="v ${priv?'m':''}">${v}</div></div>`).join('');
   let msg;
@@ -2153,6 +2155,11 @@ document.addEventListener('input', e=>{
     if(key==='lang') applyLang();
     if(key==='fontScale') document.documentElement.style.fontSize = (num(el.value)||1)*100 + '%';
     if(key==='zMode'){ state.zBrokenOn = ''; trackNisab(); }
+    if(key==='zExcludeStocks' && el.checked){
+      zStocksHlAt = Date.now();
+      setTimeout(()=>document.getElementById('zakat-stocks').scrollIntoView({block:'nearest', behavior:'smooth'}), 50);
+      setTimeout(()=>{ if(Date.now() - zStocksHlAt >= 5000) renderTotals(); }, 5100);   // drop the class once the glow is done
+    }
     render(); return;
   }
   const {sec,i,f} = el.dataset; if(!sec) return;
@@ -2366,19 +2373,19 @@ function checkReminders(){
   // or on the first visit in January if the app wasn't opened that day
   const d = new Date(), yr = d.getFullYear(), stocks = totals().stocks;
   if(state.zExcludeStocks && stocks > 0){
-    const z = egp(stocks * STOCK_ZAKAT);
+    // the amount isn't stated: it depends on each company's statements, worked out on Borsa Halal
     if(d.getMonth()===11 && d.getDate() >= 24 && d.getDate() < 31 && state.stockZSoon !== yr){
       state.stockZSoon = yr; save();
       const left = 31 - d.getDate();
-      notify(L(`زكاة الأسهم بعد ${fmt(left,0)} ${left===1?'يوم':'أيام'} (${fmt(31,0)} ديسمبر): حوالي ${z} لو أسهمك فضلت بقيمتها دلوقتي.`,
-               `Stocks zakat is due in ${left} day(s), on 31 December: about ${z} at today's value.`), 'zakat-stocks-soon', !!state.nZakat);
+      notify(L(`زكاة الأسهم بعد ${fmt(left,0)} ${left===1?'يوم':'أيام'} (${fmt(31,0)} ديسمبر). احسبها من موقع بورصة حلال.`,
+               `Stocks zakat is due in ${left} day(s), on 31 December. Work it out on Borsa Halal.`), 'zakat-stocks-soon', !!state.nZakat);
     }
     const dueYear = d.getMonth()===11 && d.getDate()===31 ? yr : d.getMonth()===0 ? yr - 1 : 0;
     if(dueYear && state.stockZNotified !== dueYear){
       state.stockZNotified = dueYear; save();
       const when = dueYear===yr ? L('النهارده آخر السنة', 'Today is the last day of the year') : L(`السنة خلصت (${fmt(31,0)} ديسمبر ${dueYear})`, `The year ended (31 December ${dueYear})`);
-      notify(L(`${when}: زكاة أسهمك ${fmt(STOCK_ZAKAT*100,3)}${PCT()} = حوالي ${z} على قيمتها (${egp(stocks)}).`,
-               `${when}: your stocks zakat is ${fmt(STOCK_ZAKAT*100,3)}${PCT()} = about ${z} on their value (${egp(stocks)}).`), 'zakat-stocks', !!state.nZakat);
+      notify(L(`${when}: ميعاد زكاة أسهمك. احسبها من موقع بورصة حلال على الأسهم اللي كانت في إيدك يوم ${fmt(31,0)} ديسمبر.`,
+               `${when}: your stocks zakat is due. Work it out on Borsa Halal for the shares you held on 31 December.`), 'zakat-stocks', !!state.nZakat);
     }
   }
   if(state.nBackup && totals().assets > 0 && now - (state.lastBackup||0) > 30*DAY && now - (state.backupNotifiedAt||0) > 7*DAY){
