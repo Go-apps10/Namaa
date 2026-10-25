@@ -789,7 +789,7 @@ section.card.collapsed{gap:0}
 
   <div class="tools" data-tab="home">
     <button type="button" id="btn-private" class="toggle" aria-pressed="false"></button>
-    <button type="button" id="btn-ask" class="ask-btn" hidden data-en="💬 Ask Namaa">💬 اسأل نماء</button>
+    <button type="button" id="btn-ask" class="ask-btn" hidden data-en="💬 Ask Namaa AI">💬 اسأل نماء AI</button>
     <span class="fold-all desk"></span>
   </div>
   <!-- phones: the same two icons at the top of each tab except Home -->
@@ -1111,7 +1111,7 @@ section.card.collapsed{gap:0}
 
 <!-- quick add: floating button and a bottom sheet with a short form per holding type -->
 <!-- phones: the AI chat sits above the add button -->
-<button type="button" class="fab-ai" id="fab-ai" hidden aria-label="اسأل نماء" data-en-label="Ask Namaa">
+<button type="button" class="fab-ai" id="fab-ai" hidden aria-label="اسأل نماء AI" data-en-label="Ask Namaa AI">
   <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 12.5a7.5 7.5 0 0 1-11.2 6.5L4 20l1.1-4.3A7.5 7.5 0 1 1 20 12.5z"/><path d="M12.5 8.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z" style="fill:currentColor;stroke-width:1"/></svg>
 </button>
 <button type="button" class="fab" id="fab" aria-label="إضافة" data-en-label="Add">
@@ -3307,7 +3307,7 @@ function renderMoney(){
         ${rate2!==null ? `<span class="s">${L('نسبة التوفير','Savings rate')} ${fmt(rate2,0)}${PCT()}</span>` : ''}</div>
     </div>
     ${txs.length ? '' : `<div class="rep-empty">${L('مفيش عمليات في الشهر دا. سجّل مصروف أو دخل من زرار الإضافة (+) أو من هنا.', 'No transactions this month. Add spending or income with the add (+) button or here.')}</div>`}
-    <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button>${AI_URL ? `<button type="button" class="ask-btn" data-ask>💬 ${L('اسأل نماء','Ask Namaa')}</button>` : ''}</div>
+    <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button>${AI_URL ? `<button type="button" class="ask-btn" data-ask>💬 ${L('اسأل نماء AI','Ask Namaa AI')}</button>` : ''}</div>
     ${parts.length ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}${vsPrev(p.v, prevBy[p.id])}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
     ${notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : ''}
     <div class="m-sub"><h3>${L('الميزانيات','Budgets')}</h3><button type="button" data-budedit>${budIds.length || bTotal ? L('تعديل الميزانيات','Edit budgets') : L('حدّد ميزانية','Set budgets')}</button></div>
@@ -3332,7 +3332,7 @@ document.getElementById('money-body').addEventListener('input', e=>{
   refreshTxList();
 });
 document.getElementById('money-body').addEventListener('change', e=>{ if(e.target.id==='tx-cf'){ txF.cat = e.target.value; refreshTxList(); } });
-/* ---------- AI: "Ask Namaa" and receipt photos, through the app's own Cloudflare Worker (cloudflare-worker.js) ----------
+/* ---------- AI: "Ask Namaa AI" and receipt photos, through the app's own Cloudflare Worker (cloudflare-worker.js) ----------
    Off until the person turns it on. Questions send a summary of figures (totals by category, assets, goals) — never shop
    names or individual transactions; receipts send the photo. Each user has a daily allowance, kept by the worker. */
 const AI_URL = 'https://namaa-ai.mohamedmmourad862.workers.dev';   // the Worker's address — empty hides the feature
@@ -3362,8 +3362,22 @@ function aiContext(){
       spending: Math.round(list.filter(x=>x.type==='exp').reduce((a,x)=>a+txEgp(x),0)), spendingByCategory: byCat});
   }
   const r0 = n => isFinite(n) ? Math.round(n) : null;
+  // ready-made answers for "today / yesterday / this week", so the model reads figures instead of adding them up
+  const span = (from, to) => {
+    const list = state.tx.filter(x=>x.date >= from && x.date <= to), byCat = {};
+    list.filter(x=>x.type==='exp').forEach(x=>{ const n = catName(catById(x.cat)); byCat[n] = Math.round((byCat[n]||0) + txEgp(x)); });
+    return {from, to, spent: Math.round(list.filter(x=>x.type==='exp').reduce((a,x)=>a+txEgp(x),0)),
+      income: Math.round(list.filter(x=>x.type==='inc').reduce((a,x)=>a+txEgp(x),0)), transactions: list.length, spentByCategory: byCat};
+  };
+  const d0 = today(), ago = n => dayKey(Date.now() - n*DAY);
+  const daily = {}; monthTx(mk0).filter(x=>x.type==='exp').forEach(x=>{ daily[x.date] = Math.round((daily[x.date]||0) + txEgp(x)); });
   return {
-    today: today(), currency: 'EGP',
+    today: d0, weekday: new Date().toLocaleDateString('en-US', {weekday:'long'}), currency: 'EGP',
+    spendingToday: span(d0, d0), spendingYesterday: span(ago(1), ago(1)), spendingLast7Days: span(ago(6), d0), spendingThisMonth: span(mk0 + '-01', d0),
+    dailySpendingThisMonth: daily,
+    // recent transactions by category and amount only — no shop names or notes leave the device
+    recentTransactions: [...state.tx].sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 40)
+      .map(x=>({date: x.date, type: x.type==='exp' ? 'expense' : 'income', category: catName(catById(x.cat)), amountEgp: Math.round(txEgp(x)*100)/100})),
     netWorth: r0(t.net), assets: {gold: r0(t.gold), silver: r0(t.silver), cash: r0(t.cash), egyptianStocks: r0(t.stocks), other: r0(t.other)}, debts: r0(t.debts),
     goldGrams: state.gold.reduce((a,g)=>({...a, [g.k]: (a[g.k]||0) + num(g.w)}), {}),
     prices: {gold21PerGram: r0(goldPrice('21')), gold24PerGram: r0(goldPrice('24')), usdInEgp: usdEgp() ? +usdEgp().toFixed(2) : null},
@@ -3380,8 +3394,8 @@ function renderAi(){
   pill.className = 'pill ' + (aiReady() ? 'ok' : 'idle');
   pill.textContent = aiReady() ? L('شغال','On') : L('مقفول','Off');
   if(!AI_URL){ box.innerHTML = `<div class="note">${L('الميزة دي لسه بتتجهّز.','This feature is being set up.')}</div>`; return; }
-  box.innerHTML = `<div class="note">${L('💬 <b>اسأل نماء</b> عن فلوسك بالكلام، و🧾 <b>صوّر فاتورة</b> وهي تتسجّل لوحدها. مجاني، بحد يومي: 20 سؤال و20 فاتورة.',
-      '💬 <b>Ask Namaa</b> about your money in plain words, and 🧾 <b>snap a receipt</b> to record it. Free, with a daily allowance: 20 questions and 20 receipts.')}</div>
+  box.innerHTML = `<div class="note">${L('💬 <b>اسأل نماء AI</b> عن فلوسك بالكلام، و🧾 <b>صوّر فاتورة</b> وهي تتسجّل لوحدها. مجاني، بحد يومي: 20 سؤال و20 فاتورة.',
+      '💬 <b>Ask Namaa AI</b> about your money in plain words, and 🧾 <b>snap a receipt</b> to record it. Free, with a daily allowance: 20 questions and 20 receipts.')}</div>
     <div class="note">🔒 ${L('لما تشغّلها، <b>ملخص أرقامك</b> (إجماليات الفئات والأصول والأهداف، من غير أسماء محلات ولا عمليات) بيتبعت لـ Cloudflare عشان يتحلل ويرجعلك الرد، وصورة الفاتورة بتتبعت عشان تتقرا. مش بيتحفظوا ومش بيتستخدموا في تدريب أي ذكاء اصطناعي.',
       'When on, a <b>summary of your figures</b> (totals by category, assets and goals — no shop names or transactions) goes to Cloudflare to be analysed, and receipt photos go to be read. Neither is stored or used to train any AI.')}</div>
     <label class="checks"><span style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="ai-toggle" ${state.aiOn?'checked':''}> ${L('شغّل الذكاء الاصطناعي على أجهزتي','Turn on AI on my devices')}</span></label>`;
@@ -3398,7 +3412,7 @@ document.getElementById('ai-box').addEventListener('change', e=>{
 // the chat: kept for this visit only
 function openAsk(){
   sheetSec = 'ask';
-  document.getElementById('sheet-title').textContent = '💬 ' + L('اسأل نماء','Ask Namaa');
+  document.getElementById('sheet-title').textContent = '💬 ' + L('اسأل نماء AI','Ask Namaa AI');
   if(!aiReady()){
     sheetBody.innerHTML = `<div class="note">${L('شغّل الذكاء الاصطناعي الأول من الإعدادات. هتلاقي هناك إيه اللي بيتبعت وإزاي.', 'Turn on AI in Settings first; it explains what is sent and how.')}</div>
       <button type="button" class="go-btn" data-ai-settings>${L('افتح الإعدادات','Open Settings')}</button>`;
@@ -3438,6 +3452,28 @@ sheetBody.addEventListener('click', e=>{
 });
 sheetBody.addEventListener('keydown', e=>{ if(sheetSec==='ask' && e.target.id==='ai-q' && e.key==='Enter' && !e.shiftKey){ e.preventDefault(); askSend(e.target.value); } });
 // receipt photo → amount, shop, date and category filled in for review
+// the vision model for receipts. Compared on test receipts (Oct 2026): Mistral Small 3.1 read totals and dates right
+// and was the quickest; Llama 4 Scout got totals but misread years; Gemma 3 isn't open to this account
+const AI_VISION = '@cf/mistralai/mistral-small-3.1-24b-instruct';
+// receipts are text on paper: ~1400px on the long side, greyscale, and the darkest/lightest 1% stretched to black/white
+// so faded thermal print reads clearly (skipped when the photo has little contrast to work with)
+function receiptCanvas(img){
+  const k = Math.min(1, 1400 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+  c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+  const g = c.getContext('2d', {willReadFrequently: true});
+  g.drawImage(img, 0, 0, c.width, c.height);
+  try{
+    const data = g.getImageData(0, 0, c.width, c.height), p = data.data, hist = new Uint32Array(256), n = p.length / 4;
+    for(let i = 0; i < p.length; i += 4){ const y = (p[i]*299 + p[i+1]*587 + p[i+2]*114) / 1000 | 0; p[i] = y; hist[y]++; }
+    let lo = 0, hi = 255, acc = 0;
+    while(lo < 255 && (acc += hist[lo]) < n * .01) lo++;
+    acc = 0; while(hi > 0 && (acc += hist[hi]) < n * .01) hi--;
+    const span = hi - lo, stretch = span >= 60;
+    for(let i = 0; i < p.length; i += 4){ const v = stretch ? Math.max(0, Math.min(255, (p[i] - lo) * 255 / span)) : p[i]; p[i] = p[i+1] = p[i+2] = v; }
+    g.putImageData(data, 0, 0);
+  }catch(e){}
+  return c;
+}
 async function scanReceipt(file){
   const btn = sheetBody.querySelector('[data-txscan]');
   // reading a photo takes the free model half a minute or so; say so, so nobody thinks it froze
@@ -3445,19 +3481,25 @@ async function scanReceipt(file){
   try{
     const url = URL.createObjectURL(file);
     const img = await new Promise((ok, no)=>{ const i = new Image(); i.onload = ()=>ok(i); i.onerror = no; i.src = url; });
-    // ~1000px on the long side keeps the text readable while the upload and the model's work stay small
-    const k = Math.min(1, 1000 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
-    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
-    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
-    const j = await aiCall('receipt', {image: c.toDataURL('image/jpeg', .8), categories: cats('exp').map(x=>({id:x.id, name:catName(x)}))});
+    const c = receiptCanvas(img); URL.revokeObjectURL(url);
+    const j = await aiCall('receipt', {image: c.toDataURL('image/jpeg', .85), categories: cats('exp').map(x=>({id:x.id, name:catName(x)})), ...(AI_VISION ? {model: AI_VISION} : {})});
     const r = j.receipt || {};
     if(!(r.amount > 0)){ toast(L('مقدرتش ألاقي مبلغ في الصورة دي. جرّب صورة أوضح.', "Couldn't find a total in that photo. Try a clearer one.")); return; }
     if(r.category && cats('exp').some(x=>x.id===r.category)) txDraft.cat = r.category;
     renderTxSheet();
     document.getElementById('t-amt').value = r.amount;
     if(r.merchant) document.getElementById('t-note').value = r.merchant;
-    if(r.date && r.date <= today()) document.getElementById('t-date').value = r.date;
-    toast(L(`اتقرت الفاتورة ✓ راجع وبعدين احفظ.${aiLeft.receipt!==null ? ` (فاضل ${fmt(aiLeft.receipt,0)} النهارده)` : ''}`, `Receipt read ✓ Check it, then save.${aiLeft.receipt!==null ? ` (${aiLeft.receipt} left today)` : ''}`));
+    // models sometimes misread the year: a date in the future, or over a year old, takes the most recent matching day-month
+    let dt = r.date;
+    if(dt){
+      const t = today(), y = +t.slice(0,4), same = yr => yr + dt.slice(4);
+      if(dt > t || dt < dayKey(Date.now() - 400*DAY)) dt = same(y) <= t ? same(y) : same(y - 1);
+      document.getElementById('t-date').value = dt;
+    }
+    // show which line the total came from, so a wrong pick is easy to spot
+    const from = r.totalLine ? L(` من سطر «${r.totalLine}»`, ` from "${r.totalLine}"`) : '';
+    toast(L(`اتقرت الفاتورة ✓ ${fmt(r.amount)} ج.م${from}. راجع وبعدين احفظ.${aiLeft.receipt!==null ? ` (فاضل ${fmt(aiLeft.receipt,0)} النهارده)` : ''}`,
+            `Receipt read ✓ ${fmt(r.amount)} EGP${from}. Check it, then save.${aiLeft.receipt!==null ? ` (${aiLeft.receipt} left today)` : ''}`));
     buzz();
   }catch(e){ toast(aiErr(e)); }
   finally{ const b = sheetBody.querySelector('[data-txscan]'); if(b){ b.disabled = false; b.textContent = '🧾 ' + L('صوّر فاتورة وهي تتملي لوحدها','Snap a receipt to fill this in'); } }
