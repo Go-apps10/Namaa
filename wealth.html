@@ -485,6 +485,26 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .g-item{background:#fff;border-radius:8px;padding:8px 10px;box-shadow:0 1px 3px rgba(0,0,0,.12);display:flex;justify-content:space-between;gap:8px;align-items:center}
 .g-item b{color:#c62828;padding:0 4px}
 .g-item.new{display:block;border-left:3px solid #3949ab;animation:gin .3s}
+.inbox-os{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.inbox-os>summary{cursor:pointer;font-weight:600}
+.inbox-os>:not(summary){margin-top:8px}
+.inbox-os>input{width:100%}
+.ios-steps{margin:0;padding-inline-start:20px;display:grid;gap:4px}
+.ios-steps code{direction:ltr;unicode-bidi:isolate;background:var(--bg);padding:0 4px;border-radius:4px}
+/* iPhone Shortcuts mock: always light, like the app */
+.g-ios{position:absolute;inset:0;background:#f2f2f7;color:#000;direction:ltr;text-align:left;font-family:-apple-system,"Segoe UI",Arial,sans-serif;display:flex;flex-direction:column}
+.g-iosh{padding:12px 14px 8px;font-weight:700;font-size:16px;display:flex;justify-content:space-between;align-items:center}
+.g-iosblue{color:#007aff}
+.g-ioslist{background:#fff;border-radius:10px;margin:0 12px;display:grid}
+.g-ioslist>span{padding:8px 12px;border-bottom:1px solid #e5e5ea}
+.g-ioslist>span:last-child{border-bottom:0}
+.g-iostabs{margin-top:auto;display:flex;justify-content:space-around;border-top:1px solid #d8d8dc;background:#f9f9f9;padding:7px;font-size:10px;color:#8e8e93}
+.g-iostabs .on{color:#007aff}
+.g-act{background:#fff;border-radius:10px;margin:6px 12px 0;padding:8px 10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px}
+.g-var{background:#007aff;color:#fff;border-radius:6px;padding:1px 7px;font-size:11px}
+.g-mdicon{width:48px;height:48px;border-radius:12px;flex:none;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.md-ic{width:20px;height:20px;border-radius:5px;vertical-align:-5px;margin-inline-end:4px}
+.g-play{background:#01875f;color:#fff;border-radius:8px;padding:8px;text-align:center;font-weight:600}
 .g-add{justify-self:end;width:30px;height:30px;border-radius:50%;background:#3949ab;color:#fff;display:grid;place-items:center;font-size:16px}
 /* the phone getting the message */
 .g-phone{position:absolute;inset:0;background:linear-gradient(160deg,#1b3a30,#0f2a22)}
@@ -867,9 +887,7 @@ section.card.collapsed{gap:0}
     <div class="zk" id="zakat-grid"></div>
     <div class="zk-msg" id="zakat-msg"></div>
     <div class="settings">
-      <label><input type="checkbox" data-set="zExcludeWorn" id="zExcludeWorn"> <span data-en="Exclude worn gold (jewellery)">استبعاد الذهب الملبوس (للزينة)</span></label>
-      <label><input type="checkbox" data-set="zExcludeStocks" id="zExcludeStocks"> <span data-en="Exclude Egyptian stocks">استبعاد أسهم البورصة المصرية</span></label>
-      <label><input type="checkbox" data-set="zDeductDebts" id="zDeductDebts"> <span data-en="Deduct debts from the zakat base">خصم الديون من وعاء الزكاة</span></label>
+      <label><input type="checkbox" data-set="zExcludeWorn" id="zExcludeWorn"> <span data-en="Exclude worn gold (jewellery)">استبعاد الذهب الملبوس (للزينة)</span></label>      <label><input type="checkbox" data-set="zDeductDebts" id="zDeductDebts"> <span data-en="Deduct debts from the zakat base">خصم الديون من وعاء الزكاة</span></label>
       <label for="zMode"><span data-en="Zakat year method">طريقة حساب الحول</span>
         <select id="zMode" data-set="zMode">
           <option value="majority" data-en="Breaks if wealth drops below nisab (majority view)">ينقطع لو المال نزل تحت النصاب (الجمهور)</option>
@@ -1090,6 +1108,7 @@ section.card.collapsed{gap:0}
   <div class="g-bars" id="g-bars"></div>
   <div class="g-stage" id="g-stage"><div class="g-scene" id="g-scene"></div><div class="g-ptr" id="g-ptr"></div></div>
   <div class="g-cap" id="g-cap" aria-live="polite"></div>
+  <button type="button" class="linkish" id="g-switch" hidden style="border:0;background:none;justify-self:center;margin:0 auto;display:block;font-size:.85rem"></button>
   <div class="g-ctl">
     <button type="button" id="g-prev" data-en="Back">السابق</button>
     <button type="button" id="g-play"></button>
@@ -1210,7 +1229,7 @@ const DEFAULT_STATE = {
   gold:[{k:'21', w:0}], silver:[{k:'999', w:0}], cash:[{b:'home', c:'EGP', a:0}], stocks:[{s:'COMI', q:0}],
   other:[], debts:[], alerts:[],
   goal:'', goldPremium:0, silverPremium:0, goldSource:'local', priceSide:'buy',
-  zExcludeWorn:true, zExcludeStocks:false, zDeductDebts:true, zDate:'', lastBackup:null,
+  zExcludeWorn:true, zDeductDebts:true, zDate:'', lastBackup:null,
   notifyOn:false, nPrice:true, nZakat:true, nBackup:true, zNotified:'', backupNotifiedAt:0,
   goalDate:'', nMonthly:true, monthlySent:'', reports:{}, yearReports:{},
   tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'',
@@ -1811,10 +1830,10 @@ function renderCashBanks(){
 }
 
 const STOCK_ZAKAT = 0.02577;
-let zStocksHlAt = 0;   // when "exclude stocks" was last ticked
+let zStocksHlAt = 0;   // when the stocks note last came into view (it glows for 5 seconds)
 function zakatBase(t){
   return sectionTotal('gold', r => !(state.zExcludeWorn && r.worn)) + t.silver + t.cash
-    + (state.zExcludeStocks ? 0 : t.stocks) - (state.zDeductDebts ? t.debts : 0);
+    - (state.zDeductDebts ? t.debts : 0);   // stocks are never in the base: their zakat runs on the companies' year (see renderZakat)
 }
 function renderZakat(t){
   const nisab = goldPrice('24')*85, base = zakatBase(t);
@@ -1835,16 +1854,14 @@ function renderZakat(t){
   // at 2.577% (2.5% scaled from the lunar to the solar year). The amount itself depends on each company's
   // statements, so the app explains the rule and sends the person to Borsa Halal rather than estimating it.
   const yEnd = new Date(new Date().getFullYear(), 11, 31), yLeft = Math.ceil((yEnd - Date.now())/DAY);
-  // just ticked: the heading glows for 5 seconds (kept in step across re-renders by a negative delay)
+  // the heading glows for 5 seconds when the note comes into view (kept in step across re-renders by a negative delay)
   const hlAgo = Date.now() - zStocksHlAt, hl = hlAgo < 5000 ? ` class="zk-hl" style="animation-delay:-${hlAgo}ms"` : '';
-  document.getElementById('zakat-stocks').innerHTML = state.zExcludeStocks
-    ? `<div class="note"><b${hl}>📈 ${L('زكاة الأسهم لوحدها','Stocks have their own zakat')}</b><br>
+  document.getElementById('zakat-stocks').innerHTML = `<div class="note"><b${hl}>📈 ${L('زكاة الأسهم لوحدها','Stocks have their own zakat')}</b><br>
         ${L(`الأسهم مستبعدة من وعاء الزكاة وحولها، لأن زكاتها بتتبع حول الشركات، وده بيخلص في <b>آخر السنة الميلادية (${fmt(31,0)} ديسمبر)</b>. النسبة <b>${fmt(STOCK_ZAKAT*100,3)}${PCT()}</b> بدل ${fmt(2.5,1)}${PCT()} لأن السنة الميلادية أطول من الهجرية، وبتتحسب على قيمة الأسهم اللي في إيدك آخر يوم في السنة.`,
             `Stocks are left out of the zakat base and its year, because their zakat follows the companies' financial year, which ends on <b>31 December</b>. The rate is <b>${fmt(STOCK_ZAKAT*100,3)}${PCT()}</b> instead of ${fmt(2.5,1)}${PCT()} because the solar year is longer than the lunar one, and it applies to the value of the shares you hold on the last day of the year.`)}
         ${yLeft > 0 ? `<br>${L(`حول الشركات بيخلص بعد ${fmt(yLeft,0)} يوم (${dateFmt(yEnd)}).`, `The companies' year ends in ${yLeft} days (${dateFmt(yEnd)}).`)}` : ''}
         <br>🔗 ${L(`زكاة كل سهم بتختلف حسب القوائم المالية للشركة، فاحسب زكاة أسهمك من موقع <a href="https://www.borsahalal.com/" target="_blank" rel="noopener">بورصة حلال</a>.`,
-                  `Each share's zakat depends on the company's financial statements, so work out your stocks zakat on <a href="https://www.borsahalal.com/" target="_blank" rel="noopener">Borsa Halal</a>.`)}</div>`
-    : '';
+                  `Each share's zakat depends on the company's financial statements, so work out your stocks zakat on <a href="https://www.borsahalal.com/" target="_blank" rel="noopener">Borsa Halal</a>.`)}</div>`;
   document.getElementById('zakat-grid').innerHTML = cells.map(([l,v,priv])=>`<div><div class="l">${l}</div><div class="v ${priv?'m':''}">${v}</div></div>`).join('');
   let msg;
   if(!isFinite(nisab)) msg = '';
@@ -2155,11 +2172,6 @@ document.addEventListener('input', e=>{
     if(key==='lang') applyLang();
     if(key==='fontScale') document.documentElement.style.fontSize = (num(el.value)||1)*100 + '%';
     if(key==='zMode'){ state.zBrokenOn = ''; trackNisab(); }
-    if(key==='zExcludeStocks' && el.checked){
-      zStocksHlAt = Date.now();
-      setTimeout(()=>document.getElementById('zakat-stocks').scrollIntoView({block:'nearest', behavior:'smooth'}), 50);
-      setTimeout(()=>{ if(Date.now() - zStocksHlAt >= 5000) renderTotals(); }, 5100);   // drop the class once the glow is done
-    }
     render(); return;
   }
   const {sec,i,f} = el.dataset; if(!sec) return;
@@ -2372,7 +2384,7 @@ function checkReminders(){
   // stocks zakat (when stocks are kept out of the hawl): a week's notice, then on 31 December,
   // or on the first visit in January if the app wasn't opened that day
   const d = new Date(), yr = d.getFullYear(), stocks = totals().stocks;
-  if(state.zExcludeStocks && stocks > 0){
+  if(stocks > 0){
     // the amount isn't stated: it depends on each company's statements, worked out on Borsa Halal
     if(d.getMonth()===11 && d.getDate() >= 24 && d.getDate() < 31 && state.stockZSoon !== yr){
       state.stockZSoon = yr; save();
@@ -3767,6 +3779,8 @@ function inboxKey(){
 }
 const inboxAddr = extra => inbox.url + '?key=' + encodeURIComponent(inboxKey()) + (extra || '');
 const macroLink = () => inboxAddr('&from=[sms_number]&sms=[sms_message]');
+// iPhone Shortcuts: the message text is inserted as a variable right after "sms="
+const iosLink = () => inboxAddr('&sms=');
 const inboxScript = () => `// صندوق رسايل البنك لنماء — Namaa bank-message inbox
 const KEY = '${inboxKey()}';
 
@@ -3815,6 +3829,8 @@ function renderInbox(){
   if(!inbox.url){
     box.innerHTML = `<div class="note">${L('MacroDroid يبعت رسالة البنك لصندوق صغير على حساب جوجل بتاعك، من غير ما يفتح التطبيق، ونماء يلمّها أول ما تفتحه. محدش بيشوف الصندوق غيرك.',
         "MacroDroid sends each bank message to a small inbox on your own Google account without opening the app; Namaa collects them when you open it. Only you can see the inbox.")}</div>
+      <div class="note"><img class="md-ic" src="icons/macrodroid.png" alt="">${L(`<b>أندرويد:</b> محتاج تطبيق MacroDroid. <a href="${MD_PLAY}" target="_blank" rel="noopener">حمّله من Google Play</a> (مجاني).`, `<b>Android:</b> you need the MacroDroid app. <a href="${MD_PLAY}" target="_blank" rel="noopener">Get it on Google Play</a> (free).`)}<br>
+        🍎 ${L('<b>آيفون:</b> بتستخدم تطبيق Shortcuts (الاختصارات) اللي في الموبايل أصلاً، على iOS 17 أو أحدث.', '<b>iPhone:</b> you use the built-in Shortcuts app, on iOS 17 or later.')}</div>
       <button type="button" class="go-btn sm" data-inbox-guide style="justify-self:start">▶ ${L('شوف الشرح خطوة بخطوة','Watch the step-by-step guide')}</button>
       <div class="row"><button type="button" data-inbox-script>${showScript ? L('إخفاء السكريبت','Hide script') : L('1. اعرض السكريبت','1. Show the script')}</button>
         <button type="button" data-inbox-copy-script>${L('نسخ السكريبت','Copy script')}</button></div>
@@ -3826,13 +3842,35 @@ function renderInbox(){
   }
   box.innerHTML = `<div class="who">${inboxBusy ? L('بيشوف الصندوق…','Checking the inbox…') : inboxErr ? `<span class="err">${esc(inboxErr)}</span>`
       : inboxLast ? L(`شغال ✓ · آخر مرة شاف الصندوق ${new Date(inboxLast).toLocaleTimeString(LOC())}`, `Working ✓ · last checked ${new Date(inboxLast).toLocaleTimeString(LOC())}`) : L('محفوظ ✓','Saved ✓')}</div>
-    <div class="field"><span>${L('الرابط اللي هتحطه في MacroDroid','The link to put in MacroDroid')}</span>
-      <input type="text" readonly value="${esc(macroLink())}" style="direction:ltr;font-size:.8rem"></div>
+    <details class="inbox-os"${isIOS ? '' : ' open'}><summary><img class="md-ic" src="icons/macrodroid.png" alt="">${L('أندرويد: MacroDroid','Android: MacroDroid')}</summary>
+      <div class="note">${L(`1. حمّل <a href="${MD_PLAY}" target="_blank" rel="noopener">MacroDroid من Google Play</a> (مجاني).<br>2. اعمل ماكرو: Trigger ‹SMS Received› ← Action ‹HTTP Request› (GET) والصق الرابط دا:`,
+        `1. Install <a href="${MD_PLAY}" target="_blank" rel="noopener">MacroDroid from Google Play</a> (free).<br>2. Make a macro: Trigger ‹SMS Received› → Action ‹HTTP Request› (GET) with this link:`)}</div>
+      <input type="text" readonly value="${esc(macroLink())}" style="direction:ltr;font-size:.8rem">
+      <div class="row">
+        <button type="button" class="go-btn sm" data-inbox-copy-link>${L('نسخ رابط MacroDroid','Copy MacroDroid link')}</button>
+      </div>
+    </details>
+    <details class="inbox-os"${isIOS ? ' open' : ''}><summary>🍎 ${L('آيفون: Shortcuts (الاختصارات)','iPhone: Shortcuts')}</summary>
+      <ol class="note ios-steps">${L(
+        `<li>افتح تطبيق <b>Shortcuts</b> ← تبويب <b>Automation</b> ← <b>+</b> ← <b>Message</b>.</li>
+         <li>في <b>Sender</b> اختار رقم البنك (CIB، NBE…). لو عندك أكتر من بنك استخدم <b>Message Contains</b> واكتب كلمة زي <b>EGP</b> أو <b>جنيه</b>.</li>
+         <li>اختار <b>Run Immediately</b> ودوس <b>Next</b> ← <b>New Blank Automation</b>.</li>
+         <li>ضيف أكشن <b>URL Encode</b>، وخلّي اللي جواه <b>Shortcut Input</b> (لو سألك اختار <b>Content</b>).</li>
+         <li>ضيف أكشن <b>Get Contents of URL</b> والصق الرابط اللي تحت، وبعد <code>sms=</code> على طول دوس واختار المتغير <b>URL Encoded Text</b>.</li>
+         <li>دوس <b>Done</b>. من هنا ورايح أي رسالة من البنك هتوصل للصندوق لوحدها.</li>`,
+        `<li>Open <b>Shortcuts</b> → <b>Automation</b> tab → <b>+</b> → <b>Message</b>.</li>
+         <li>Under <b>Sender</b> pick your bank's number (CIB, NBE…). With several banks use <b>Message Contains</b> and a word like <b>EGP</b>.</li>
+         <li>Choose <b>Run Immediately</b>, tap <b>Next</b> → <b>New Blank Automation</b>.</li>
+         <li>Add a <b>URL Encode</b> action with <b>Shortcut Input</b> inside (pick <b>Content</b> if asked).</li>
+         <li>Add <b>Get Contents of URL</b>, paste the link below, and right after <code>sms=</code> insert the <b>URL Encoded Text</b> variable.</li>
+         <li>Tap <b>Done</b>. Bank messages now reach the inbox by themselves.</li>`)}</ol>
+      <input type="text" readonly value="${esc(iosLink())}" style="direction:ltr;font-size:.8rem">
+      <div class="row"><button type="button" class="go-btn sm" data-inbox-copy-ios>${L('نسخ رابط الآيفون','Copy iPhone link')}</button></div>
+    </details>
     <div class="row">
-      <button type="button" class="go-btn sm" data-inbox-copy-link>${L('نسخ رابط MacroDroid','Copy MacroDroid link')}</button>
+      <button type="button" data-inbox-guide>▶ ${L('الشرح','Guide')}</button>
       <button type="button" data-inbox-now>${L('شوف الصندوق دلوقتي','Check now')}</button>
       <button type="button" data-inbox-script>${showScript ? L('إخفاء السكريبت','Hide script') : L('السكريبت','Script')}</button>
-      <button type="button" data-inbox-guide>▶ ${L('الشرح','Guide')}</button>
     </div>
     ${scriptBox}
     <div class="note">${L('شغّل دا على موبايلك بس. الرابط فيه مفتاح سري، متديهوش لحد.', "Use this on your phone only. The link carries a secret key; don't share it.")}</div>
@@ -3845,6 +3883,7 @@ document.getElementById('inbox-box').addEventListener('click', async e=>{
   if(d.inboxScript!==undefined){ showScript = !showScript; renderInbox(); }
   else if(d.inboxCopyScript!==undefined){ if(!await copy(inboxScript())){ showScript = true; renderInbox(); toast(L('انسخه من الخانة.', 'Copy it from the box.')); } }
   else if(d.inboxCopyLink!==undefined){ if(!await copy(macroLink())) toast(L('انسخه من الخانة.', 'Copy it from the box.')); }
+  else if(d.inboxCopyIos!==undefined){ if(!await copy(iosLink())) toast(L('انسخه من الخانة.', 'Copy it from the box.')); }
   else if(d.inboxSave!==undefined){
     const typed = document.getElementById('inbox-url').value.trim(), url = typed.replace(/\?.*$/, '');
     // the MacroDroid link from another device carries that device's key: take it, so the script made there keeps working here
@@ -3854,7 +3893,7 @@ document.getElementById('inbox-box').addEventListener('click', async e=>{
       toast(L('دا مش رابط Web app. لازم يبدأ بـ https://script.google.com/macros/s/ ويخلص بـ /exec', "That isn't a Web app link. It starts with https://script.google.com/macros/s/ and ends with /exec")); return; }
     inbox.url = url; saveInbox(); showScript = false; await pullInbox(true);
   }
-  else if(d.inboxGuide!==undefined) openGuide('inbox');
+  else if(d.inboxGuide!==undefined) openGuide(isIOS ? 'inboxIos' : 'inbox');   // the guide for the phone in hand
   else if(d.inboxNow!==undefined) pullInbox(true);
   else if(d.inboxOff!==undefined){ inbox = {key: inbox.key}; saveInbox(); inboxErr = ''; inboxLast = 0; renderInbox(); }
 });
@@ -3867,7 +3906,17 @@ const gEditor = (code, extra='') => gGoogle('script.google.com', `<div class="g-
 const gScript = `<pre>// Namaa bank-message inbox\nconst KEY = '••••••••••';\n\nfunction doGet(e) {\n  …\n}</pre>`;
 const gNamaa = inner => `<div class="g-app"><div class="g-ttl">⚙ ${L('الإعدادات','Settings')}</div><div class="g-card">${inner}</div></div>`;
 const gInboxHead = (pill, cls='') => `<div class="g-hd"><b>${L('رسايل البنك في الخلفية','Bank messages in the background')}</b><span class="g-pill ${cls}">${pill}</span></div>`;
+const MD_PLAY = 'https://play.google.com/store/apps/details?id=com.arlosoft.macrodroid';
 const INBOX_GUIDE = [
+  { cap: ['الأول: على موبايلك الأندرويد حمّل تطبيق MacroDroid من Google Play (مجاني). هو اللي هيبعت رسايل البنك لنماء.',
+          'First, on your Android phone install MacroDroid from Google Play (free). It is what sends bank messages to Namaa.'],
+    html: () => `<div class="g-md" style="background:#fff"><div class="g-bar"><span>▶ Google Play</span></div>
+      <div class="g-sec" style="gap:10px;padding:14px">
+        <div class="g-row" style="gap:12px;flex-wrap:nowrap"><img class="g-mdicon" src="icons/macrodroid.png" alt="MacroDroid"><span><b style="font-size:14px">MacroDroid - Device Automation</b><br><small style="color:#188038">ArloSoft</small> · <small style="color:#666">4.5 ★</small></span></div>
+        <span class="g-play" data-t="inst" data-s="inst">Install</span><span class="g-play" data-s="open" hidden>Open</span>
+        <small data-s="dl" hidden style="color:#666;text-transform:none;letter-spacing:0">Installing…</small>
+      </div></div>`,
+    acts: [[700,'tap','inst'], [1400,'show','dl'], [2600,'hide','dl'], [2600,'hide','inst'], [2600,'show','open']], dur: 4600 },
   { cap: ['في نماء: الإعدادات ← «رسايل البنك في الخلفية» ← «نسخ السكريبت». ابعته لنفسك عشان تفتحه على اللاب.',
           'In Namaa: Settings → "Bank messages in the background" → "Copy script". Send it to yourself to open on a laptop.'],
     html: () => gNamaa(`${gInboxHead(L('مقفول','Off'))}<i class="g-line"></i><i class="g-line s"></i>
@@ -3913,7 +3962,7 @@ const INBOX_GUIDE = [
           'Tap "Copy MacroDroid link". In the macro delete the open-page action and add Web Interactions → HTTP Request (GET) with the link.'],
     html: () => `<div class="g-fill" data-s="a">${gNamaa(`${gInboxHead(L('شغال ✓','On ✓'),'ok')}<div class="g-in">…/exec?key=•••&amp;from=[sms_number]&amp;sms=[sms_message]</div>
         <div class="g-row"><span class="g-ab go" data-t="cml">${L('نسخ رابط MacroDroid','Copy MacroDroid link')}</span><span class="g-ab">${L('شوف الصندوق دلوقتي','Check now')}</span></div>`)}</div>
-      <div class="g-fill" data-s="b" hidden><div class="g-md"><div class="g-mdh">MacroDroid · ${L('رسايل البنك','Bank SMS')}</div>
+      <div class="g-fill" data-s="b" hidden><div class="g-md"><div class="g-mdh"><img class="md-ic" src="icons/macrodroid.png" alt="">MacroDroid · ${L('رسايل البنك','Bank SMS')}</div>
         <div class="g-sec"><small>Triggers</small><span class="g-item">✉ SMS Received</span></div>
         <div class="g-sec"><small>Actions</small><span class="g-item" data-s="old">🌐 Open Website / URL <b data-t="del">✕</b></span>
           <span class="g-item new" data-s="http" hidden>⇅ HTTP Request · GET<br><span class="g-url">…/exec?key=•••&amp;from=[sms_number]&amp;sms=[sms_message]</span></span>
@@ -3990,8 +4039,46 @@ const SYNC_GUIDE = [
       <div class="g-row"><span class="g-ab" data-t="rot" style="color:var(--down)">${L('تغيير الكود','Change code')}</span><span class="g-ab" data-t="stop" style="color:var(--down)">${L('إيقاف على الجهاز دا','Stop on this device')}</span></div>`),
     acts: [[900,'tap','rot'], [2600,'tap','stop']], dur: 6400 },
 ];
+// iPhone: the same Google inbox (steps 2–8 of the Android guide), then a Shortcuts automation instead of MacroDroid
+const gIos = (title, body, tab='') => `<div class="g-ios"><div class="g-iosh">${title}</div>${body}${tab ? `<div class="g-iostabs"><span>▦ Shortcuts</span><span class="${tab==='auto'?'on':''}" data-t="autotab">⏱ Automation</span><span>✦ Gallery</span></div>` : ''}</div>`;
+const IOS_GUIDE = [
+  { cap: ['على الآيفون مش محتاج تحمّل حاجة: هنستخدم تطبيق Shortcuts (الاختصارات) اللي في الموبايل أصلاً، على iOS 17 أو أحدث. الأول هنعمل الصندوق على جوجل.',
+          "On iPhone there's nothing to install: we use the built-in Shortcuts app, on iOS 17 or later. First, the inbox on Google."],
+    html: () => gIos('Shortcuts', `<div style="flex:1;display:grid;place-items:center"><span style="font-size:64px">⧉</span></div>`, 'auto'),
+    acts: [], dur: 4200 },
+  ...INBOX_GUIDE.slice(1, 8),
+  { cap: ['في نماء على الآيفون: الإعدادات ← رسايل البنك في الخلفية ← 🍎 آيفون ← «نسخ رابط الآيفون».',
+          'In Namaa on the iPhone: Settings → Bank messages in the background → 🍎 iPhone → "Copy iPhone link".'],
+    html: () => gNamaa(`${gInboxHead(L('شغال ✓','On ✓'),'ok')}<b style="font-size:12px">🍎 ${L('آيفون: Shortcuts','iPhone: Shortcuts')}</b>
+        <div class="g-in">…/exec?key=•••&amp;sms=</div><div class="g-row"><span class="g-ab go" data-t="cp">${L('نسخ رابط الآيفون','Copy iPhone link')}</span></div>`)
+      + `<div class="g-toast" data-s="toast" hidden>${L('اتنسخ.','Copied.')}</div>`,
+    acts: [[700,'tap','cp'], [1400,'show','toast']], dur: 4200 },
+  { cap: ['افتح تطبيق Shortcuts ← تبويب Automation تحت ← دوس + فوق ← اختار Message.',
+          'Open Shortcuts → the Automation tab → tap + at the top → choose Message.'],
+    html: () => gIos(`<span>Automation</span><span class="g-iosblue" data-t="plus">＋</span>`,
+      `<div class="g-ioslist" data-s="empty" style="padding:22px;text-align:center;color:#8e8e93">No automations yet</div>
+       <div class="g-ioslist" data-s="types" hidden><span>⏰ Time of Day</span><span>⏰ Alarm</span><span>✉ Email</span><span data-t="msg">💬 Message</span><span>📍 Arrive</span></div>`, 'auto'),
+    acts: [[600,'tap','autotab'], [1600,'tap','plus'], [2300,'hide','empty'], [2300,'show','types'], [3300,'tap','msg']], dur: 5400 },
+  { cap: ['في Sender اختار رقم البنك (أو Message Contains وكلمة زي EGP)، واختار Run Immediately، ودوس Next.',
+          "Under Sender pick your bank's number (or Message Contains with a word like EGP), choose Run Immediately, tap Next."],
+    html: () => gIos(`<span>Message</span><span class="g-iosblue" data-t="next">Next</span>`,
+      `<div class="g-ioslist"><span data-t="sender">Sender <b class="g-iosblue" data-s="choose" style="float:right">Choose</b><b data-s="cib" hidden style="float:right">CIB</b></span><span>Message Contains <b style="float:right;color:#8e8e93">Choose</b></span></div>
+       <div class="g-ioslist" style="margin-top:12px"><span>Run After Confirmation</span><span data-t="run">Run Immediately <b class="g-iosblue" data-s="check" hidden style="float:right">✓</b></span></div>`),
+    acts: [[600,'tap','sender'], [1300,'hide','choose'], [1300,'show','cib'], [2300,'tap','run'], [3000,'show','check'], [4000,'tap','next']], dur: 5600 },
+  { cap: ['ضيف أكشن URL Encode (جواه Shortcut Input)، وبعده Get Contents of URL والصق الرابط، وبعد sms= حط المتغير URL Encoded Text، ودوس Done.',
+          'Add URL Encode (with Shortcut Input inside), then Get Contents of URL with the link, put the URL Encoded Text variable right after sms=, tap Done.'],
+    html: () => gIos(`<span>New Automation</span><span class="g-iosblue" data-t="done">Done</span>`,
+      `<div class="g-act" data-s="a1" hidden>🔗 <b>URL Encode</b> <span class="g-var">Shortcut Input</span></div>
+       <div class="g-act" data-s="a2" hidden>🌐 <b>Get Contents of</b> <span class="g-url">…/exec?key=•••&amp;sms=</span><span class="g-var" data-s="v" hidden>URL Encoded Text</span></div>
+       <div class="g-act g-iosblue" data-t="add" style="justify-content:center">＋ Add Action</div>`),
+    acts: [[600,'tap','add'], [1300,'show','a1'], [2200,'tap','add'], [2900,'show','a2'], [3800,'show','v'], [4800,'tap','done']], dur: 6400 },
+  { ...INBOX_GUIDE[INBOX_GUIDE.length - 1],
+    cap: ['خلاص! رسالة البنك بتروح للصندوق من غير ما حاجة تفتح، وأول ما تفتح نماء هتلاقيها في المصاريف مستنية تصنيف.',
+          "Done! Bank messages go to the inbox without anything opening, and when you open Namaa they're waiting in Spending."] },
+];
 const GUIDES = {
   inbox: {title: ['شرح رسايل البنك في الخلفية', 'Bank messages in the background: how-to'], scenes: INBOX_GUIDE},
+  inboxIos: {title: ['شرح رسايل البنك على الآيفون', 'Bank messages on iPhone: how-to'], scenes: IOS_GUIDE},
   sync: {title: ['شرح المزامنة السحابية', 'Cloud sync: how-to'], scenes: SYNC_GUIDE},
 };
 let GUIDE = INBOX_GUIDE;
@@ -4031,7 +4118,11 @@ function gShow(i){
 function openGuide(name='inbox'){
   const g = GUIDES[name];
   GUIDE = g.scenes; document.getElementById('guide-title').textContent = L(...g.title);
-  gAuto = true; guideDlg.showModal(); gShow(0);
+  // the bank-message guides offer the other phone's version, for setting up a phone other than this one
+  const sw = document.getElementById('g-switch'), other = {inbox:'inboxIos', inboxIos:'inbox'}[name];
+  sw.hidden = !other;
+  if(other){ sw.textContent = other==='inboxIos' ? L('🍎 عندك آيفون؟ شوف شرح الآيفون', '🍎 On iPhone? See the iPhone guide') : L('🤖 عندك أندرويد؟ شوف شرح الأندرويد', '🤖 On Android? See the Android guide'); sw.onclick = () => openGuide(other); }
+  gAuto = true; if(!guideDlg.open) guideDlg.showModal(); gShow(0);
 }
 document.getElementById('g-next').addEventListener('click', ()=>{ if(gIdx===GUIDE.length - 1) guideDlg.close(); else gShow(gIdx + 1); });
 document.getElementById('g-prev').addEventListener('click', ()=>gShow(gIdx - 1));
@@ -4600,7 +4691,8 @@ if('serviceWorker' in navigator && window.isSecureContext && location.protocol.s
 let installEvt = null;
 const installBox = document.getElementById('install');
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+// iPads report themselves as Macs; a touch screen gives them away
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints > 1);
 let installDismissed = false;
 try{ installDismissed = localStorage.getItem('wealth-install-dismissed')==='1'; }catch(e){}
 window.addEventListener('beforeinstallprompt', e=>{
@@ -4656,6 +4748,12 @@ const refreshIfStale = () => { if(!document.hidden && Date.now() - lastUpdate > 
 document.addEventListener('visibilitychange', refreshIfStale);
 window.addEventListener('focus', refreshIfStale);
 window.addEventListener('pageshow', refreshIfStale);
+// the stocks zakat note glows each time it scrolls into view (or the Zakat tab opens), not more than every 10 seconds
+if('IntersectionObserver' in window) new IntersectionObserver(entries=>{
+  if(!entries.some(e=>e.isIntersecting) || Date.now() - zStocksHlAt < 10e3) return;
+  zStocksHlAt = Date.now(); renderTotals();
+  setTimeout(()=>{ if(Date.now() - zStocksHlAt >= 5000) renderTotals(); }, 5100);   // drop the class once the glow is done
+}, {threshold: .6}).observe(document.getElementById('zakat-stocks'));
 // bank messages waiting in the inbox: collect on open, on coming back, and every minute while open
 pullInbox();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) pullInbox(); });
