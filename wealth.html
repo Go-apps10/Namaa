@@ -97,7 +97,16 @@ header>div:first-child{flex:1;min-width:0}
 .note-it .dot{width:8px;height:8px;border-radius:50%;margin-top:7px}
 .note-it.new{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .note-it.new .dot{background:var(--accent)}
-.avatar-btn{order:3;width:44px;height:44px;border-radius:50%;padding:0;overflow:hidden;flex:none;border:2px solid var(--accent)}
+/* with a photo, the photo is the settings button (a small gear on its corner), so the top keeps two round buttons */
+.avatar-btn{order:3;width:44px;height:44px;border-radius:50%;padding:0;flex:none;border:2px solid var(--accent);position:relative;background:none}
+.avatar-btn img{border-radius:50%}
+.av-gear{position:absolute;bottom:-3px;inset-inline-end:-3px;width:18px;height:18px;border-radius:50%;background:var(--surface);border:1.5px solid var(--line);display:grid;place-items:center;color:var(--fg)}
+.av-gear svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+:root.has-avatar #btn-settings{display:none}
+@media (max-width:640px){
+  .avatar-btn,.btn-settings{width:40px;height:40px}
+  header{gap:8px}
+}
 .avatar-btn img,.avatar-pv img{width:100%;height:100%;object-fit:cover;display:block}
 .avatar-pv{width:56px;height:56px;border-radius:50%;overflow:hidden;background:var(--bg);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);flex:none}
 .avatar-pv svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
@@ -725,7 +734,6 @@ section.card.collapsed{gap:0}
       <button type="button" class="sync-ind" id="sync-ind" hidden data-open-settings="sync"></button>
       <button id="refresh" type="button" data-en="Refresh">تحديث الآن</button>
     </div>
-    <button id="btn-avatar" type="button" class="avatar-btn" hidden aria-haspopup="dialog" aria-label="بياناتك الشخصية" data-en-label="Your profile"><img id="avatar-img" alt=""></button>
     <button id="btn-bell" type="button" class="btn-settings btn-bell" aria-haspopup="dialog" aria-label="الإشعارات" data-en-label="Notifications">
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></svg>
       <span class="bell-n" id="bell-n" hidden></span>
@@ -733,6 +741,8 @@ section.card.collapsed{gap:0}
     <button id="btn-settings" type="button" class="btn-settings" aria-haspopup="dialog" aria-label="الإعدادات" data-en-label="Settings" title="الإعدادات">
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
     </button>
+    <button id="btn-avatar" type="button" class="avatar-btn" hidden aria-haspopup="dialog" aria-label="الإعدادات" data-en-label="Settings"><img id="avatar-img" alt="">
+      <span class="av-gear" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></span></button>
   </header>
 
   <div class="tools" data-tab="home">
@@ -1286,6 +1296,7 @@ let shownAvatar = null;
 function renderAvatar(){
   const src = shownAvatar = state.avatar || '';
   document.getElementById('btn-avatar').hidden = !src;
+  document.documentElement.classList.toggle('has-avatar', !!src);
   if(src) document.getElementById('avatar-img').src = src;
   document.getElementById('avatar-pv').innerHTML = src ? `<img src="${src}" alt="">` : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>';
   document.getElementById('btn-photo-off').hidden = !src;
