@@ -308,6 +308,21 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 @media (max-width:640px){.tx-filter{grid-template-columns:1fr 1fr}.tx-filter #tx-q{grid-column:1/-1}}
 .tx-found{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.85rem;color:var(--muted);margin:6px 0}
 .tx-found .linkish{margin-inline-start:auto;font-size:.85rem}
+/* AI */
+.ask-btn{border-color:var(--accent);color:var(--accent);font-weight:600}
+.scan-btn{border:1.5px dashed var(--accent);color:var(--accent);background:none;border-radius:12px;padding:12px;font-weight:600}
+.ai-chat{display:grid;gap:8px;max-height:50dvh;overflow:auto;align-content:start;padding:2px}
+.ai-msg{max-width:88%;padding:9px 13px;border-radius:14px;font-size:.93rem;line-height:1.65;white-space:normal;overflow-wrap:anywhere}
+.ai-msg.me{justify-self:end;background:var(--accent);color:#14110a;border-end-end-radius:4px}
+.ai-msg.ai{justify-self:start;background:var(--bg);border:1px solid var(--line);border-end-start-radius:4px}
+.ai-msg.typing{display:flex;gap:4px;padding:12px 14px}
+.ai-msg.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:ai-dot 1s infinite}
+.ai-msg.typing i:nth-child(2){animation-delay:.15s}.ai-msg.typing i:nth-child(3){animation-delay:.3s}
+@keyframes ai-dot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.ai-in{display:flex;gap:8px;align-items:flex-end}
+.ai-in textarea{flex:1;min-width:0;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;resize:none;max-height:120px}
+.ai-in .go-btn{padding:10px 16px;border-radius:12px}
+:root[dir="rtl"] .ai-in .go-btn{transform:scaleX(-1)}
 .goals{display:grid;gap:12px}
 .goal{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg);display:grid;gap:8px}
 .goal .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
@@ -768,6 +783,7 @@ section.card.collapsed{gap:0}
 
   <div class="tools" data-tab="home">
     <button type="button" id="btn-private" class="toggle" aria-pressed="false"></button>
+    <button type="button" id="btn-ask" class="ask-btn" hidden data-en="💬 Ask Namaa">💬 اسأل نماء</button>
     <span class="fold-all desk"></span>
   </div>
   <!-- phones: the same two icons at the top of each tab except Home -->
@@ -1021,6 +1037,11 @@ section.card.collapsed{gap:0}
   </div>
 
   <div class="dlg-sec">
+    <h3><span data-en="✨ AI assistant">✨ الذكاء الاصطناعي</span> <span class="pill idle" id="ai-pill"></span></h3>
+    <div id="ai-box" class="sync-box"></div>
+  </div>
+
+  <div class="dlg-sec">
     <h3><span data-en="Bank messages in the background">رسايل البنك في الخلفية</span> <span class="pill idle" id="inbox-pill"></span></h3>
     <div id="inbox-box" class="sync-box"></div>
   </div>
@@ -1235,7 +1256,7 @@ const DEFAULT_STATE = {
   tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'',
   pending:[], merchantCats:{}, autoKnown:true, budgetTotal:'',
   deletedTx:[], deletedPending:[], deletedRec:[], deletedCats:[], hiddenCats:[], notes:[], notesSeenAt:0, notesClearedAt:0, _savedAt:0,
-  nDebt:true, goals:[], deletedGoals:[],
+  nDebt:true, goals:[], deletedGoals:[], aiOn:false,
   userName:'', avatar:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
 };
 
@@ -1309,7 +1330,7 @@ function applyLang(){
     : L('افتحه زي أي تطبيق من الشاشة الرئيسية.', 'Open it like any app from your home screen.');
   resetClearButton();
   renderHello(); renderAvatar(); renderNotify(); renderPin(); applyPrivate(isPrivate());
-  if(dlg.open){ renderSync(); renderInbox(); }
+  if(dlg.open){ renderSync(); renderInbox(); renderAi(); }
 }
 // the person's photo: shown at the top next to Settings, and in Settings with choose / remove
 let shownAvatar = null;
@@ -2204,7 +2225,7 @@ document.getElementById('zToday').addEventListener('click', ()=>{ state.zDate = 
 /* ---------- settings dialog ---------- */
 const dlg = document.getElementById('settings');
 function openSettings(part){
-  syncStatic(); renderBackupNote(); renderNotify(); renderSync(); renderInbox();
+  syncStatic(); renderBackupNote(); renderNotify(); renderSync(); renderInbox(); renderAi();
   if(!dlg.open) dlg.showModal();
   if(part==='notify') document.getElementById('notify-box').scrollIntoView({block:'start'});
   if(part==='sync') document.getElementById('sync-box').scrollIntoView({block:'center'});
@@ -3276,7 +3297,7 @@ function renderMoney(){
         ${rate2!==null ? `<span class="s">${L('نسبة التوفير','Savings rate')} ${fmt(rate2,0)}${PCT()}</span>` : ''}</div>
     </div>
     ${txs.length ? '' : `<div class="rep-empty">${L('مفيش عمليات في الشهر دا. سجّل مصروف أو دخل من زرار الإضافة (+) أو من هنا.', 'No transactions this month. Add spending or income with the add (+) button or here.')}</div>`}
-    <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button></div>
+    <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button>${AI_URL ? `<button type="button" class="ask-btn" data-ask>💬 ${L('اسأل نماء','Ask Namaa')}</button>` : ''}</div>
     ${parts.length ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}${vsPrev(p.v, prevBy[p.id])}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
     ${notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : ''}
     <div class="m-sub"><h3>${L('الميزانيات','Budgets')}</h3><button type="button" data-budedit>${budIds.length || bTotal ? L('تعديل الميزانيات','Edit budgets') : L('حدّد ميزانية','Set budgets')}</button></div>
@@ -3301,6 +3322,137 @@ document.getElementById('money-body').addEventListener('input', e=>{
   refreshTxList();
 });
 document.getElementById('money-body').addEventListener('change', e=>{ if(e.target.id==='tx-cf'){ txF.cat = e.target.value; refreshTxList(); } });
+/* ---------- AI: "Ask Namaa" and receipt photos, through the app's own Cloudflare Worker (cloudflare-worker.js) ----------
+   Off until the person turns it on. Questions send a summary of figures (totals by category, assets, goals) — never shop
+   names or individual transactions; receipts send the photo. Each user has a daily allowance, kept by the worker. */
+const AI_URL = 'https://namaa-ai.mohamedmmourad862.workers.dev';   // the Worker's address — empty hides the feature
+const aiReady = () => !!AI_URL && !!state.aiOn;
+let aiChat = [], aiBusy = false, aiLeft = {ask: null, receipt: null};
+async function aiCall(kind, body){
+  const f = await fbInit();
+  const token = await f.auth.currentUser.getIdToken();
+  const r = await fetch(`${AI_URL.replace(/\/$/, '')}/${kind}`, {method:'POST', headers:{'Content-Type':'application/json', 'Authorization':'Bearer ' + token}, body: JSON.stringify(body)});
+  const j = await r.json().catch(()=>({ok:false, error:'net'}));
+  if(typeof j.left==='number') aiLeft[kind] = j.left;
+  if(!j.ok) throw new Error(j.error || 'ai');
+  return j;
+}
+const aiErr = e => e.message==='limit' ? L('خلّصت المرات المسموحة النهارده. ارجع بكرة.', "You've used today's allowance. Come back tomorrow.")
+  : navigator.onLine===false || e.message==='net' ? L('مفيش نت دلوقتي.', 'No connection right now.')
+  : e.message==='auth' ? L('مقدرتش أتأكد من حسابك. جرّب تاني.', "Couldn't verify the app. Try again.")
+  : L('الذكاء الاصطناعي مشغول دلوقتي. جرّب كمان شوية.', 'The AI is busy right now. Try again in a bit.');
+// what a question is answered from: figures only
+function aiContext(){
+  const t = totals(), mk0 = monthKey(Date.now()), months = [];
+  for(let i = 0; i < 6; i++){
+    const mk = monthKey(new Date(+mk0.slice(0,4), +mk0.slice(5,7)-1-i, 15).getTime()), list = monthTx(mk);
+    if(!list.length && i) continue;
+    const byCat = {}; list.filter(x=>x.type==='exp').forEach(x=>{ const n = catName(catById(x.cat)); byCat[n] = Math.round((byCat[n]||0) + txEgp(x)); });
+    months.push({month: mk, income: Math.round(list.filter(x=>x.type==='inc').reduce((a,x)=>a+txEgp(x),0)),
+      spending: Math.round(list.filter(x=>x.type==='exp').reduce((a,x)=>a+txEgp(x),0)), spendingByCategory: byCat});
+  }
+  const r0 = n => isFinite(n) ? Math.round(n) : null;
+  return {
+    today: today(), currency: 'EGP',
+    netWorth: r0(t.net), assets: {gold: r0(t.gold), silver: r0(t.silver), cash: r0(t.cash), egyptianStocks: r0(t.stocks), other: r0(t.other)}, debts: r0(t.debts),
+    goldGrams: state.gold.reduce((a,g)=>({...a, [g.k]: (a[g.k]||0) + num(g.w)}), {}),
+    prices: {gold21PerGram: r0(goldPrice('21')), gold24PerGram: r0(goldPrice('24')), usdInEgp: usdEgp() ? +usdEgp().toFixed(2) : null},
+    months,
+    budgets: {monthlyTotal: num(state.budgetTotal) || null, byCategory: Object.fromEntries(Object.entries(state.budgets).filter(([,v])=>num(v)>0).map(([k,v])=>[catName(catById(k)), num(v)]))},
+    recurringMonthly: state.recurring.map(x=>({category: catName(catById(x.cat)), type: x.type==='exp'?'expense':'income', amount: num(x.amount), day: x.day})),
+    instalments: state.debts.filter(d=>num(d.inst)>0).map(d=>({remaining: num(d.a), monthly: num(d.inst), dueDay: num(d.day)||null})),
+    savingsGoals: state.goals.map(g=>({name: g.name, target: num(g.target), saved: num(g.saved), by: g.date || null})),
+    zakat: {base: r0(zakatBase(t)), nisab: r0(goldPrice('24')*85), hawlStarted: state.zDate || null, note: 'stocks are excluded; their zakat is on 31 December via Borsa Halal'},
+  };
+}
+function renderAi(){
+  const box = document.getElementById('ai-box'), pill = document.getElementById('ai-pill'); if(!box) return;
+  pill.className = 'pill ' + (aiReady() ? 'ok' : 'idle');
+  pill.textContent = aiReady() ? L('شغال','On') : L('مقفول','Off');
+  if(!AI_URL){ box.innerHTML = `<div class="note">${L('الميزة دي لسه بتتجهّز.','This feature is being set up.')}</div>`; return; }
+  box.innerHTML = `<div class="note">${L('💬 <b>اسأل نماء</b> عن فلوسك بالكلام، و🧾 <b>صوّر فاتورة</b> وهي تتسجّل لوحدها. مجاني، بحد يومي: 20 سؤال و20 فاتورة.',
+      '💬 <b>Ask Namaa</b> about your money in plain words, and 🧾 <b>snap a receipt</b> to record it. Free, with a daily allowance: 20 questions and 20 receipts.')}</div>
+    <div class="note">🔒 ${L('لما تشغّلها، <b>ملخص أرقامك</b> (إجماليات الفئات والأصول والأهداف، من غير أسماء محلات ولا عمليات) بيتبعت لـ Cloudflare عشان يتحلل ويرجعلك الرد، وصورة الفاتورة بتتبعت عشان تتقرا. مش بيتحفظوا ومش بيتستخدموا في تدريب أي ذكاء اصطناعي.',
+      'When on, a <b>summary of your figures</b> (totals by category, assets and goals — no shop names or transactions) goes to Cloudflare to be analysed, and receipt photos go to be read. Neither is stored or used to train any AI.')}</div>
+    <label class="checks"><span style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="ai-toggle" ${state.aiOn?'checked':''}> ${L('شغّل الذكاء الاصطناعي على أجهزتي','Turn on AI on my devices')}</span></label>`;
+}
+document.getElementById('btn-ask').hidden = !AI_URL;
+document.getElementById('btn-ask').addEventListener('click', ()=>{ openAsk(); buzz(6); });
+document.getElementById('ai-box').addEventListener('change', e=>{
+  if(e.target.id!=='ai-toggle') return;
+  state.aiOn = e.target.checked; save(); render(); renderAi();
+  toast(state.aiOn ? L('اتشغّل الذكاء الاصطناعي ✨', 'AI is on ✨') : L('اتقفل الذكاء الاصطناعي.', 'AI is off.'));
+});
+// the chat: kept for this visit only
+function openAsk(){
+  sheetSec = 'ask';
+  document.getElementById('sheet-title').textContent = '💬 ' + L('اسأل نماء','Ask Namaa');
+  if(!aiReady()){
+    sheetBody.innerHTML = `<div class="note">${L('شغّل الذكاء الاصطناعي الأول من الإعدادات. هتلاقي هناك إيه اللي بيتبعت وإزاي.', 'Turn on AI in Settings first; it explains what is sent and how.')}</div>
+      <button type="button" class="go-btn" data-ai-settings>${L('افتح الإعدادات','Open Settings')}</button>`;
+  } else renderAsk();
+  if(!sheet.open) sheet.showModal();
+}
+const AI_SAMPLES = [['صرفت كام على الأكل الشهر دا مقارنة باللي فات؟','How much did I spend on food this month vs last?'],
+  ['لو حوّشت 5 آلاف في الشهر أوصل لهدفي إمتى؟','If I save 5,000 a month, when do I reach my goal?'],
+  ['إيه أكتر حاجة بصرف عليها؟ وأوفّر منين؟','Where does most of my money go, and where can I save?'],
+  ['ثروتي بالذهب تساوي كام جرام عيار 21؟','How many grams of 21k gold is my net worth?']];
+function renderAsk(){
+  const msgs = aiChat.map(m=>`<div class="ai-msg ${m.role==='user'?'me':'ai'}">${esc(m.content).replace(/\n/g,'<br>')}</div>`).join('');
+  sheetBody.innerHTML = `<div class="ai-chat" id="ai-chat">${msgs || `<div class="note">${L('اسأل أي سؤال عن فلوسك، أو جرّب واحد من دول:','Ask anything about your money, or try one of these:')}</div>
+      <div class="chips">${AI_SAMPLES.map(s=>`<button type="button" data-ai-sample>${L(...s)}</button>`).join('')}</div>`}
+      ${aiBusy ? `<div class="ai-msg ai typing"><i></i><i></i><i></i></div>` : ''}</div>
+    <div class="ai-in"><textarea id="ai-q" rows="1" maxlength="500" placeholder="${L('اكتب سؤالك…','Type your question…')}"></textarea>
+      <button type="button" class="go-btn" data-ai-send ${aiBusy?'disabled':''} aria-label="${L('ابعت','Send')}">➤</button></div>
+    <div class="note" style="text-align:center">${aiLeft.ask!==null ? L(`فاضل ${fmt(aiLeft.ask,0)} سؤال النهارده · `, `${aiLeft.ask} questions left today · `) : ''}${L('الردود ممكن تغلط، راجع الأرقام المهمة.','Answers can be wrong; double-check what matters.')}</div>`;
+  const c = document.getElementById('ai-chat'); c.scrollTop = c.scrollHeight;
+}
+async function askSend(text){
+  text = (text||'').trim(); if(!text || aiBusy) return;
+  aiChat.push({role:'user', content:text}); aiBusy = true; renderAsk();
+  try{
+    // failed replies stay on screen but aren't sent back as conversation
+    const j = await aiCall('ask', {lang: LANG, context: aiContext(), messages: aiChat.filter(m=>!m.err).slice(-6).map(({role, content})=>({role, content}))});
+    aiChat.push({role:'assistant', content:j.answer});
+  }catch(e){ aiChat.push({role:'assistant', content:'⚠️ ' + aiErr(e), err:true}); }
+  aiBusy = false;
+  if(sheet.open && sheetSec==='ask') renderAsk();
+}
+sheetBody.addEventListener('click', e=>{
+  if(e.target.closest('[data-ai-settings]')){ sheet.close(); openSettings(); return; }
+  if(sheetSec!=='ask') return;
+  const s = e.target.closest('[data-ai-sample]'); if(s){ askSend(s.textContent); return; }
+  if(e.target.closest('[data-ai-send]')) askSend(document.getElementById('ai-q').value);
+});
+sheetBody.addEventListener('keydown', e=>{ if(sheetSec==='ask' && e.target.id==='ai-q' && e.key==='Enter' && !e.shiftKey){ e.preventDefault(); askSend(e.target.value); } });
+// receipt photo → amount, shop, date and category filled in for review
+async function scanReceipt(file){
+  const btn = sheetBody.querySelector('[data-txscan]');
+  // reading a photo takes the free model half a minute or so; say so, so nobody thinks it froze
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ ' + L('بيقرا الفاتورة… ممكن ياخد لحد دقيقة','Reading the receipt… this can take up to a minute'); }
+  try{
+    const url = URL.createObjectURL(file);
+    const img = await new Promise((ok, no)=>{ const i = new Image(); i.onload = ()=>ok(i); i.onerror = no; i.src = url; });
+    // ~1000px on the long side keeps the text readable while the upload and the model's work stay small
+    const k = Math.min(1, 1000 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+    const j = await aiCall('receipt', {image: c.toDataURL('image/jpeg', .8), categories: cats('exp').map(x=>({id:x.id, name:catName(x)}))});
+    const r = j.receipt || {};
+    if(!(r.amount > 0)){ toast(L('مقدرتش ألاقي مبلغ في الصورة دي. جرّب صورة أوضح.', "Couldn't find a total in that photo. Try a clearer one.")); return; }
+    if(r.category && cats('exp').some(x=>x.id===r.category)) txDraft.cat = r.category;
+    renderTxSheet();
+    document.getElementById('t-amt').value = r.amount;
+    if(r.merchant) document.getElementById('t-note').value = r.merchant;
+    if(r.date && r.date <= today()) document.getElementById('t-date').value = r.date;
+    toast(L(`اتقرت الفاتورة ✓ راجع وبعدين احفظ.${aiLeft.receipt!==null ? ` (فاضل ${fmt(aiLeft.receipt,0)} النهارده)` : ''}`, `Receipt read ✓ Check it, then save.${aiLeft.receipt!==null ? ` (${aiLeft.receipt} left today)` : ''}`));
+    buzz();
+  }catch(e){ toast(aiErr(e)); }
+  finally{ const b = sheetBody.querySelector('[data-txscan]'); if(b){ b.disabled = false; b.textContent = '🧾 ' + L('صوّر فاتورة وهي تتملي لوحدها','Snap a receipt to fill this in'); } }
+}
+sheetBody.addEventListener('click', e=>{ if(sheetSec==='tx' && e.target.closest('[data-txscan]')) document.getElementById('t-scan')?.click(); });
+sheetBody.addEventListener('change', e=>{ if(e.target.id==='t-scan' && e.target.files[0]){ const f = e.target.files[0]; e.target.value = ''; scanReceipt(f); } });
+
 /* ---------- savings goals: a name, a target, what's put aside so far and an optional date ----------
    Putting money aside here doesn't move any account balance; it tracks what's set apart for the goal. */
 function goalPlan(g){
@@ -3435,6 +3587,7 @@ document.getElementById('money-body').addEventListener('click', e=>{
   if(b.dataset.txdel) delTx(b.dataset.txdel);
   else if(b.dataset.txexport!==undefined) exportTx();
   else if(b.dataset.txpdf!==undefined) exportPdf();
+  else if(b.dataset.ask!==undefined) openAsk();
   else if(b.dataset.txclear!==undefined){ txF.q = ''; txF.cat = ''; txF.min = ''; renderMoney(); }
   else if(b.dataset.txadd) openTx(b.dataset.txadd);
   else if(b.dataset.budedit!==undefined) openBudgets();
@@ -3484,6 +3637,8 @@ function renderTxSheet(fresh){
   const row = acctById(d.acct), curLbl = row && row.c!=='EGP' ? lbl(CURRENCIES.find(c=>c.id===row.c)) : L('ج.م','EGP');
   document.getElementById('sheet-title').textContent = d.type==='exp' ? L('مصروف جديد','New expense') : L('دخل جديد','New income');
   sheetBody.innerHTML = `
+    ${aiReady() && d.type==='exp' ? `<button type="button" class="scan-btn" data-txscan>🧾 ${L('صوّر فاتورة وهي تتملي لوحدها','Snap a receipt to fill this in')}</button>
+      <input type="file" id="t-scan" accept="image/*" capture="environment" hidden>` : ''}
     <div class="seg"><button type="button" data-txtype="exp" aria-pressed="${d.type==='exp'}">${L('مصروف','Expense')}</button><button type="button" data-txtype="inc" aria-pressed="${d.type==='inc'}">${L('دخل','Income')}</button></div>
     ${fld(L(`المبلغ (${curLbl})`, `Amount (${curLbl})`), `<input id="t-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${esc(amt)}">`)}
     <div class="field"><span>${L('الفئة','Category')}</span><div class="chips">${cats(d.type).map(c=>{
@@ -4190,8 +4345,10 @@ async function fbInit(){
   const base = `https://www.gstatic.com/firebasejs/${FB_V}/`;
   const [A, Au, F] = await Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]);
   const app = A.initializeApp(FB_CONFIG), auth = Au.getAuth(app);
+  // wait for the saved sign-in to load, so the same anonymous user comes back instead of a new one each visit
+  try{ await auth.authStateReady(); }catch(e){}
   if(!auth.currentUser) await Au.signInAnonymously(auth);
-  fb = {F, db: F.getFirestore(app)};
+  fb = {F, db: F.getFirestore(app), auth};
   return fb;
 }
 const metaRef = () => fb.F.doc(fb.db, 'vaults', vault.id, 'data', 'meta');
