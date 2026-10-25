@@ -16,6 +16,11 @@
     "method": "GET",
     "params": { "title": "from", "text": "sms" }
   },
+  "shortcuts": [
+    { "name": "مصروف جديد", "short_name": "مصروف", "url": "./wealth.html?go=exp", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "لصق رسالة بنك", "short_name": "رسالة بنك", "url": "./wealth.html?go=paste", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "الزكاة", "short_name": "الزكاة", "url": "./wealth.html?go=zakat", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] }
+  ],
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
