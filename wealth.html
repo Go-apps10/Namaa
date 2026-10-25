@@ -398,6 +398,10 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .fab{position:fixed;inset-inline-end:max(18px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:15;
   width:56px;height:56px;border-radius:18px;border:0;background:var(--accent);color:#14110a;display:grid;place-items:center;
   box-shadow:0 8px 22px rgba(0,0,0,.28)}
+.fab-ai{display:none;position:fixed;z-index:15;width:46px;height:46px;border-radius:50%;padding:0;place-items:center;
+  inset-inline-end:calc(max(18px,env(safe-area-inset-right,0px)) + 5px);bottom:calc(144px + env(safe-area-inset-bottom,0px));
+  background:var(--surface);color:var(--accent);border:1.5px solid var(--accent);box-shadow:0 6px 18px rgba(0,0,0,.28)}
+:root.locked .fab-ai{visibility:hidden}
 .fab:hover{filter:brightness(1.06)}
 :root.locked .fab,:root.locked .bnav{visibility:hidden}
 .sheet{border:1px solid var(--line);border-radius:18px 18px 0 0;padding:0;background:var(--surface);color:var(--fg);
@@ -586,6 +590,8 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
   .bnav button[aria-current=page]{color:var(--accent);font-weight:600}
   .wrap{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
   .fab{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  .fab-ai:not([hidden]){display:grid}
+  .tools .ask-btn{display:none}
   .toasts{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
   .wrap>.tab-off{display:none!important}
 }
@@ -1104,6 +1110,10 @@ section.card.collapsed{gap:0}
 <div class="ptr" id="ptr" hidden></div>
 
 <!-- quick add: floating button and a bottom sheet with a short form per holding type -->
+<!-- phones: the AI chat sits above the add button -->
+<button type="button" class="fab-ai" id="fab-ai" hidden aria-label="اسأل نماء" data-en-label="Ask Namaa">
+  <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 12.5a7.5 7.5 0 0 1-11.2 6.5L4 20l1.1-4.3A7.5 7.5 0 1 1 20 12.5z"/><path d="M12.5 8.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z" style="fill:currentColor;stroke-width:1"/></svg>
+</button>
 <button type="button" class="fab" id="fab" aria-label="إضافة" data-en-label="Add">
   <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg>
 </button>
@@ -3377,6 +3387,8 @@ function renderAi(){
     <label class="checks"><span style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="ai-toggle" ${state.aiOn?'checked':''}> ${L('شغّل الذكاء الاصطناعي على أجهزتي','Turn on AI on my devices')}</span></label>`;
 }
 document.getElementById('btn-ask').hidden = !AI_URL;
+document.getElementById('fab-ai').hidden = !AI_URL;
+document.getElementById('fab-ai').addEventListener('click', ()=>{ openAsk(); buzz(6); });
 document.getElementById('btn-ask').addEventListener('click', ()=>{ openAsk(); buzz(6); });
 document.getElementById('ai-box').addEventListener('change', e=>{
   if(e.target.id!=='ai-toggle') return;
