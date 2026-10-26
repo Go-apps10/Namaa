@@ -118,6 +118,9 @@ header>div:first-child{flex:1;min-width:0}
 .theme button[aria-pressed=true],.toggle[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.88rem}
 .fold-all{display:flex;gap:6px;justify-content:flex-end;margin-inline-start:auto}
+.eye-btn{width:36px;height:36px;padding:0;display:grid;place-items:center;border-radius:10px;color:var(--muted)}
+.eye-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.eye-btn[aria-pressed=true]{color:var(--accent);border-color:var(--accent)}
 .fold-all button{width:36px;height:36px;padding:0;display:grid;place-items:center;border-radius:10px;color:var(--muted)}
 .fold-all button:hover{color:var(--fg)}
 .fold-all svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -308,6 +311,82 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 @media (max-width:640px){.tx-filter{grid-template-columns:1fr 1fr}.tx-filter #tx-q{grid-column:1/-1}}
 .tx-found{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.85rem;color:var(--muted);margin:6px 0}
 .tx-found .linkish{margin-inline-start:auto;font-size:.85rem}
+/* daily allowance (Home) */
+.allow{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:16px 18px;display:grid;gap:8px}
+.allow .l{font-size:.85rem;color:var(--muted)}
+.allow .big{font:700 1.9rem/1.15 var(--display);color:var(--up)}
+.allow.over .big{color:var(--down)}
+.allow .bar2{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.allow .bar2 span{display:block;height:100%;border-radius:4px;background:var(--up)}
+.allow.warn .bar2 span{background:var(--warn)}.allow.over .bar2 span{background:var(--down)}
+.allow .s{font-size:.82rem;color:var(--muted)}
+.allow.empty{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+/* loans and savings circles */
+.people{display:grid;gap:14px}
+.pp-sum{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.pp-sum>div{background:var(--surface);padding:10px 14px;display:grid;gap:2px}
+.pp-sum .l{font-size:.75rem;color:var(--muted)}.pp-sum .v{font-weight:600}
+.pp-list{display:grid;gap:8px}
+.pp{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);display:grid;gap:6px}
+.pp .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.pp .top b{font-weight:600}
+.pp .s{font-size:.8rem;color:var(--muted)}
+.pp .row button{font-size:.82rem;padding:5px 11px}
+.pp.done{opacity:.6}
+.pp .bar2{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.pp .bar2 span{display:block;height:100%;background:var(--certs)}
+/* commitments calendar */
+.cal{display:grid;gap:10px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}
+.cal-grid .wd{font-size:.7rem;color:var(--muted);padding:2px 0}
+.cal-grid button{border:1px solid transparent;border-radius:8px;padding:5px 0 4px;background:var(--bg);font-size:.82rem;display:grid;gap:2px;justify-items:center;min-height:42px;color:var(--fg)}
+.cal-grid button.today{border-color:var(--accent)}
+.cal-grid button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+.cal-grid button .dots{display:flex;gap:2px;height:6px}
+.cal-grid button .dots i{width:5px;height:5px;border-radius:50%}
+.cal-ev{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.cal-ev .d{color:var(--muted);font-size:.78rem;min-width:56px}
+.cal-ev .n{flex:1;min-width:0}
+/* achievements */
+.badges{display:grid;gap:12px}
+.bdg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.bdg{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg);display:grid;gap:2px;justify-items:center;text-align:center}
+.bdg .ic{font-size:1.6rem}.bdg b{font-size:.8rem;font-weight:600}.bdg small{font-size:.7rem;color:var(--muted)}
+.bdg.locked{opacity:.4;filter:grayscale(1)}
+.wrap-btn{background:linear-gradient(135deg,#123326,#3a2a5c);color:#fff;border:0;border-radius:14px;padding:14px;font-weight:600;font-size:1rem}
+/* year in review story */
+.story{position:fixed;inset:0;z-index:80;color:#fff;display:grid;place-items:center;overflow:hidden;
+  background:linear-gradient(160deg,var(--s1,#123326),var(--s2,#0a1c16));transition:background .6s}
+.st-bars{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));inset-inline:14px;display:flex;gap:4px;z-index:2}
+.st-bars i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.3);overflow:hidden}
+.st-bars i b{display:block;height:100%;width:0;background:#fff}
+.st-bars i.done b{width:100%}
+.st-bars i.now b{animation:gbar 5.5s linear forwards}
+.st-x{position:absolute;top:calc(24px + env(safe-area-inset-top,0px));inset-inline-end:12px;z-index:3;background:none;border:0;color:#fff;font-size:1.8rem;padding:4px 10px}
+.st-slide{width:min(440px,100%);padding:70px 26px 40px;display:grid;gap:14px;text-align:center;animation:t-in .5s ease both}
+.st-slide .ic{font-size:64px;line-height:1}
+.st-slide .k{font-size:1rem;opacity:.8}
+.st-slide .v{font:700 2.4rem/1.15 var(--display);color:#ffd27a}
+.st-slide .s{font-size:1rem;opacity:.9;line-height:1.7}
+.st-slide ol{margin:0;padding:0;list-style:none;display:grid;gap:8px;text-align:start}
+.st-slide ol li{display:flex;justify-content:space-between;gap:10px;background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px}
+.st-slide .row{justify-content:center}
+.st-slide .row button{background:#ffd27a;color:#14110a;border:0;font-weight:600;border-radius:12px;padding:12px 18px}
+.st-slide .row button.ghost{background:rgba(255,255,255,.15);color:#fff}
+/* notifications dropdown (laptops) */
+.notes-pop{position:fixed;z-index:30;width:min(380px,calc(100vw - 24px));max-height:min(70vh,560px);overflow:auto;background:var(--surface);
+  border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 48px rgba(0,0,0,.35);padding:8px;display:grid;gap:6px;animation:gin .18s ease}
+.notes-pop[hidden]{display:none}
+.notes-pop .pop-head{padding:6px 8px 2px;font-family:var(--display)}
+/* voice */
+.mic-btn{border:1.5px dashed var(--line);border-radius:12px;padding:10px;font-weight:600;background:none;color:var(--fg)}
+.mic-btn.on{border-color:var(--down);color:var(--down);animation:mic 1s ease-in-out infinite}
+@keyframes mic{50%{opacity:.55}}
+.tx-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tx-tools>:only-child{grid-column:1/-1}
+.gc-out{display:grid;gap:0;border:1px solid var(--line);border-radius:12px;padding:4px 12px;background:var(--bg)}
+.gc-out:empty{display:none}
+.gc-out .cal-ev:last-child{border-bottom:0}
 /* AI */
 .ask-btn{border-color:var(--accent);color:var(--accent);font-weight:600}
 .scan-btn{border:1.5px dashed var(--accent);color:var(--accent);background:none;border-radius:12px;padding:12px;font-weight:600}
@@ -788,7 +867,7 @@ section.card.collapsed{gap:0}
   </header>
 
   <div class="tools" data-tab="home">
-    <button type="button" id="btn-private" class="toggle" aria-pressed="false"></button>
+    <button type="button" id="btn-private" class="toggle eye-btn" data-private-btn aria-pressed="false"></button>
     <button type="button" id="btn-ask" class="ask-btn" hidden data-en="💬 Ask Namaa AI">💬 اسأل نماء AI</button>
     <span class="fold-all desk"></span>
   </div>
@@ -828,6 +907,11 @@ section.card.collapsed{gap:0}
       <div class="goal-plan m" id="goal-plan" hidden></div>
     </div>
   </div>
+
+  <!-- what can be spent today, from the month's budget -->
+  <div class="allow" id="allow" data-tab="home"></div>
+  <!-- how many months of spending the cash covers -->
+  <div class="allow" id="efund" data-tab="home" hidden></div>
 
   <!-- three swipeable cards: history chart, monthly reports, yearly reports -->
   <section class="card" id="sec-insights" data-tab="reports">
@@ -904,6 +988,16 @@ section.card.collapsed{gap:0}
     <div class="goals" id="goals-body"></div>
   </section>
 
+  <section class="card" id="sec-cal" data-tab="money">
+    <div class="sec-head"><h2><span class="dot" style="background:var(--stocks)"></span><span data-en="Commitments calendar">تقويم الالتزامات</span></h2></div>
+    <div id="cal-body" class="cal"></div>
+  </section>
+
+  <section class="card" id="sec-badges" data-tab="reports">
+    <div class="sec-head"><h2><span class="dot" style="background:var(--accent)"></span><span data-en="Your achievements">إنجازاتك</span></h2></div>
+    <div id="badges-body" class="badges"></div>
+  </section>
+
   <section class="card" id="sec-zakat" data-tab="zakat">
     <div class="sec-head"><h2><span data-en="Zakat">الزكاة</span></h2><span class="sec-sum m" id="zakat-sum"></span></div>
     <div class="zk" id="zakat-grid"></div>
@@ -939,6 +1033,7 @@ section.card.collapsed{gap:0}
       <label for="goldPremium" id="goldPremium-wrap"><span data-en="Local market premium (%)">فرق السوق المحلي (٪)</span><input id="goldPremium" type="number" step="0.1" data-set="goldPremium"></label>
     </div>
     <div class="note" id="source-note"></div>
+    <div class="row"><button type="button" class="ask-btn" data-goldcalc data-en="🧮 Gold buy / sell calculator">🧮 حاسبة شراء وبيع الدهب</button><span class="note m" id="gold-avg"></span></div>
     <div class="tbl-wrap"><table class="gold-tbl"><thead><tr><th data-en="Karat">العيار</th><th data-en="Weight / count">الوزن / العدد</th><th data-en="Price">السعر</th><th data-en="Value">القيمة</th><th data-en="Total paid">اشتريته بكام (إجمالي)</th><th data-en="Profit / loss">الربح / الخسارة</th><th data-en="Worn">ملبوس</th><th></th></tr></thead><tbody id="gold-rows"></tbody></table></div>
     <button class="add" type="button" data-add="gold" data-en="+ Add gold">+ إضافة ذهب</button>
   </section>
@@ -978,6 +1073,11 @@ section.card.collapsed{gap:0}
     <div class="sub-sum m" id="debts-inst"></div>
     <div class="tbl-wrap"><table><thead><tr><th data-en="Description">الوصف</th><th data-en="Remaining (EGP)">المبلغ المتبقي (ج.م)</th><th data-en="Monthly instalment (EGP)">القسط الشهري (ج.م)</th><th data-en="Due day">يوم القسط</th><th></th></tr></thead><tbody id="debts-rows"></tbody></table></div>
     <button class="add" type="button" data-add="debts" data-en="+ Add debt or instalment">+ إضافة دين أو قسط</button>
+  </section>
+
+  <section class="card" id="sec-people" data-tab="assets">
+    <div class="sec-head"><h2><span class="dot" style="background:var(--certs)"></span><span data-en="Loans and savings circles">السلف والجمعيات</span></h2><span class="sec-sum m" id="sum-people"></span></div>
+    <div id="people-body" class="people"></div>
   </section>
 
   <section class="card" id="sec-alerts" data-tab="alerts">
@@ -1110,6 +1210,14 @@ section.card.collapsed{gap:0}
 <div class="ptr" id="ptr" hidden></div>
 
 <!-- quick add: floating button and a bottom sheet with a short form per holding type -->
+<!-- year in review: full-screen story -->
+<div class="story" id="story" hidden role="dialog" aria-modal="true" aria-label="ملخص السنة">
+  <div class="st-bars" id="st-bars"></div>
+  <button type="button" class="st-x" id="st-x" aria-label="إغلاق" data-en-label="Close">×</button>
+  <div class="st-slide" id="st-slide"></div>
+</div>
+<!-- laptops: notifications drop down under the bell -->
+<div class="notes-pop" id="notes-pop" hidden></div>
 <!-- phones: the AI chat sits above the add button -->
 <button type="button" class="fab-ai" id="fab-ai" hidden aria-label="اسأل نماء AI" data-en-label="Ask Namaa AI">
   <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 12.5a7.5 7.5 0 0 1-11.2 6.5L4 20l1.1-4.3A7.5 7.5 0 1 1 20 12.5z"/><path d="M12.5 8.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z" style="fill:currentColor;stroke-width:1"/></svg>
@@ -1267,6 +1375,8 @@ const DEFAULT_STATE = {
   pending:[], merchantCats:{}, autoKnown:true, budgetTotal:'',
   deletedTx:[], deletedPending:[], deletedRec:[], deletedCats:[], hiddenCats:[], notes:[], notesSeenAt:0, notesClearedAt:0, _savedAt:0,
   nDebt:true, goals:[], deletedGoals:[], aiOn:false,
+  loans:[], gamaeyas:[], deletedLoans:[], deletedGam:[], badges:{}, badgesInit:false,
+  rules:[], deletedRules:[], subIgnore:[], subNotified:{},
   userName:'', avatar:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
 };
 
@@ -1466,6 +1576,9 @@ async function refresh(){
     checkAlerts();
     trackNisab();
     checkReminders();
+    checkPeople();
+    checkSubs();
+    checkWrap();
     recordSnapshot();
     checkMonthly();
   }catch(e){
@@ -1934,6 +2047,8 @@ const ROW_SECS = ['gold','silver','cash','stocks','other','debts','alerts'];
 function render(){
   if((state.avatar||'') !== shownAvatar) renderAvatar();   // a photo set on another device arrives with sync
   renderBell();
+  renderAllow(); renderEfund(); renderPeople(); renderCal(); renderBadges(); renderGoldAvg();
+  setTimeout(checkBadges, 0);   // after this render, so a new achievement's message doesn't land mid-render
   renderStamp();
   renderMarket();
   renderTicker();
@@ -2268,7 +2383,7 @@ async function notify(body, tag, push=true){
 const NOTE_KINDS = [   // tag prefix, icon, where tapping it goes
   ['price','📈','alerts'], ['budget','📊','money'], ['zakat','🕌','zakat'], ['backup','💾','settings'],
   ['monthly','📅','reports'], ['sms','💳','money'], ['recur','🔁','money'], ['sync','☁','settings'],
-  ['debt','🗓','assets'], ['goal','🎯','money'],
+  ['debt','🗓','assets'], ['goal','🎯','goals'], ['loan','🤝','people'], ['gam','🫂','people'], ['ach','🏆','badges'], ['wrap','🎁','badges'], ['sub','🔁','money'],
 ];
 const noteKind = tag => NOTE_KINDS.find(k=>(tag||'').startsWith(k[0]));
 function logNote(tag, body){
@@ -2293,34 +2408,55 @@ function noteWhen(t){
   if(d===dayKey(Date.now() - DAY)) return L(`امبارح ${time}`, `Yesterday ${time}`);
   return new Date(t).toLocaleDateString(LOC(), {day:'numeric', month:'short'}) + ' · ' + time;
 }
-function openNotes(){
-  const seenBefore = state.notesSeenAt;
-  state.notesSeenAt = Date.now(); save(); renderBell();
-  sheetSec = 'notes';
-  document.getElementById('sheet-title').textContent = L('الإشعارات','Notifications');
+// where tapping a notification goes: [tab, section]
+const NOTE_GO = {alerts:['alerts','sec-alerts'], money:['money','sec-money'], zakat:['zakat','sec-zakat'], reports:['reports','sec-insights'],
+  assets:['assets','sec-debts'], people:['assets','sec-people'], goals:['money','sec-goals'], cal:['money','sec-cal'], badges:['reports','sec-badges'], home:['home', null]};
+const notesPop = document.getElementById('notes-pop');
+const popMode = () => matchMedia('(min-width:641px)').matches;   // laptops: a dropdown under the bell; phones: the bottom sheet
+function notesHtml(seenBefore){
   const list = [...state.notes].reverse();
-  sheetBody.innerHTML = list.length
+  return list.length
     ? `<div class="notes">${list.map(x=>{ const k = noteKind(x.kind) || NOTE_KINDS[0];
         return `<button type="button" class="note-it${x.t > seenBefore ? ' new' : ''}" data-note-go="${k[2]}"><span class="ic">${k[1]}</span><span>${esc(x.body)}<small>${noteWhen(x.t)}</small></span><i class="dot"></i></button>`; }).join('')}</div>
       <button type="button" class="x" data-notes-clear style="justify-self:center">${L('مسح الكل','Clear all')}</button>`
     : `<div class="rep-empty">${L('مفيش إشعارات لسه. هنا هتلاقي رسايل البنك الجديدة، والميزانية، والأسعار اللي وصلت، والزكاة، وأي حاجة فاتتك.', "Nothing yet. New bank messages, budgets, price alerts, zakat and anything you missed will show up here.")}</div>`;
+}
+function openNotes(){
+  const seenBefore = state.notesSeenAt;
+  state.notesSeenAt = Date.now(); save(); renderBell();
+  if(popMode()){
+    notesPop.innerHTML = `<div class="pop-head"><b>${L('الإشعارات','Notifications')}</b></div>${notesHtml(seenBefore)}`;
+    const r = document.getElementById('btn-bell').getBoundingClientRect();
+    notesPop.style.top = Math.round(r.bottom + 8) + 'px';
+    // pinned to the bell's outer edge (right in Arabic layouts is the start, so measure from whichever side the bell is near)
+    if(LANG==='en'){ notesPop.style.right = Math.max(12, Math.round(innerWidth - r.right)) + 'px'; notesPop.style.left = 'auto'; }
+    else { notesPop.style.left = Math.max(12, Math.round(r.left)) + 'px'; notesPop.style.right = 'auto'; }
+    notesPop.hidden = false;
+    return;
+  }
+  sheetSec = 'notes';
+  document.getElementById('sheet-title').textContent = L('الإشعارات','Notifications');
+  sheetBody.innerHTML = notesHtml(seenBefore);
   if(!sheet.open) sheet.showModal();
 }
-// the sheet's own variables are declared further down, so reach the element directly here
-document.getElementById('sheet-body').addEventListener('click', e=>{
-  if(sheetSec!=='notes') return;
+function goTo(go){
+  if(go==='settings'){ openSettings(); return; }
+  const [tab, sec] = NOTE_GO[go] || [go, null];
+  setTab(tab);
+  if(sec){ const s = document.getElementById(sec); if(s){ if(s.classList.contains('collapsed')) setCollapsed(s, false); s.scrollIntoView({block:'start'}); } }
+}
+function notesClick(e){
   const go = e.target.closest('[data-note-go]')?.dataset.noteGo;
-  if(go){
-    sheet.close();
-    if(go==='settings'){ openSettings(); return; }
-    setTab(go);
-    const sec = {alerts:'sec-alerts', money:'sec-money', zakat:'sec-zakat', reports:'sec-insights', assets:'sec-debts'}[go];
-    if(sec){ const s = document.getElementById(sec); if(s.classList.contains('collapsed')) setCollapsed(s, false); s.scrollIntoView({block:'start'}); }
-  } else if(e.target.closest('[data-notes-clear]')){
-    state.notes = []; state.notesClearedAt = Date.now(); save(); renderBell(); openNotes();
-  }
-});
-document.getElementById('btn-bell').addEventListener('click', ()=>{ openNotes(); buzz(6); });
+  if(go){ if(sheet.open && sheetSec==='notes') sheet.close(); notesPop.hidden = true; goTo(go); }
+  else if(e.target.closest('[data-notes-clear]')){ state.notes = []; state.notesClearedAt = Date.now(); save(); renderBell(); openNotes(); }
+}
+// the sheet's own variables are declared further down, so reach the element directly here
+document.getElementById('sheet-body').addEventListener('click', e=>{ if(sheetSec==='notes') notesClick(e); });
+notesPop.addEventListener('click', notesClick);
+document.addEventListener('click', e=>{ if(!notesPop.hidden && !notesPop.contains(e.target) && !e.target.closest('#btn-bell')) notesPop.hidden = true; });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') notesPop.hidden = true; });
+window.addEventListener('resize', ()=>{ notesPop.hidden = true; });
+document.getElementById('btn-bell').addEventListener('click', ()=>{ if(!notesPop.hidden){ notesPop.hidden = true; return; } openNotes(); buzz(6); });
 function renderNotify(){
   const btn = document.getElementById('btn-notify'), test = document.getElementById('btn-notify-test');
   const pill = document.getElementById('notify-pill'), note = document.getElementById('notify-note');
@@ -3043,7 +3179,7 @@ function addTx(t){
 /* undo: keep the whole state from just before a delete and offer to put it back for a few seconds.
    Anything deleted in between already left a tombstone that sync may have shared, and tombstones win on merge,
    so what comes back gets fresh ids (its old id is swapped everywhere it's referenced). */
-const TOMBS = ['deletedTx','deletedPending','deletedRec','deletedCats','deletedGoals'];
+const TOMBS = ['deletedTx','deletedPending','deletedRec','deletedCats','deletedGoals','deletedLoans','deletedGam','deletedRules'];
 function offerUndo(msg, snap){
   toast(msg, {label: L('تراجع','Undo'), fn: ()=>{
     const old = JSON.parse(snap);
@@ -3307,11 +3443,13 @@ function renderMoney(){
         ${rate2!==null ? `<span class="s">${L('نسبة التوفير','Savings rate')} ${fmt(rate2,0)}${PCT()}</span>` : ''}</div>
     </div>
     ${txs.length ? '' : `<div class="rep-empty">${L('مفيش عمليات في الشهر دا. سجّل مصروف أو دخل من زرار الإضافة (+) أو من هنا.', 'No transactions this month. Add spending or income with the add (+) button or here.')}</div>`}
-    <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button></div>
+    <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button><button type="button" data-rules>🏷️ ${L('قواعد التصنيف','Category rules')}</button></div>
+    ${moneyMonth===monthKey(Date.now()) ? forecastHtml() : ''}
     ${parts.length ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}${vsPrev(p.v, prevBy[p.id])}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
     ${notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : ''}
     <div class="m-sub"><h3>${L('الميزانيات','Budgets')}</h3><button type="button" data-budedit>${budIds.length || bTotal ? L('تعديل الميزانيات','Edit budgets') : L('حدّد ميزانية','Set budgets')}</button></div>
     ${budIds.length || bTotal ? `<div class="budgets">${buds}</div>` : `<div class="note">${L('حدّد مبلغ لكل فئة في الشهر، والتطبيق ينبهك لما تقرّب منه.', "Set a monthly amount per category and you'll be warned as you get close.")}</div>`}
+    ${subsHtml()}
     ${state.tx.length ? `<div><div class="m-sub"><h3>${L('العمليات','Transactions')}</h3><span class="row" style="gap:6px"><button type="button" data-txexport title="${L('تنزيل العمليات اللي ظاهرة كملف Excel','Download the transactions shown as an Excel file')}">⬇ Excel</button><button type="button" data-txpdf title="${L('كشف PDF بالعمليات اللي ظاهرة','A PDF statement of the transactions shown')}">⬇ PDF</button></span></div>
       <div class="tx-filter">
         <input id="tx-q" type="search" autocomplete="off" placeholder="🔍 ${L('ابحث باسم المحل أو الملاحظة أو المبلغ','Search shop, note or amount')}" value="${esc(txF.q)}">
@@ -3477,7 +3615,7 @@ function receiptCanvas(img){
 async function scanReceipt(file){
   const btn = sheetBody.querySelector('[data-txscan]');
   // reading a photo takes the free model half a minute or so; say so, so nobody thinks it froze
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ ' + L('بيقرا الفاتورة… ممكن ياخد لحد دقيقة','Reading the receipt… this can take up to a minute'); }
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ ' + L('بيقرا… ثواني','Reading… a few seconds'); }
   try{
     const url = URL.createObjectURL(file);
     const img = await new Promise((ok, no)=>{ const i = new Image(); i.onload = ()=>ok(i); i.onerror = no; i.src = url; });
@@ -3502,10 +3640,695 @@ async function scanReceipt(file){
             `Receipt read ✓ ${fmt(r.amount)} EGP${from}. Check it, then save.${aiLeft.receipt!==null ? ` (${aiLeft.receipt} left today)` : ''}`));
     buzz();
   }catch(e){ toast(aiErr(e)); }
-  finally{ const b = sheetBody.querySelector('[data-txscan]'); if(b){ b.disabled = false; b.textContent = '🧾 ' + L('صوّر فاتورة وهي تتملي لوحدها','Snap a receipt to fill this in'); } }
+  finally{ const b = sheetBody.querySelector('[data-txscan]'); if(b){ b.disabled = false; b.textContent = '🧾 ' + L('صوّر فاتورة','Snap a receipt'); } }
 }
 sheetBody.addEventListener('click', e=>{ if(sheetSec==='tx' && e.target.closest('[data-txscan]')) document.getElementById('t-scan')?.click(); });
 sheetBody.addEventListener('change', e=>{ if(e.target.id==='t-scan' && e.target.files[0]){ const f = e.target.files[0]; e.target.value = ''; scanReceipt(f); } });
+
+/* ---------- daily allowance: what the month's budget leaves for today ----------
+   (budget − spent before today) ÷ days left including today, minus what today already took. Spend less today and
+   tomorrow's share grows; spend more and it shrinks. */
+function allowance(){
+  const b = num(state.budgetTotal); if(!(b > 0)) return null;
+  const t = today(), mk = t.slice(0,7), dim = new Date(+mk.slice(0,4), +mk.slice(5,7), 0).getDate();
+  const exp = monthTx(mk).filter(x=>x.type==='exp'), spentMonth = exp.reduce((a,x)=>a+txEgp(x),0);
+  const spentToday = exp.filter(x=>x.date===t).reduce((a,x)=>a+txEgp(x),0);
+  const daysLeft = dim - +t.slice(8) + 1, perDay = Math.max(0, (b - (spentMonth - spentToday)) / daysLeft);
+  return {b, spentMonth, spentToday, perDay, leftToday: perDay - spentToday, daysLeft, leftMonth: b - spentMonth};
+}
+function renderAllow(){
+  const el = document.getElementById('allow'); if(!el) return;
+  const a = allowance();
+  if(!a){
+    el.className = 'allow empty';
+    el.innerHTML = `<span>💡 ${L('حط ميزانية للشهر، ونماء يقولك مسموحلك تصرف كام كل يوم.', 'Set a monthly budget and Namaa tells you how much you can spend each day.')}</span>
+      <button type="button" class="go-btn sm" data-allow-bud>${L('حدّد ميزانية','Set a budget')}</button>`;
+    return;
+  }
+  const over = a.leftToday < 0, gone = a.leftMonth <= 0, p = a.perDay > 0 ? Math.min(100, a.spentToday / a.perDay * 100) : 100;
+  el.className = 'allow' + (over || gone ? ' over' : p >= 80 ? ' warn' : '');
+  el.innerHTML = `<div class="l">${gone ? L('ميزانية الشهر خلصت','This month\'s budget is used up') : over ? L('عدّيت حد النهارده بـ','Over today\'s share by') : L('مسموحلك تصرف النهارده','You can spend today')}</div>
+    <div class="big m">${gone ? egp(-a.leftMonth) + ' ' + L('زيادة','over') : egp(Math.abs(a.leftToday))}</div>
+    <div class="bar2"><span style="width:${p}%"></span></div>
+    <div class="s m">${L(`صرفت النهارده ${egp(a.spentToday)} من ${egp(a.perDay)} · فاضل في الشهر ${egp(Math.max(0, a.leftMonth))} لـ ${fmt(a.daysLeft,0)} ${a.daysLeft===1?'يوم':'أيام'}`,
+      `Spent ${egp(a.spentToday)} of ${egp(a.perDay)} today · ${egp(Math.max(0, a.leftMonth))} left for ${a.daysLeft} day${a.daysLeft===1?'':'s'}`)}</div>`;
+}
+document.getElementById('allow').addEventListener('click', e=>{ if(e.target.closest('[data-allow-bud]')) openBudgets(); });
+
+/* ---------- loans (money lent and borrowed between people) and savings circles (جمعيات) ----------
+   A tracker beside the accounts: entries here don't change balances or net worth. Paying a circle's monthly share
+   is recorded as a spending transaction under "Savings circle"; collecting the pot as income. */
+const monthsBetween = (a, b) => (+b.slice(0,4) - +a.slice(0,4)) * 12 + (+b.slice(5,7) - +a.slice(5,7));   // 'YYYY-MM'
+const addMonths = (mk, n) => monthKey(new Date(+mk.slice(0,4), +mk.slice(5,7) - 1 + n, 15).getTime());
+const loanLeft = l => Math.max(0, num(l.amount) - num(l.paid));
+// "جمعية الشغل" stays as is; "الشغل" becomes "جمعية الشغل"
+const gamName = g => { const n = (g.name||'').trim(); return !n ? L('جمعية','Savings circle') : /^جمعي/.test(n) || LANG==='en' ? n : 'جمعية ' + n; };
+function gamInfo(g){
+  const now = monthKey(Date.now()), n = Math.max(1, Math.round(num(g.months))), i = monthsBetween(g.start, now) + 1;
+  const paid = Object.keys(g.paid||{}).filter(k=>g.paid[k]).length, turnMk = addMonths(g.start, Math.round(num(g.turn)) - 1);
+  return {now, n, i, paid, turnMk, pot: num(g.monthly) * n, active: i >= 1 && i <= n, ended: i > n, paidNow: !!(g.paid||{})[now]};
+}
+function renderPeople(){
+  const body = document.getElementById('people-body'); if(!body) return;
+  const open = state.loans.filter(l=>!l.done && loanLeft(l) > 0);
+  const lent = open.filter(l=>l.dir==='out').reduce((a,l)=>a+loanLeft(l),0), owe = open.filter(l=>l.dir==='in').reduce((a,l)=>a+loanLeft(l),0);
+  document.getElementById('sum-people').textContent = lent || owe ? `+${egp(lent)} / −${egp(owe)}` : '';
+  const loanRow = l => { const days = Math.floor((Date.now() - new Date(l.date+'T12:00')) / DAY), left = loanLeft(l), done = l.done || left <= 0;
+    return `<div class="pp${done?' done':''}"><div class="top"><b>${l.dir==='out' ? '↗' : '↙'} ${esc(l.name)}</b><span class="m ${l.dir==='out'?'up-t':'down-t'}">${egp(left)}${num(l.paid) > 0 ? ` <small class="s">${L(`من ${egp(num(l.amount))}`, `of ${egp(num(l.amount))}`)}</small>` : ''}</span></div>
+      <div class="s">${l.dir==='out' ? L('سلّفته','You lent') : L('استلفت منه','You borrowed')} · ${dateFmt(new Date(l.date+'T12:00'))}${days > 0 ? L(` · من ${fmt(days,0)} يوم`, ` · ${days} days ago`) : ''}${l.note ? ' · ' + esc(l.note) : ''}</div>
+      <div class="row">${done ? `<span class="pill ok">${L('اتسدّت ✓','Settled ✓')}</span>` : `<button type="button" data-loan-pay="${l.id}">${l.dir==='out' ? L('رجّعلي جزء','Got some back') : L('رجّعت جزء','Paid some back')}</button><button type="button" data-loan-done="${l.id}">✓ ${L('اتسدّت','Settled')}</button>`}
+        <button type="button" class="x" data-loan-del="${l.id}" aria-label="${L('حذف','Delete')}">×</button></div></div>`; };
+  const gamRow = g => { const f = gamInfo(g), mine = f.now===f.turnMk;
+    return `<div class="pp${f.ended && g.got ? ' done' : ''}"><div class="top"><b>🫂 ${esc(g.name || L('جمعية','Savings circle'))}</b><span class="m">${egp(num(g.monthly))} / ${L('شهر','month')}</span></div>
+      <div class="bar2"><span style="width:${Math.min(100, f.paid / f.n * 100)}%"></span></div>
+      <div class="s">${f.ended ? L('الجمعية خلصت','Finished') : f.i < 1 ? L(`بتبدأ ${monthLabel(g.start)}`, `Starts ${monthLabel(g.start)}`) : L(`شهر ${fmt(f.i,0)} من ${fmt(f.n,0)}`, `Month ${f.i} of ${f.n}`)} · ${L(`دفعت ${fmt(f.paid,0)} من ${fmt(f.n,0)}`, `paid ${f.paid} of ${f.n}`)}
+        · ${g.got ? L('قبضت ✓','Collected ✓') : mine ? `<b>${L('الشهر دا دورك تقبض','Your turn this month')}</b>` : L(`دورك ${monthLabel(f.turnMk)}`, `Your turn: ${monthLabel(f.turnMk)}`)} (<span class="m">${egp(f.pot)}</span>)${num(g.day) ? L(` · الدفع يوم ${fmt(num(g.day),0)}`, ` · pay on day ${num(g.day)}`) : ''}</div>
+      <div class="row">${f.active && !f.paidNow ? `<button type="button" data-gam-pay="${g.id}">✓ ${L(`دفعت قسط ${monthLabel(f.now)}`, `Paid ${monthLabel(f.now)}`)}</button>` : f.active ? `<span class="pill ok">${L('دفعت الشهر دا ✓','Paid this month ✓')}</span>` : ''}
+        ${!g.got && monthsBetween(f.turnMk, f.now) >= 0 ? `<button type="button" data-gam-got="${g.id}">💰 ${L('قبضت','Collected')}</button>` : ''}
+        <button type="button" data-gam-edit="${g.id}">${L('تعديل','Edit')}</button>
+        <button type="button" class="x" data-gam-del="${g.id}" aria-label="${L('حذف','Delete')}">×</button></div></div>`; };
+  body.innerHTML = `${lent || owe ? `<div class="pp-sum"><div><span class="l">${L('ليك عند الناس','Owed to you')}</span><span class="v m up-t">${egp(lent)}</span></div><div><span class="l">${L('عليك للناس','You owe')}</span><span class="v m down-t">${egp(owe)}</span></div></div>` : ''}
+    <div class="m-sub"><h3>🤝 ${L('السلف','Loans')}</h3><button type="button" data-loan-new>+ ${L('سلفة','Loan')}</button></div>
+    <div class="pp-list">${state.loans.length ? [...state.loans].sort((a,b)=>(a.done||loanLeft(a)<=0) - (b.done||loanLeft(b)<=0) || b.date.localeCompare(a.date)).map(loanRow).join('') : `<div class="note">${L('سلّفت حد أو استلفت من حد؟ سجّلها هنا ونماء يفكّرك لو طوّلت.', 'Lent or borrowed money? Note it here and Namaa reminds you if it drags on.')}</div>`}</div>
+    <div class="m-sub"><h3>🫂 ${L('الجمعيات','Savings circles')}</h3><button type="button" data-gam-new>+ ${L('جمعية','Circle')}</button></div>
+    <div class="pp-list">${state.gamaeyas.length ? state.gamaeyas.map(gamRow).join('') : `<div class="note">${L('داخل جمعية؟ سجّل القسط وعدد الشهور ودورك، ونماء يفكّرك بميعاد الدفع ويقولك إمتى تقبض.', "In a savings circle? Add the monthly share, the months and your turn; Namaa reminds you to pay and tells you when you collect.")}</div>`}</div>`;
+}
+let ppId = null;
+function openLoan(){
+  sheetSec = 'loan'; ppId = 'out';
+  document.getElementById('sheet-title').textContent = L('سلفة جديدة','New loan');
+  sheetBody.innerHTML = `<div class="seg"><button type="button" data-loan-dir="out" aria-pressed="true">↗ ${L('سلّفت حد','I lent')}</button><button type="button" data-loan-dir="in" aria-pressed="false">↙ ${L('استلفت من حد','I borrowed')}</button></div>
+    ${fld(L('الاسم','Name'), `<input id="ln-name" type="text" maxlength="40" placeholder="${L('مثلاً: أحمد','e.g. Ahmed')}">`)}
+    <div class="two">${fld(L('المبلغ (ج.م)','Amount (EGP)'), `<input id="ln-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" placeholder="0">`)}${fld(L('التاريخ','Date'), `<input id="ln-date" type="date" value="${today()}">`)}</div>
+    ${fld(L('ملاحظة','Note'), `<input id="ln-note" type="text" maxlength="60" placeholder="${L('اختياري','optional')}">`)}
+    <button type="button" class="go-btn" data-loan-save>${L('حفظ','Save')}</button>`;
+  if(!sheet.open) sheet.showModal();
+  document.getElementById('ln-name').focus();
+}
+function openLoanPay(id){
+  const l = state.loans.find(x=>x.id===id); if(!l) return;
+  sheetSec = 'loanpay'; ppId = id;
+  document.getElementById('sheet-title').textContent = l.dir==='out' ? L(`${l.name} رجّعلك قد إيه؟`, `How much did ${l.name} pay back?`) : L(`رجّعت لـ ${l.name} قد إيه؟`, `How much did you pay ${l.name}?`);
+  sheetBody.innerHTML = `<div class="note">${L(`فاضل ${egp(loanLeft(l))}`, `${egp(loanLeft(l))} left`)}</div>
+    ${fld(L('المبلغ (ج.م)','Amount (EGP)'), `<input id="ln-pay" class="amt-in" type="number" min="0" step="any" inputmode="decimal" placeholder="0">`)}
+    <button type="button" class="go-btn" data-loan-paysave>${L('سجّل','Save')}</button>`;
+  if(!sheet.open) sheet.showModal();
+  document.getElementById('ln-pay').focus();
+}
+function openGam(id){
+  const g = id ? state.gamaeyas.find(x=>x.id===id) : null;
+  sheetSec = 'gam'; ppId = id || null;
+  document.getElementById('sheet-title').textContent = g ? L('تعديل الجمعية','Edit savings circle') : L('جمعية جديدة','New savings circle');
+  sheetBody.innerHTML = `${fld(L('اسمها','Name'), `<input id="gm-name" type="text" maxlength="40" value="${esc(g?.name||'')}" placeholder="${L('مثلاً: جمعية الشغل','e.g. Work circle')}">`)}
+    <div class="two">${fld(L('القسط الشهري (ج.م)','Monthly share (EGP)'), `<input id="gm-amt" type="number" min="0" step="any" inputmode="decimal" value="${esc(g?.monthly||'')}">`)}${fld(L('عدد الشهور','Months'), `<input id="gm-n" type="number" min="1" step="1" inputmode="numeric" value="${esc(g?.months||'10')}">`)}</div>
+    <div class="two">${fld(L('بدأت شهر','Started'), `<input id="gm-start" type="month" value="${esc(g?.start||monthKey(Date.now()))}">`)}${fld(L('دورك رقم','Your turn (number)'), `<input id="gm-turn" type="number" min="1" step="1" inputmode="numeric" value="${esc(g?.turn||'1')}">`)}</div>
+    ${fld(L('يوم الدفع في الشهر (للتذكير)','Pay day of the month (for reminders)'), `<input id="gm-day" type="number" min="1" max="31" step="1" inputmode="numeric" value="${esc(g?.day||'')}" placeholder="${L('مثلاً 1','e.g. 1')}">`)}
+    <div class="note">${L('لما تعلّم إنك دفعت القسط بيتسجّل مصروف في فئة «جمعية»، ولما تقبض بيتسجّل دخل.', 'Marking a month paid records a spending transaction under "Savings circle"; collecting records income.')}</div>
+    <button type="button" class="go-btn" data-gam-save>${L('حفظ','Save')}</button>`;
+  if(!sheet.open) sheet.showModal();
+}
+sheetBody.addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  const d = b.dataset;
+  if(sheetSec==='loan' && d.loanDir){ ppId = d.loanDir; sheetBody.querySelectorAll('[data-loan-dir]').forEach(x=>x.setAttribute('aria-pressed', x===b)); }
+  else if(sheetSec==='loan' && d.loanSave!==undefined){
+    const name = document.getElementById('ln-name').value.trim(), amount = num(document.getElementById('ln-amt').value);
+    if(!name || !(amount > 0)){ buzz([30,40,30]); toast(L('اكتب الاسم والمبلغ.', 'Enter the name and amount.')); return; }
+    state.loans.push({id:newId('l'), dir:ppId, name, amount, paid:0, date: document.getElementById('ln-date').value || today(), note: document.getElementById('ln-note').value.trim(), done:false});
+    save(); render(); sheet.close(); buzz();
+  }
+  else if(sheetSec==='loanpay' && d.loanPaysave!==undefined){
+    const l = state.loans.find(x=>x.id===ppId), amt = num(document.getElementById('ln-pay').value);
+    if(!l || !(amt > 0)){ buzz([30,40,30]); return; }
+    l.paid = Math.min(num(l.amount), num(l.paid) + amt); if(loanLeft(l) <= 0) l.done = true;
+    save(); render(); sheet.close(); buzz();
+    toast(l.done ? L(`السلفة مع ${l.name} اتسدّت كلها ✓`, `The loan with ${l.name} is settled ✓`) : L(`فاضل ${egp(loanLeft(l))}`, `${egp(loanLeft(l))} left`));
+  }
+  else if(sheetSec==='gam' && d.gamSave!==undefined){
+    const monthly = num(document.getElementById('gm-amt').value), months = Math.round(num(document.getElementById('gm-n').value)), turn = Math.round(num(document.getElementById('gm-turn').value));
+    if(!(monthly > 0) || !(months >= 1)){ buzz([30,40,30]); toast(L('اكتب القسط وعدد الشهور.', 'Enter the monthly share and the months.')); return; }
+    const vals = {name: document.getElementById('gm-name').value.trim(), monthly, months, turn: Math.min(months, Math.max(1, turn || 1)),
+      start: document.getElementById('gm-start').value || monthKey(Date.now()), day: Math.round(num(document.getElementById('gm-day').value)) || ''};
+    const g = ppId && state.gamaeyas.find(x=>x.id===ppId);
+    if(g) Object.assign(g, vals); else state.gamaeyas.push({id:newId('j'), ...vals, paid:{}, got:false});
+    save(); render(); sheet.close(); buzz();
+  }
+});
+document.getElementById('people-body').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  const d = b.dataset;
+  if(d.loanNew!==undefined) openLoan();
+  else if(d.gamNew!==undefined) openGam();
+  else if(d.gamEdit) openGam(d.gamEdit);
+  else if(d.loanPay) openLoanPay(d.loanPay);
+  else if(d.loanDone){ const l = state.loans.find(x=>x.id===d.loanDone); if(l){ l.done = true; l.paid = num(l.amount); save(); render(); buzz(); } }
+  else if(d.loanDel || d.gamDel){
+    const snap = JSON.stringify(state);
+    if(d.loanDel){ state.loans = state.loans.filter(x=>x.id!==d.loanDel); state.deletedLoans.push(d.loanDel); }
+    else { state.gamaeyas = state.gamaeyas.filter(x=>x.id!==d.gamDel); state.deletedGam.push(d.gamDel); }
+    save(); render(); buzz([10,40,10]); offerUndo(L('اتمسح.', 'Deleted.'), snap);
+  }
+  else if(d.gamPay){
+    const g = state.gamaeyas.find(x=>x.id===d.gamPay); if(!g) return;
+    const mk = monthKey(Date.now());
+    g.paid = {...(g.paid||{}), [mk]: true};
+    addTx({type:'exp', amount: num(g.monthly), cat: cats('exp').some(c=>c.id==='gamaeya') ? 'gamaeya' : 'other', note: g.name || L('جمعية','Savings circle'), date: today()});
+    save(); render(); buzz(); toast(L(`اتسجّل قسط ${monthLabel(mk)} (${egp(num(g.monthly))}) في المصاريف.`, `${monthLabel(mk)} share (${egp(num(g.monthly))}) recorded in spending.`));
+  }
+  else if(d.gamGot){
+    const g = state.gamaeyas.find(x=>x.id===d.gamGot); if(!g) return;
+    g.got = true;
+    addTx({type:'inc', amount: gamInfo(g).pot, cat:'otherin', note: (g.name || L('جمعية','Savings circle')) + ' · ' + L('قبض','collected'), date: today()});
+    save(); render(); buzz(); toast(L(`مبروك 🎉 اتسجّل قبض ${egp(gamInfo(g).pot)} كدخل.`, `Congrats 🎉 ${egp(gamInfo(g).pot)} recorded as income.`));
+  }
+});
+// reminders: a loan open a month (then monthly), a circle's payment two days before its day, and the month it's your turn
+function checkPeople(){
+  const now = Date.now(), mk = monthKey(now), d0 = new Date(); d0.setHours(0,0,0,0);
+  let changed = false;
+  for(const l of state.loans){
+    if(l.done || loanLeft(l) <= 0) continue;
+    const days = Math.floor((now - new Date(l.date+'T12:00')) / DAY);
+    if(days >= 30 && l.remind !== mk){
+      l.remind = mk; changed = true;
+      notify(l.dir==='out' ? L(`فات ${fmt(days,0)} يوم على سلفة ${l.name} (فاضل ${egp(loanLeft(l))}).`, `${days} days since you lent ${l.name} money (${egp(loanLeft(l))} left).`)
+                           : L(`فات ${fmt(days,0)} يوم على السلفة اللي عليك لـ ${l.name} (فاضل ${egp(loanLeft(l))}).`, `${days} days since you borrowed from ${l.name} (${egp(loanLeft(l))} left).`), 'loan', !!state.nDebt);
+    }
+  }
+  for(const g of state.gamaeyas){
+    const f = gamInfo(g);
+    if(!f.active) continue;
+    if(num(g.day) && !f.paidNow){
+      const due = new Date(d0.getFullYear(), d0.getMonth(), Math.min(num(g.day), new Date(d0.getFullYear(), d0.getMonth()+1, 0).getDate()));
+      const left = Math.round((due - d0) / DAY);
+      if(left >= 0 && left <= 2 && g.remind !== mk){ g.remind = mk; changed = true;
+        notify(L(`قسط ${gamName(g)} (${egp(num(g.monthly))}) ميعاده ${left===0?'النهارده':left===1?'بكرة':'بعد يومين'}.`, `Savings circle ${g.name || ''} share (${egp(num(g.monthly))}) is due ${left===0?'today':left===1?'tomorrow':'in two days'}.`), 'gam', !!state.nDebt); }
+    }
+    if(f.now===f.turnMk && !g.got && g.turnRemind !== mk){ g.turnRemind = mk; changed = true;
+      notify(L(`الشهر دا دورك تقبض ${gamName(g)}: ${egp(f.pot)} 🎉`, `It's your turn to collect from ${g.name || 'the circle'}: ${egp(f.pot)} 🎉`), 'gam', !!state.nDebt); }
+  }
+  if(changed) save();
+}
+
+/* ---------- voice entry: "صرفت ميتين جنيه أكل" → amount, category and type filled in for review ----------
+   The phone's own speech recognition turns speech into text; the rest is read here, with no AI. */
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+const AR_NUM = {'واحد':1,'واحدة':1,'اتنين':2,'اثنين':2,'إتنين':2,'تلاتة':3,'ثلاثة':3,'تلات':3,'اربعة':4,'أربعة':4,'اربع':4,'خمسة':5,'خمس':5,'ستة':6,'ست':6,'سبعة':7,'سبع':7,
+  'تمانية':8,'ثمانية':8,'تمن':8,'تسعة':9,'تسع':9,'عشرة':10,'عشر':10,'حداشر':11,'اتناشر':12,'تلتاشر':13,'اربعتاشر':14,'خمستاشر':15,'ستاشر':16,'سبعتاشر':17,'تمنتاشر':18,'تسعتاشر':19,
+  'عشرين':20,'تلاتين':30,'ثلاثين':30,'اربعين':40,'أربعين':40,'خمسين':50,'ستين':60,'سبعين':70,'تمانين':80,'ثمانين':80,'تسعين':90,
+  'مية':100,'ميه':100,'مائة':100,'مئة':100,'ميت':100,'ميتين':200,'مائتين':200,'متين':200,'تلتمية':300,'تلاتمية':300,'ثلاثمائة':300,'ربعمية':400,'اربعمية':400,'أربعمائة':400,
+  'خمسمية':500,'خمسمائة':500,'ستمية':600,'ستمائة':600,'سبعمية':700,'سبعمائة':700,'تمنمية':800,'ثمانمائة':800,'تسعمية':900,'تسعمائة':900};
+function speechAmount(text){
+  const s = latinDigits(text).replace(/[٬,](?=\d{3})/g, '').replace(/٫/g, '.');
+  const k = /(?:الف|ألف|آلاف|الاف|k|thousand)/i;
+  const m = s.match(/(\d+(?:\.\d+)?)\s*(الف|ألف|آلاف|الاف|thousand|k)?/i);
+  if(m) return +m[1] * (m[2] ? 1000 : 1) + (m[2] && /ونص|and a half/.test(s.slice(m.index)) ? 500 : 0);
+  // number words: "ألفين وخمسمية", "تلتمية وخمسين", "ألف ونص"
+  let total = 0, cur = 0, last = 0;
+  for(let w of s.split(/\s+/)){
+    w = w.replace(/^و(?=\S)/, '').replace(/[.،؟!]/g, '');
+    if(w==='الفين' || w==='ألفين'){ total += 2000; last = 1000; continue; }
+    if(k.test(w) && (w==='الف' || w==='ألف' || w==='آلاف' || w==='الاف' || /thousand/i.test(w))){ total += (cur || 1) * 1000; cur = 0; last = 1000; continue; }
+    if(w==='نص' || w==='ونص'){ cur += last >= 1000 ? 500 : last >= 100 ? 50 : .5; continue; }
+    if(AR_NUM[w] !== undefined){ cur += AR_NUM[w]; last = AR_NUM[w]; }
+  }
+  return total + cur;
+}
+// words that point at a category or at income
+const VOICE_CATS = [['food',/اكل|أكل|بقال|سوبر|ماركت|مطعم|غدا|عشا|فطار|food|grocer|restaurant/i], ['transport',/مواصلات|بنزين|اوبر|أوبر|كريم|تاكسي|مترو|عربية|uber|taxi|fuel|petrol/i],
+  // (no bare "مية"/"نت": they're also "a hundred" and part of other words)
+  ['bills',/فاتور|كهربا|كهرباء|غاز|(^|\s)النت(\s|$)|انترنت|إنترنت|موبايل|رصيد|bill|electric|internet/i], ['rent',/ايجار|إيجار|rent/i], ['health',/دكتور|صيدلي|دوا|دواء|علاج|مستشفى|doctor|pharm/i],
+  ['clothes',/هدوم|لبس|جزمة|clothes/i], ['fun',/خروج|سينما|كافيه|قهوة|فسحة|cinema|cafe|coffee/i], ['edu',/دروس|مدرسة|جامعة|كورس|كتب|school|course/i],
+  ['charity',/صدقة|زكاة|تبرع|charity/i], ['gifts',/هدية|هدايا|مناسبة|gift/i], ['install',/قسط|أقساط|اقساط|installment/i], ['gamaeya',/جمعية/i]];
+const VOICE_INC = /قبضت|مرتب|راتب|دخل|جالي|اتحولي|كسبت|salary|income|got paid|received/i;
+function voiceParse(text){
+  const type = VOICE_INC.test(text) ? 'inc' : 'exp', list = cats(type);
+  const own = list.find(c => c.name && text.includes(c.name));   // a category the person named themselves
+  const hit = own || list.find(c => VOICE_CATS.some(([id, re]) => id===c.id && re.test(text)));
+  return {type, amount: speechAmount(text), cat: hit?.id || (type==='inc' ? (list.find(c=>c.id==='salary' && /مرتب|راتب|salary/i.test(text))?.id) : '')};
+}
+let voiceRec = null;
+function startVoice(btn){
+  if(voiceRec){ voiceRec.stop(); return; }
+  const r = voiceRec = new SpeechRec();
+  r.lang = LANG==='en' ? 'en-US' : 'ar-EG'; r.interimResults = false; r.maxAlternatives = 1;
+  btn.classList.add('on'); btn.textContent = '🎙 ' + L('بسمعك… قول مثلاً «صرفت ميتين أكل»','Listening… e.g. "spent 200 on food"');
+  r.onresult = e => {
+    const text = e.results[0][0].transcript, p = voiceParse(text);
+    if(p.type !== txDraft.type){ txDraft.type = p.type; }
+    txDraft.cat = p.cat || (cats(txDraft.type).some(c=>c.id===txDraft.cat) ? txDraft.cat : cats(txDraft.type)[0].id);
+    renderTxSheet();
+    if(p.amount > 0) document.getElementById('t-amt').value = Math.round(p.amount * 100) / 100;
+    document.getElementById('t-note').value = text.slice(0, 60);
+    toast(p.amount > 0 ? L(`سمعت: «${text}» ✓ راجع وبعدين احفظ.`, `Heard: "${text}" ✓ Check it, then save.`) : L(`سمعت: «${text}» بس مالقيتش مبلغ. اكتبه بإيدك.`, `Heard: "${text}" but found no amount. Type it in.`));
+    buzz();
+  };
+  r.onerror = e => { if(e.error!=='aborted' && e.error!=='no-speech') toast(e.error==='not-allowed' ? L('اسمح للتطبيق يستخدم المايك من إعدادات المتصفح.', 'Allow microphone access in the browser settings.') : L('ماسمعتش كويس. جرّب تاني.', "Didn't catch that. Try again.")); };
+  r.onend = () => { voiceRec = null; const b = sheetBody.querySelector('[data-txvoice]'); if(b){ b.classList.remove('on'); b.textContent = '🎤 ' + L('قولها بصوتك','Say it'); } };
+  try{ r.start(); }catch(e){ voiceRec = null; btn.classList.remove('on'); }
+}
+sheetBody.addEventListener('click', e=>{ const b = e.target.closest('[data-txvoice]'); if(b && sheetSec==='tx') startVoice(b); });
+
+/* ---------- achievements: small wins, announced once in the bell ---------- */
+const NW_STEPS = [100e3, 250e3, 500e3, 1e6, 2e6, 5e6, 10e6];
+function badgeInfo(key){
+  const [kind, arg] = key.split(':');
+  const nw = n => n >= 1e6 ? L(`${fmt(n/1e6,0)} مليون`, `${n/1e6}M`) : L(`${fmt(n/1e3,0)} ألف`, `${n/1e3}K`);
+  switch(kind){
+    case 'first': return {ic:'🌱', t: L('أول خطوة','First step'), d: L('سجّلت أول عملية. كدا بدأت تتابع فلوسك!', 'You recorded your first transaction. You\'re on your way!')};
+    case 'streak': return {ic:'🔥', t: L(`${fmt(+arg,0)} أيام ورا بعض`, `${arg}-day streak`), d: L(`سجّلت مصاريفك ${fmt(+arg,0)} أيام ورا بعض 🔥`, `You logged spending ${arg} days in a row 🔥`)};
+    case 'nw': return {ic:'💎', t: L(`ثروة ${nw(+arg)}`, `${nw(+arg)} net worth`), d: L(`ثروتك عدّت ${nw(+arg)} جنيه 🎉`, `Your net worth passed ${nw(+arg)} EGP 🎉`)};
+    case 'under': return {ic:'🎯', t: L('شهر تحت الميزانية','Month under budget'), d: L(`قفلت ${monthLabel(arg)} تحت الميزانية 👏`, `You closed ${monthLabel(arg)} under budget 👏`)};
+    case 'save20': return {ic:'🐷', t: L('وفّرت 20% وأكتر','Saved 20%+'), d: L(`وفّرت 20% أو أكتر من دخل ${monthLabel(arg)} 💪`, `You saved 20% or more of ${monthLabel(arg)}'s income 💪`)};
+    case 'half': { const g = state.goals.find(x=>x.id===arg); return {ic:'🏁', t: L('نص الطريق','Halfway'), d: L(`وصلت لنص هدف «${g?.name||''}»`, `Halfway to "${g?.name||''}"`)}; }
+    case 'goal': { const g = state.goals.find(x=>x.id===arg); return {ic:'🏆', t: L('هدف اتحقق','Goal reached'), d: L(`حققت هدف «${g?.name||''}» 🎉`, `You reached "${g?.name||''}" 🎉`)}; }
+    case 'main': return {ic:'🌟', t: L('الهدف المالي','Main goal'), d: L('وصلت لهدفك المالي الكبير 🌟', 'You reached your main financial goal 🌟')};
+    case 'debtfree': return {ic:'🕊️', t: L('من غير ديون','Debt-free'), d: L('خلّصت كل ديونك 🕊️', 'You cleared all your debts 🕊️')};
+  }
+  return {ic:'⭐', t:key, d:key};
+}
+function streakDays(){
+  const days = new Set(state.tx.map(x=>x.date));
+  let n = 0, t = Date.now();
+  if(!days.has(dayKey(t))) t -= DAY;   // today not logged yet doesn't break the run
+  while(days.has(dayKey(t))){ n++; t -= DAY; }
+  return n;
+}
+function earnedNow(){
+  const out = [], t = totals();
+  if(state.tx.length) out.push('first');
+  const st = streakDays(); for(const n of [3, 7, 14, 30, 100]) if(st >= n) out.push('streak:' + n);
+  if(pricesComplete() && isFinite(t.net)) for(const n of NW_STEPS) if(t.net >= n) out.push('nw:' + n);
+  const prev = addMonths(monthKey(Date.now()), -1), pm = monthTx(prev);
+  if(pm.length){
+    const inc = pm.filter(x=>x.type==='inc').reduce((a,x)=>a+txEgp(x),0), exp = pm.filter(x=>x.type==='exp').reduce((a,x)=>a+txEgp(x),0);
+    if(num(state.budgetTotal) > 0 && exp <= num(state.budgetTotal)) out.push('under:' + prev);
+    if(inc > 0 && (inc - exp) / inc >= .2) out.push('save20:' + prev);
+  }
+  for(const g of state.goals){ const p = num(g.target) > 0 ? num(g.saved) / num(g.target) : 0; if(p >= .5) out.push('half:' + g.id); if(p >= 1) out.push('goal:' + g.id); }
+  if(num(state.goal) > 0 && pricesComplete() && t.net >= num(state.goal)) out.push('main');
+  if(state.debts.length && state.debts.every(d=>num(d.a) <= 0)) out.push('debtfree');
+  return out;
+}
+// the first check after this feature arrives files what's already true quietly, so nobody gets a pile of old news
+function checkBadges(){
+  const fresh = earnedNow().filter(k=>!state.badges[k]);
+  if(!fresh.length) return;
+  for(const k of fresh) state.badges[k] = today();
+  if(state.badgesInit) for(const k of fresh) notify(badgeInfo(k).d, 'ach', false);
+  state.badgesInit = true; save();
+}
+function renderBadges(){
+  const body = document.getElementById('badges-body'); if(!body) return;
+  const keys = Object.keys(state.badges).sort((a,b)=>state.badges[b].localeCompare(state.badges[a]));
+  const y = wrapYear();
+  body.innerHTML = `<button type="button" class="wrap-btn" data-wrap>🎁 ${L(`ملخص سنتك ${yr(y)}`, `Your ${y} in review`)}</button>
+    ${keys.length ? `<div class="bdg-grid">${keys.map(k=>{ const b = badgeInfo(k); return `<div class="bdg" title="${esc(b.d)}"><span class="ic">${b.ic}</span><b>${esc(b.t)}</b><small>${dateFmt(new Date(state.badges[k]+'T12:00'))}</small></div>`; }).join('')}</div>`
+      : `<div class="note">${L('سجّل مصاريفك كل يوم، وحط ميزانية وأهداف، وهتبدأ تكسب إنجازات هنا 🏆', 'Log spending daily and set budgets and goals; your achievements will appear here 🏆')}</div>`}`;
+}
+document.getElementById('badges-body').addEventListener('click', e=>{ if(e.target.closest('[data-wrap]')) openWrap(); });
+
+/* ---------- commitments calendar: what's due when this month ---------- */
+let calMonth = null, calDay = null;
+function calEvents(mk){
+  const ev = [], dim = new Date(+mk.slice(0,4), +mk.slice(5,7), 0).getDate(), at = d => `${mk}-${String(Math.min(dim, Math.max(1, Math.round(num(d)) || 1))).padStart(2,'0')}`;
+  for(const r of state.recurring) if(!r.start || r.start.slice(0,7) <= mk) ev.push({date: at(r.day), kind: r.type==='inc' ? 'in' : 'out', name: r.note || catName(catById(r.cat)), amount: num(r.amount)});
+  for(const d of state.debts) if(num(d.inst) > 0 && num(d.a) > 0 && num(d.day)) ev.push({date: at(d.day), kind:'out', name: (d.name || L('قسط','Instalment')), amount: num(d.inst)});
+  for(const g of state.gamaeyas){ const f = gamInfo(g), i = monthsBetween(g.start, mk) + 1;
+    if(i >= 1 && i <= f.n){ if(!(g.paid||{})[mk]) ev.push({date: at(g.day || 1), kind:'out', name: gamName(g), amount: num(g.monthly)});
+      if(mk===f.turnMk && !g.got) ev.push({date: at(g.day || 1), kind:'in', name: L(`قبض ${gamName(g)}`, `Collect ${gamName(g)}`), amount: f.pot}); } }
+  for(const g of state.goals) if(g.date && g.date.slice(0,7)===mk) ev.push({date: g.date, kind:'goal', name: L(`ميعاد هدف «${g.name}»`, `Goal "${g.name}" date`), amount: Math.max(0, num(g.target) - num(g.saved))});
+  if(state.zDate){ const end = dayKey(new Date(state.zDate).getTime() + HAWL_DAYS*DAY); if(end.slice(0,7)===mk) ev.push({date: end, kind:'zakat', name: L('موعد حول الزكاة','Zakat year ends'), amount: 0}); }
+  if(mk.slice(5)==='12' && totals().stocks > 0) ev.push({date: `${mk}-31`, kind:'zakat', name: L('زكاة الأسهم','Stocks zakat'), amount: 0});
+  return ev.sort((a,b)=>a.date.localeCompare(b.date));
+}
+const CAL_COLORS = {in:'var(--up)', out:'var(--down)', goal:'var(--cash)', zakat:'var(--accent)'};
+function renderCal(){
+  const body = document.getElementById('cal-body'); if(!body) return;
+  const mk = calMonth || monthKey(Date.now()), t = today(), ev = calEvents(mk);
+  const y = +mk.slice(0,4), m = +mk.slice(5,7), dim = new Date(y, m, 0).getDate();
+  const lead = (new Date(y, m-1, 1).getDay() + 1) % 7;   // weeks start on Saturday
+  const wd = LANG==='en' ? ['Sa','Su','Mo','Tu','We','Th','Fr'] : ['س','ح','ن','ث','ر','خ','ج'];
+  const byDay = {}; ev.forEach(e=>{ (byDay[e.date] = byDay[e.date] || []).push(e); });
+  const cells = Array.from({length: lead}, ()=>'<span></span>').join('') + Array.from({length: dim}, (_, i)=>{
+    const d = `${mk}-${String(i+1).padStart(2,'0')}`, es = byDay[d] || [];
+    return `<button type="button" data-cal-day="${d}" class="${d===t?'today':''}" aria-pressed="${calDay===d}"><span>${fmt(i+1,0)}</span><span class="dots">${[...new Set(es.map(e=>e.kind))].map(k=>`<i style="background:${CAL_COLORS[k]}"></i>`).join('')}</span></button>`; }).join('');
+  // the list: the chosen day, or what's still ahead this month (all of it for other months)
+  const shown = calDay ? (byDay[calDay] || []) : ev.filter(e => mk!==t.slice(0,7) || e.date >= t);
+  const out = shown.filter(e=>e.kind==='out').reduce((a,e)=>a+e.amount,0), inn = shown.filter(e=>e.kind==='in').reduce((a,e)=>a+e.amount,0);
+  body.innerHTML = `<div class="month-nav"><button type="button" class="x" data-cal-nav="-1" aria-label="${L('الشهر اللي فات','Previous month')}">‹</button><b>${monthLabel(mk)}</b><button type="button" class="x" data-cal-nav="1" aria-label="${L('الشهر الجاي','Next month')}">›</button></div>
+    <div class="cal-grid">${wd.map(w=>`<span class="wd">${w}</span>`).join('')}${cells}</div>
+    ${shown.length ? `<div class="note m">${calDay ? dateFmt(new Date(calDay+'T12:00')) : mk===t.slice(0,7) ? L('الجاي الشهر دا','Still ahead this month') : L('الشهر دا','This month')}: ${out ? `<bdi class="down-t">${L('عليك','due')} ${egp(out)}</bdi>` : ''}${out && inn ? ' · ' : ''}${inn ? `<bdi class="up-t">${L('جايلك','coming in')} ${egp(inn)}</bdi>` : ''}</div>
+      <div>${shown.map(e=>`<div class="cal-ev"><span class="d">${new Date(e.date+'T12:00').toLocaleDateString(LOC(), {day:'numeric', month:'short'})}</span><span class="n"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CAL_COLORS[e.kind]};margin-inline-end:6px"></i>${esc(e.name)}</span>${e.amount ? `<span class="m ${e.kind==='in'?'up-t':e.kind==='out'?'down-t':''}"><bdi>${e.kind==='in'?'+':e.kind==='out'?'−':''}${egp(e.amount)}</bdi></span>` : ''}</div>`).join('')}</div>`
+      : `<div class="note">${calDay ? L('مفيش حاجة اليوم دا.','Nothing on this day.') : L('مفيش التزامات مسجّلة. العمليات المتكررة والأقساط والجمعيات بتظهر هنا لوحدها.', 'No commitments yet. Monthly repeats, instalments and savings circles show up here by themselves.')}</div>`}`;
+}
+document.getElementById('cal-body').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.calNav){ calMonth = addMonths(calMonth || monthKey(Date.now()), +b.dataset.calNav); calDay = null; renderCal(); buzz(6); }
+  else if(b.dataset.calDay){ calDay = calDay===b.dataset.calDay ? null : b.dataset.calDay; renderCal(); }
+});
+
+/* ---------- year in review: a story of the year in a few screens, with an image to share ---------- */
+// December and January show the year that's ending / just ended; other months, the year so far
+const wrapYear = () => { const d = new Date(); return d.getMonth()===0 ? d.getFullYear() - 1 : d.getFullYear(); };
+const yr = n => Number(n).toLocaleString(LOC(), {useGrouping:false});   // a year in the chosen digits, without a thousands mark
+function yearStats(y){
+  const ys = String(y), tx = state.tx.filter(x=>x.date.startsWith(ys));
+  const inc = tx.filter(x=>x.type==='inc').reduce((a,x)=>a+txEgp(x),0), exp = tx.filter(x=>x.type==='exp').reduce((a,x)=>a+txEgp(x),0);
+  const byCat = {}; tx.filter(x=>x.type==='exp').forEach(x=>{ byCat[x.cat] = (byCat[x.cat]||0) + txEgp(x); });
+  const cats3 = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([id,v])=>({name: catName(catById(id)), v, p: exp ? v/exp*100 : 0}));
+  const months = {}; tx.forEach(x=>{ const mk = x.date.slice(0,7), o = months[mk] = months[mk] || {inc:0, exp:0}; o[x.type==='inc'?'inc':'exp'] += txEgp(x); });
+  const mlist = Object.entries(months);
+  const best = mlist.filter(([,o])=>o.inc > 0).sort((a,b)=>(b[1].inc-b[1].exp)-(a[1].inc-a[1].exp))[0];
+  const pts = history.filter(p=>dayKey(p.t).startsWith(ys));
+  const first = pts[0], last = pts[pts.length-1];
+  const grams = p => p?.px?.g21 > 0 ? netOf(p) / p.px.g21 : null;
+  return {y, tx, inc, exp, saved: inc - exp, rate: inc > 0 ? (inc-exp)/inc*100 : null, cats3, best: best && {mk: best[0], v: best[1].inc - best[1].exp},
+    days: new Set(tx.map(x=>x.date)).size, badges: Object.values(state.badges).filter(d=>d.startsWith(ys)).length,
+    nw0: first && netOf(first), nw1: last && netOf(last), from: first && dayKey(first.t), g0: grams(first), g1: grams(last)};
+}
+let wrapSlides = [], wrapIdx = 0, wrapTimer = null, wrapS = null;
+function openWrap(){
+  const s = wrapS = yearStats(wrapYear()), sl = [];
+  const name = (state.userName||'').trim();
+  sl.push({c:['#123326','#0a1c16'], h:`<div class="ic">✨</div><div class="k">${L(`${name ? name + '، ' : ''}دي سنتك مع نماء`, `${name ? name + ', ' : ''}here's your year with Namaa`)}</div><div class="v">${yr(s.y)}</div><div class="s">${L('يلا نشوف عملت إيه','Let\'s see how it went')}</div>`});
+  if(s.nw0 != null && s.nw1 != null && s.from){ const d = s.nw1 - s.nw0, p = s.nw0 ? d / s.nw0 * 100 : 0;
+    sl.push({c:['#4a3a14','#1c1607'], h:`<div class="ic">${d >= 0 ? '📈' : '📉'}</div><div class="k">${L(`ثروتك من ${dateFmt(new Date(s.from+'T12:00'))}`, `Your net worth since ${dateFmt(new Date(s.from+'T12:00'))}`)}</div><div class="v">${d >= 0 ? '+' : '−'}${egp(Math.abs(d))}</div><div class="s">${egp(s.nw0)} ← ${egp(s.nw1)}<br>${d >= 0 ? L('زادت','up') : L('قلّت','down')} ${fmt(Math.abs(p),1)}${PCT()}</div>`}); }
+  if(s.g0 && s.g1) sl.push({c:['#5c4410','#241a05'], h:`<div class="ic">🪙</div><div class="k">${L('ثروتك بالدهب عيار 21','Your wealth in 21k gold')}</div><div class="v">${fmt(s.g1,1)} ${L('جرام','g')}</div><div class="s">${L(`كانت ${fmt(s.g0,1)} جرام · ${s.g1 >= s.g0 ? 'زادت' : 'قلّت'} ${fmt(Math.abs(s.g1 - s.g0),1)} جرام`, `was ${fmt(s.g0,1)} g · ${s.g1 >= s.g0 ? 'up' : 'down'} ${fmt(Math.abs(s.g1 - s.g0),1)} g`)}</div>`});
+  if(s.inc || s.exp) sl.push({c:['#1f4a3a','#0b2018'], h:`<div class="ic">🐷</div><div class="k">${L('دخلك وصرفك','Money in and out')}</div><div class="v">${s.rate != null ? fmt(Math.max(0,s.rate),0) + PCT() : egp(s.exp)}</div><div class="s">${s.rate != null ? L(`وفّرت من دخلك`, `of your income saved`) + '<br>' : ''}${L(`دخل ${egp(s.inc)} · صرفت ${egp(s.exp)}`, `in ${egp(s.inc)} · out ${egp(s.exp)}`)}</div>`});
+  if(s.cats3.length) sl.push({c:['#5a2a24','#24110e'], h:`<div class="ic">🛒</div><div class="k">${L('أكتر حاجة صرفت عليها','Where most of it went')}</div><div class="v">${esc(s.cats3[0].name)}</div><ol>${s.cats3.map((c,i)=>`<li><span>${i+1}. ${esc(c.name)}</span><span>${egp(c.v)} · ${fmt(c.p,0)}${PCT()}</span></li>`).join('')}</ol>`});
+  if(s.best && s.best.v > 0) sl.push({c:['#1d3a5c','#0c1a2b'], h:`<div class="ic">🏅</div><div class="k">${L('أحسن شهر وفّرت فيه','Your best saving month')}</div><div class="v">${monthLabel(s.best.mk)}</div><div class="s">${L(`وفّرت ${egp(s.best.v)}`, `you saved ${egp(s.best.v)}`)}</div>`});
+  if(s.tx.length) sl.push({c:['#3a2a5c','#150f24'], h:`<div class="ic">🔥</div><div class="k">${L('التزامك','Your habit')}</div><div class="v">${fmt(s.tx.length,0)}</div><div class="s">${L(`عملية سجّلتها في ${fmt(s.days,0)} يوم${s.badges ? ` · وكسبت ${fmt(s.badges,0)} إنجاز 🏆` : ''}`, `transactions over ${s.days} days${s.badges ? ` · ${s.badges} achievements 🏆` : ''}`)}</div>`});
+  sl.push({c:['#0f2a22','#06120e'], end:true, h:`<div class="ic">🎁</div><div class="k">${L('شارك سنتك','Share your year')}</div><div class="v">${L('نماء','Namaa')} ${yr(s.y)}</div>
+    <div class="row"><button type="button" data-wrap-share="1">${L('صورة بالأرقام','Image with amounts')}</button><button type="button" class="ghost" data-wrap-share="0">${L('من غير أرقام','Without amounts')}</button></div>`});
+  wrapSlides = sl; wrapIdx = 0;
+  document.getElementById('story').hidden = false; document.body.style.overflow = 'hidden';
+  showWrap(0);
+}
+function showWrap(i){
+  clearTimeout(wrapTimer);
+  if(i < 0) i = 0;
+  if(i >= wrapSlides.length){ closeWrap(); return; }
+  wrapIdx = i; const s = wrapSlides[i], st = document.getElementById('story');
+  st.style.setProperty('--s1', s.c[0]); st.style.setProperty('--s2', s.c[1]);
+  document.getElementById('st-bars').innerHTML = wrapSlides.map((_, k)=>`<i class="${k < i ? 'done' : k===i && !s.end ? 'now' : k===i ? 'done' : ''}"><b></b></i>`).join('');
+  const box = document.getElementById('st-slide'), fresh = box.cloneNode(false); fresh.innerHTML = s.h; box.replaceWith(fresh);
+  if(!s.end) wrapTimer = setTimeout(()=>showWrap(i + 1), 5500);
+}
+function closeWrap(){ clearTimeout(wrapTimer); document.getElementById('story').hidden = true; document.body.style.overflow = ''; }
+document.getElementById('st-x').addEventListener('click', e=>{ e.stopPropagation(); closeWrap(); });
+document.getElementById('story').addEventListener('click', e=>{
+  const sh = e.target.closest('[data-wrap-share]'); if(sh){ shareWrap(sh.dataset.wrapShare==='1'); return; }
+  if(e.target.closest('button')) return;
+  // tap most of the screen to go on; the starting edge (left in English, right in Arabic) goes back
+  showWrap(wrapIdx + (LANG==='en' ? (e.clientX > innerWidth / 3 ? 1 : -1) : (e.clientX < innerWidth * 2 / 3 ? 1 : -1)));
+});
+document.addEventListener('keydown', e=>{ if(document.getElementById('story').hidden) return;
+  if(e.key==='Escape') closeWrap(); else if(e.key==='ArrowLeft') showWrap(wrapIdx + (LANG==='en' ? -1 : 1)); else if(e.key==='ArrowRight') showWrap(wrapIdx + (LANG==='en' ? 1 : -1)); });
+// a 1080×1920 story image; "without amounts" keeps percentages and grams only
+async function shareWrap(amounts){
+  const s = wrapS, W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'), rtl = LANG!=='en';
+  try{ await document.fonts.ready; }catch(e){}
+  const bg = g.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#173f31'); bg.addColorStop(1,'#0a1c16'); g.fillStyle = bg; g.fillRect(0,0,W,H);
+  g.direction = rtl ? 'rtl' : 'ltr'; g.textAlign = 'center';
+  const disp = getComputedStyle(document.documentElement).getPropertyValue('--display').trim() || 'sans-serif';
+  const body = getComputedStyle(document.body).fontFamily;
+  g.fillStyle = '#e0b257'; g.font = `700 92px ${disp}`; g.fillText(`${L('نماء','Namaa')} ${yr(s.y)}`, W/2, 230);
+  g.fillStyle = 'rgba(255,255,255,.75)'; g.font = `400 40px ${body}`; g.fillText(L('سنتي في أرقام','My year in numbers'), W/2, 310);
+  const rows = [];
+  if(s.nw0 != null && s.nw1 != null){ const d = s.nw1 - s.nw0, p = s.nw0 ? d/s.nw0*100 : 0; rows.push(['📈', L('ثروتي','Net worth'), `${d>=0?'+':'−'}${fmt(Math.abs(p),1)}${PCT()}`, amounts ? `${d>=0?'+':'−'}${egp(Math.abs(d))}` : '']); }
+  if(s.g1) rows.push(['🪙', L('بالدهب عيار 21','In 21k gold'), `${fmt(s.g1,1)} ${L('جرام','g')}`, s.g0 ? L(`كانت ${fmt(s.g0,1)}`, `was ${fmt(s.g0,1)}`) : '']);
+  if(s.rate != null) rows.push(['🐷', L('وفّرت من دخلي','Saved of income'), `${fmt(Math.max(0,s.rate),0)}${PCT()}`, amounts ? egp(s.saved) : '']);
+  if(s.cats3[0]) rows.push(['🛒', L('أكتر بند','Top spending'), s.cats3[0].name, `${fmt(s.cats3[0].p,0)}${PCT()}`]);
+  if(s.best) rows.push(['🏅', L('أحسن شهر','Best month'), monthLabel(s.best.mk), amounts ? egp(s.best.v) : '']);
+  if(s.tx.length) rows.push(['🔥', L('عمليات سجّلتها','Transactions logged'), fmt(s.tx.length,0), L(`في ${fmt(s.days,0)} يوم`, `over ${s.days} days`)]);
+  rows.forEach(([ic, k, v, sub], i)=>{
+    const y = 440 + i * 220;
+    g.fillStyle = 'rgba(255,255,255,.07)'; g.beginPath(); g.roundRect(80, y, W-160, 190, 28); g.fill();
+    g.fillStyle = '#fff'; g.font = '64px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif'; g.textAlign = 'center'; g.fillText(ic, rtl ? W-170 : 170, y + 118);
+    g.textAlign = rtl ? 'right' : 'left'; const x = rtl ? W-250 : 250;
+    g.fillStyle = 'rgba(255,255,255,.7)'; g.font = `400 36px ${body}`; g.fillText(k, x, y + 70);
+    g.fillStyle = '#ffd27a'; g.font = `700 58px ${disp}`; g.fillText(v, x, y + 140);
+    if(sub){ g.fillStyle = 'rgba(255,255,255,.6)'; g.font = `400 32px ${body}`; g.textAlign = rtl ? 'left' : 'right'; g.fillText(sub, rtl ? 140 : W-140, y + 140); }
+  });
+  g.textAlign = 'center'; g.fillStyle = 'rgba(255,255,255,.55)'; g.font = `400 34px ${body}`; g.fillText(L('اتعمل بتطبيق نماء','Made with Namaa'), W/2, H - 110);
+  const blob = await new Promise(r=>c.toBlob(r, 'image/png'));
+  const file = new File([blob], `namaa-${s.y}.png`, {type:'image/png'});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title: `${L('نماء','Namaa')} ${s.y}`}); return; }
+  }catch(e){ if(e.name==='AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  toast(L('اتحفظت الصورة.', 'Image saved.'));
+}
+// tell once when the year's review is ready (from 1 December)
+function checkWrap(){
+  const d = new Date(), y = wrapYear();
+  if((d.getMonth()===11 || d.getMonth()===0) && state.tx.length && state.wrapNotified !== y){
+    state.wrapNotified = y; save();
+    notify(L(`🎁 ملخص سنتك ${y} جاهز! افتحه من التقارير.`, `🎁 Your ${y} in review is ready! Open it from Reports.`), 'wrap', true);
+  }
+}
+
+/* ---------- spending averages shared by the emergency fund, the forecast and the simulator ---------- */
+// the last up-to-3 finished months that have any spending recorded
+function pastMonths(n = 3){
+  const out = [], cur = monthKey(Date.now());
+  for(let i = 1; i <= 12 && out.length < n; i++){
+    const mk = addMonths(cur, -i), list = monthTx(mk);
+    if(!list.length) continue;
+    out.push({mk, inc: list.filter(x=>x.type==='inc').reduce((a,x)=>a+txEgp(x),0), exp: list.filter(x=>x.type==='exp').reduce((a,x)=>a+txEgp(x),0)});
+  }
+  return out;
+}
+// average monthly spending: finished months if there are any, else this month scaled up from the days so far
+function avgMonthlySpend(){
+  const pm = pastMonths();
+  if(pm.length) return pm.reduce((a,m)=>a+m.exp,0) / pm.length;
+  const t = today(), day = +t.slice(8), spent = monthSpent(t.slice(0,7));
+  return day >= 7 && spent > 0 ? spent / day * 30.4 : 0;
+}
+
+/* ---------- 🛟 emergency fund: months of spending the cash covers (aim: 6) ---------- */
+function renderEfund(){
+  const el = document.getElementById('efund'); if(!el) return;
+  const per = avgMonthlySpend(), cash = totals().cash;
+  el.hidden = !(per > 0) || !isFinite(cash);
+  if(el.hidden) return;
+  const months = cash / per, p = Math.min(100, months / 6 * 100), short = Math.max(0, per * 6 - cash);
+  el.className = 'allow' + (months < 1 ? ' over' : months < 3 ? ' warn' : '');
+  el.innerHTML = `<div class="l">🛟 ${L('صندوق الطوارئ','Emergency fund')}</div>
+    <div class="big m">${L(`يكفّيك ${fmt(months,1)} شهر`, `${fmt(months,1)} months covered`)}</div>
+    <div class="bar2"><span style="width:${p}%"></span></div>
+    <div class="s m">${L(`الكاش ${egp(cash)} ÷ متوسط مصاريفك ${egp(per)} في الشهر`, `Cash ${egp(cash)} ÷ average spending ${egp(per)} a month`)} · ${short > 0
+      ? L(`الهدف ${fmt(6,0)} شهور: فاضلك ${egp(short)}`, `Aim for 6 months: ${egp(short)} to go`) : L(`وصلت لـ ${fmt(6,0)} شهور ✓ ممتاز`, 'You have 6 months ✓ great')}</div>`;
+}
+
+/* ---------- 📉 end-of-month forecast: what's left when the month closes ----------
+   income so far + monthly repeats still to come in − spending so far − repeats, instalments and circles still due
+   − everyday spending for the remaining days (at this month's pace, else the past months' daily average, without the fixed items) */
+function monthForecast(){
+  const t = today(), mk = t.slice(0,7), dim = new Date(+mk.slice(0,4), +mk.slice(5,7), 0).getDate(), day = +t.slice(8), left = dim - day;
+  const list = monthTx(mk), inc = list.filter(x=>x.type==='inc').reduce((a,x)=>a+txEgp(x),0), exp = list.filter(x=>x.type==='exp').reduce((a,x)=>a+txEgp(x),0);
+  if(!list.length && !state.recurring.length) return null;
+  const ahead = calEvents(mk).filter(e => e.date > t);
+  const comingIn = ahead.filter(e=>e.kind==='in').reduce((a,e)=>a+e.amount,0), dueOut = ahead.filter(e=>e.kind==='out').reduce((a,e)=>a+e.amount,0);
+  // everyday spending = spending minus what came from monthly repeats
+  const everyday = list.filter(x=>x.type==='exp' && !x.recId).reduce((a,x)=>a+txEgp(x),0);
+  const pm = pastMonths(), pastDaily = pm.length ? pm.reduce((a,m)=>a+m.exp,0) / pm.length / 30.4 : 0;
+  const daily = day >= 5 ? everyday / day : Math.max(pastDaily, day ? everyday / day : 0);
+  const end = inc + comingIn - exp - dueOut - daily * left;
+  return {end, inc, comingIn, exp, dueOut, daily, left};
+}
+function forecastHtml(){
+  const f = monthForecast(); if(!f || f.left <= 0) return '';
+  const neg = f.end < 0;
+  return `<div class="bud ${neg ? 'over' : ''}" style="display:grid;gap:4px"><div class="top"><span>📉 ${L('توقّع آخر الشهر','End-of-month forecast')}</span>
+      <b class="m ${neg?'down-t':'up-t'}"><bdi>${neg ? '−' : '+'}${egp(Math.abs(f.end))}</bdi></b></div>
+    <span class="note m">${neg ? L('بمعدل صرفك دا هتعجز آخر الشهر. قلّل اليومي شوية أو أجّل مصروف.', "At this pace you'll run short by month end. Ease the daily spending or delay a purchase.")
+      : L('بمعدل صرفك دا هتقفل الشهر بالفلوس دي.', "At this pace this is what you'll have left.")}
+      ${L(`(صرف يومي ${egp(f.daily)} × ${fmt(f.left,0)} يوم${f.dueOut ? ` + التزامات ${egp(f.dueOut)}` : ''}${f.comingIn ? ` − جاي ${egp(f.comingIn)}` : ''})`,
+          `(daily ${egp(f.daily)} × ${f.left} days${f.dueOut ? ` + commitments ${egp(f.dueOut)}` : ''}${f.comingIn ? ` − coming in ${egp(f.comingIn)}` : ''})`)}</span></div>`;
+}
+
+/* ---------- 🔁 subscriptions: the same shop charging a similar amount in two or more months ---------- */
+function findSubs(){
+  const by = {};
+  for(const x of state.tx){
+    // rent, instalments and savings circles repeat too, but they aren't subscriptions to reconsider
+    if(x.type!=='exp' || !x.note || x.recId || ['rent','install','gamaeya'].includes(x.cat)) continue;
+    const k = merchantKey(x.note); if(!k || state.subIgnore.includes(k)) continue;
+    (by[k] = by[k] || []).push(x);
+  }
+  const subs = [];
+  for(const [k, list] of Object.entries(by)){
+    const months = new Set(list.map(x=>x.date.slice(0,7)));
+    if(months.size < 2) continue;
+    list.sort((a,b)=>a.date.localeCompare(b.date));
+    const last = list[list.length-1], amt = txEgp(last);
+    // similar amounts each time (within 20%), and not more than about once a week: a shop you visit often isn't a subscription
+    if(!list.slice(-3).every(x => Math.abs(txEgp(x) - amt) <= amt * .2) || list.length > months.size * 2) continue;
+    // the next charge: a month after the last one, moved on by months if that's already behind us
+    let nt = new Date(last.date+'T12:00').getTime() + 30 * DAY;
+    while(dayKey(nt) < today()) nt += 30 * DAY;
+    const next = dayKey(nt);
+    subs.push({k, name: last.note, amount: amt, last: last.date, next, cat: last.cat});
+  }
+  return subs.sort((a,b)=>b.amount - a.amount);
+}
+function subsHtml(){
+  const subs = findSubs(); if(!subs.length) return '';
+  const total = subs.reduce((a,s)=>a+s.amount,0);
+  return `<div><div class="m-sub"><h3>🔁 ${L('اشتراكات بتتجدد','Subscriptions')}</h3><span class="m">${L(`${egp(total)} في الشهر`, `${egp(total)} a month`)}</span></div>
+    ${subs.map(s=>`<div class="cal-ev"><span class="n">${esc(s.name)}<br><small class="note">${L(`التجديد الجاي حوالي ${dateFmt(new Date(s.next+'T12:00'))}`, `Next renewal around ${dateFmt(new Date(s.next+'T12:00'))}`)}</small></span>
+      <span class="m down-t">${egp(s.amount)}</span><button type="button" class="x" data-sub-ignore="${esc(s.k)}" title="${L('مش اشتراك','Not a subscription')}" aria-label="${L('مش اشتراك','Not a subscription')}">×</button></div>`).join('')}
+    <div class="note">${L('نماء لقاهم من العمليات اللي بتتكرر كل شهر بنفس المبلغ تقريبًا، وهينبّهك قبل كل تجديد بيومين عشان تلغي اللي مش محتاجه.', "Found from charges that repeat monthly at about the same amount; you'll get a heads-up two days before each renewal to cancel what you don't need.")}</div></div>`;
+}
+function checkSubs(){
+  const t = today(); let changed = false;
+  for(const s of findSubs()){
+    const days = Math.round((new Date(s.next+'T12:00') - new Date(t+'T12:00')) / DAY);
+    if(days >= 0 && days <= 2 && state.subNotified[s.k] !== s.next){
+      state.subNotified[s.k] = s.next; changed = true;
+      notify(L(`اشتراك ${s.name} (${egp(s.amount)}) هيتجدد حوالي ${dateFmt(new Date(s.next+'T12:00'))}. لو مش محتاجه الغيه قبلها.`,
+               `${s.name} (${egp(s.amount)}) renews around ${dateFmt(new Date(s.next+'T12:00'))}. Cancel before then if you don't need it.`), 'sub', !!state.nBudget);
+    }
+  }
+  if(changed) save();
+}
+
+/* ---------- 🏷️ categorisation rules: "a message mentioning Talabat → Food" ----------
+   Checked against the bank message text and shop name before the shops Namaa learned by itself. */
+function ruleCat(p){
+  const hay = `${p.raw||''} ${p.merchant||''}`.toLowerCase();
+  const r = state.rules.find(x => x.word && hay.includes(x.word.toLowerCase()) && cats(p.type).some(c=>c.id===x.cat));
+  return r ? r.cat : '';
+}
+function openRules(){
+  sheetSec = 'rules';
+  document.getElementById('sheet-title').textContent = '🏷️ ' + L('قواعد التصنيف','Category rules');
+  const learned = Object.entries(state.merchantCats);
+  const catOpts = sel => [...cats('exp'), ...cats('inc')].map(c=>`<option value="${c.id}" ${c.id===sel?'selected':''}>${esc(catName(c))}</option>`).join('');
+  sheetBody.innerHTML = `<div class="note">${L('أي رسالة بنك فيها الكلمة دي تتصنّف على طول على الفئة اللي تختارها، وتتسجّل لوحدها لو «سجّل لوحده» شغال.', 'Any bank message containing the word is filed under your category straight away (and recorded automatically if "file automatically" is on).')}</div>
+    <div class="two">${fld(L('لو الرسالة فيها','If the message has'), `<input id="rl-word" type="text" maxlength="30" placeholder="${L('مثلاً: Talabat','e.g. Talabat')}">`)}${fld(L('صنّفها','File as'), `<select id="rl-cat">${catOpts('food')}</select>`)}</div>
+    <button type="button" class="go-btn" data-rule-add>+ ${L('ضيف القاعدة','Add rule')}</button>
+    ${state.rules.length ? `<div class="m-sub"><h3>${L('قواعدك','Your rules')}</h3></div>${state.rules.map(r=>`<div class="cal-ev"><span class="n"><b>${esc(r.word)}</b> ← ${esc(catName(catById(r.cat)))}</span><button type="button" class="x" data-rule-del="${r.id}" aria-label="${L('حذف','Delete')}">×</button></div>`).join('')}` : ''}
+    ${learned.length ? `<div class="m-sub"><h3>${L('محلات نماء اتعلّمها','Shops Namaa learned')}</h3></div>${learned.map(([k,c])=>`<div class="cal-ev"><span class="n">${esc(k)} ← ${esc(catName(catById(c)))}</span><button type="button" class="x" data-learn-del="${esc(k)}" aria-label="${L('انسى','Forget')}">×</button></div>`).join('')}` : ''}`;
+  if(!sheet.open) sheet.showModal();
+}
+sheetBody.addEventListener('click', e=>{
+  if(sheetSec!=='rules') return;
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.ruleAdd!==undefined){
+    const word = document.getElementById('rl-word').value.trim(); if(!word){ toast(L('اكتب الكلمة.', 'Enter the word.')); return; }
+    state.rules.push({id:newId('k'), word, cat: document.getElementById('rl-cat').value}); save(); openRules(); buzz();
+  } else if(b.dataset.ruleDel){ state.rules = state.rules.filter(r=>r.id!==b.dataset.ruleDel); state.deletedRules.push(b.dataset.ruleDel); save(); openRules(); }
+  else if(b.dataset.learnDel){ delete state.merchantCats[b.dataset.learnDel]; save(); openRules(); }
+});
+
+/* ---------- 🪙 gold buy / sell calculator ----------
+   Shops sell at their selling price plus making charge (مصنعية) and stamp per gram, and buy back at their buying price
+   (sometimes minus a deduction). Buying then selling straight away loses the difference; the break-even is the buy-back
+   price per gram that gets the total back. */
+function goldSide(kid, side){   // side: 'sell' = what the shop charges you, 'buy' = what the shop pays you
+  const k = GOLD_KARATS.find(x=>x.id===kid) || GOLD_KARATS[1];
+  if(useLocal()){ const row = local.gold[kid]; if(row) return row[side]; return local.gold['24'][side] * k.purity * (k.grams||1); }
+  return goldPrice(kid);
+}
+let gcMode = 'buy';
+function openGoldCalc(){
+  sheetSec = 'goldcalc';
+  document.getElementById('sheet-title').textContent = '🧮 ' + L('حاسبة الدهب','Gold calculator');
+  const karats = GOLD_KARATS.filter(k=>!k.grams).map(k=>`<option value="${k.id}" ${k.id==='21'?'selected':''}>${lbl(k)}</option>`).join('');
+  sheetBody.innerHTML = `<div class="seg"><button type="button" data-gc-mode="buy" aria-pressed="${gcMode==='buy'}">${L('هشتري','Buying')}</button><button type="button" data-gc-mode="sell" aria-pressed="${gcMode==='sell'}">${L('هبيع','Selling')}</button></div>
+    <div class="two">${fld(L('العيار','Karat'), `<select id="gc-k">${karats}</select>`)}${fld(L('الوزن (جرام)','Weight (g)'), `<input id="gc-w" type="number" min="0" step="any" inputmode="decimal" placeholder="10">`)}</div>
+    ${gcMode==='buy' ? `<div class="two">${fld(L('المصنعية للجرام (ج.م)','Making charge per gram'), `<input id="gc-m" type="number" min="0" step="any" inputmode="decimal" placeholder="${L('مثلاً 150','e.g. 150')}">`)}${fld(L('دمغة/ضريبة للجرام (اختياري)','Stamp/tax per gram (optional)'), `<input id="gc-t" type="number" min="0" step="any" inputmode="decimal" placeholder="0">`)}</div>`
+      : fld(L('خصم الصايغ للجرام (اختياري)','Shop deduction per gram (optional)'), `<input id="gc-d" type="number" min="0" step="any" inputmode="decimal" placeholder="0">`)}
+    <div class="gc-out" id="gc-out"></div>
+    <div class="note">${L('الأسعار من أسعار الصاغة الحالية. المصنعية بتختلف من محل للتاني وبتتفاوض عليها.', "Prices are today's jewellers' prices. Making charges vary by shop and are negotiable.")}</div>`;
+  if(!sheet.open) sheet.showModal();
+  goldCalc();
+}
+function goldCalc(){
+  const out = document.getElementById('gc-out'); if(!out) return;
+  const k = document.getElementById('gc-k').value, w = num(document.getElementById('gc-w').value);
+  const shopSells = goldSide(k, 'sell'), shopBuys = goldSide(k, 'buy');
+  if(!isFinite(shopSells) || !isFinite(shopBuys)){ out.innerHTML = `<div class="note">${L('الأسعار لسه بتتحمّل…','Prices are still loading…')}</div>`; return; }
+  const row = (l, v, cls='') => `<div class="cal-ev"><span class="n">${l}</span><b class="m ${cls}">${v}</b></div>`;
+  if(gcMode==='buy'){
+    const m = num(document.getElementById('gc-m').value), tx = num(document.getElementById('gc-t').value);
+    const perGram = shopSells + m + tx, total = perGram * w, back = shopBuys * w, loss = total - back;
+    out.innerHTML = row(L('سعر الجرام عند المحل','Shop price per gram'), egp(shopSells))
+      + (w > 0 ? row(L('هتدفع إجمالي','You\'ll pay in total'), egp(total))
+      + row(L('لو بعته فورًا هتاخد','Sell it straight back for'), egp(back))
+      + row(L('هتخسر لو بعته فورًا','Loss if sold right away'), `${egp(loss)} (${fmt(loss/total*100,1)}${PCT()})`, 'down-t')
+      + row(L('عشان تكسب، سعر بيع الجرام لازم يعدّي','To profit, the buy-back price must pass'), `${egp(perGram)} <small class="note">(${L('أعلى','up')} ${fmt((perGram/shopBuys - 1)*100,1)}${PCT()})</small>`) : '');
+  } else {
+    const dd = num(document.getElementById('gc-d').value), net = (shopBuys - dd) * w;
+    out.innerHTML = row(L('المحل بيشتري الجرام بـ','Shop buys per gram at'), egp(shopBuys))
+      + (w > 0 ? row(L('هتاخد تقريبًا','You\'ll get about'), egp(net), 'up-t')
+      + row(L('الفرق عن سعر الشراء من المحل','Gap to the shop\'s selling price'), `${egp((shopSells - shopBuys + dd) * w)}`) : '');
+  }
+}
+sheetBody.addEventListener('input', e=>{ if(sheetSec==='goldcalc') goldCalc(); });
+sheetBody.addEventListener('change', e=>{ if(sheetSec==='goldcalc') goldCalc(); });
+sheetBody.addEventListener('click', e=>{ const b = e.target.closest('[data-gc-mode]'); if(b && sheetSec==='goldcalc'){ gcMode = b.dataset.gcMode; openGoldCalc(); } });
+document.getElementById('sec-gold').addEventListener('click', e=>{ if(e.target.closest('[data-goldcalc]')) openGoldCalc(); });
+
+/* ---------- 🔍 21k gold today against its 30-day average (from the prices Namaa recorded) ---------- */
+function renderGoldAvg(){
+  const el = document.getElementById('gold-avg'); if(!el) return;
+  const from = Date.now() - 30*DAY, pts = history.filter(p=>p.t >= from && p.px?.g21 > 0), now = goldPrice('21');
+  if(pts.length < 7 || !isFinite(now)){ el.textContent = ''; return; }
+  const avg = pts.reduce((a,p)=>a+p.px.g21,0) / pts.length, d = (now - avg) / avg * 100;
+  el.innerHTML = Math.abs(d) < .5 ? L(`جرام 21 النهارده قريب من متوسط آخر 30 يوم (${egp(avg)})`, `21k today is close to its 30-day average (${egp(avg)})`)
+    : L(`جرام 21 النهارده <b class="${d>0?'down-t':'up-t'}">${d>0?'أغلى':'أرخص'} ${fmt(Math.abs(d),1)}${PCT()}</b> من متوسط آخر 30 يوم (${egp(avg)})`,
+        `21k today is <b class="${d>0?'down-t':'up-t'}">${fmt(Math.abs(d),1)}% ${d>0?'above':'below'}</b> its 30-day average (${egp(avg)})`);
+}
+
+/* ---------- 🔮 what-if simulator: when do I reach my goal, as I am vs. with a change ---------- */
+function openWhatIf(){
+  sheetSec = 'whatif';
+  document.getElementById('sheet-title').textContent = '🔮 ' + L('لو…','What if…');
+  const goals = [num(state.goal) > 0 ? {id:'main', name: L('هدفي المالي (صافي الثروة)','My net-worth goal'), target: num(state.goal)} : null,
+    ...state.goals.map(g=>({id:g.id, name:g.name, target:num(g.target)}))].filter(Boolean);
+  const pm = pastMonths(), base = pm.length ? Math.max(0, pm.reduce((a,m)=>a+m.inc-m.exp,0) / pm.length) : 0;
+  sheetBody.innerHTML = goals.length ? `${fld(L('الهدف','Goal'), `<select id="wi-goal">${goals.map(g=>`<option value="${g.id}">${esc(g.name)} · ${egp(g.target)}</option>`).join('')}</select>`)}
+    ${fld(L('بتحوّش في الشهر (من متوسط آخر شهور)','You save a month (from recent months)'), `<input id="wi-base" type="number" min="0" step="any" inputmode="decimal" value="${Math.round(base)}">`)}
+    <div class="m-sub"><h3>${L('ولو…','And if…')}</h3></div>
+    ${fld(L('حوّشت زيادة في الشهر (ج.م)','You save extra a month (EGP)'), `<input id="wi-extra" type="number" min="0" step="any" inputmode="decimal" placeholder="3000">`)}
+    <div class="two">${fld(L('حطيت في شهادة (ج.م)','Put in a certificate (EGP)'), `<input id="wi-cert" type="number" min="0" step="any" inputmode="decimal" placeholder="50000">`)}${fld(L('بعائد سنوي %','at an annual rate %'), `<input id="wi-rate" type="number" min="0" step="any" inputmode="decimal" placeholder="22">`)}</div>
+    ${fld(L('اشتريت دهب كل شهر (جرام عيار 21)','Bought 21k gold every month (grams)'), `<input id="wi-gold" type="number" min="0" step="any" inputmode="decimal" placeholder="2">`)}
+    <div id="wi-out" class="gc-out"></div>
+    <div class="note">${L('حساب تقريبي: الدهب بسعر النهارده ثابت، وعائد الشهادة شهري. الحقيقة هتختلف مع الأسعار.', "A rough estimate: gold at today's price, certificate interest monthly. Real results move with prices.")}</div>`
+    : `<div class="note">${L('حط هدف مالي في الرئيسية أو هدف ادخار، والمحاكي يقولك هتوصله إمتى.', 'Set a net-worth goal on Home or a savings goal, and the simulator shows when you\'ll reach it.')}</div>`;
+  if(!sheet.open) sheet.showModal();
+  whatIf();
+}
+function whatIf(){
+  const out = document.getElementById('wi-out'); if(!out) return;
+  const gid = document.getElementById('wi-goal').value, g = gid==='main' ? null : state.goals.find(x=>x.id===gid);
+  const target = g ? num(g.target) : num(state.goal), start = g ? num(g.saved) : totals().net;
+  const base = num(document.getElementById('wi-base').value), extra = num(document.getElementById('wi-extra').value);
+  const cert = num(document.getElementById('wi-cert').value), r = num(document.getElementById('wi-rate').value) / 100 / 12, gram = num(document.getElementById('wi-gold').value) * goldPrice('21');
+  // month by month: the certificate earns interest; the scenario's extra saving and gold buying add on top
+  // the certificate money is already part of what you have; in the scenario it starts earning interest
+  const run = scen => { let v = start, c = scen ? cert : 0, pts = [v];
+    for(let m = 1; m <= 600; m++){ v += base + (scen ? extra + gram : 0) + (scen ? c * r : 0); pts.push(v); if(v >= target) return {m, pts}; }
+    return {m: null, pts}; };
+  const a = run(false), b = run(true);
+  const when = m => m===null ? L('مش في خلال 50 سنة','not within 50 years') : m===0 ? L('واصل خلاص ✓','already there ✓') : (() => { const d = new Date(); d.setMonth(d.getMonth() + m); return `${d.toLocaleDateString(LOC(), {month:'long', year:'numeric'})} · ${L(`بعد ${fmt(m,0)} شهر`, `in ${m} months`)}`; })();
+  const n = Math.min(Math.max(a.pts.length, b.pts.length), 600), W = 320, H = 120, max = Math.max(target, ...a.pts.slice(0,n), ...b.pts.slice(0,n)) || 1;
+  const line = pts => pts.slice(0,n).map((v,i)=>`${(i/(n-1||1)*W).toFixed(1)},${(H - v/max*H).toFixed(1)}`).join(' ');
+  out.innerHTML = `<div class="cal-ev"><span class="n">${L('زي ما انت','As you are')}</span><b>${when(a.m)}</b></div>
+    <div class="cal-ev"><span class="n">${L('مع التغيير','With the change')}</span><b class="up-t">${when(b.m)}</b></div>
+    ${a.m && b.m && a.m > b.m ? `<div class="note">${L(`هتوصل أسرع بـ ${fmt(a.m - b.m,0)} شهر 🎯`, `${a.m - b.m} months sooner 🎯`)}</div>` : ''}
+    <svg viewBox="0 0 ${W} ${H+4}" style="width:100%;height:auto"><line x1="0" x2="${W}" y1="${H - target/max*H}" y2="${H - target/max*H}" style="stroke:var(--accent);stroke-dasharray:4 4"/>
+      <polyline points="${line(a.pts)}" style="fill:none;stroke:var(--muted);stroke-width:2"/><polyline points="${line(b.pts)}" style="fill:none;stroke:var(--up);stroke-width:2.5"/></svg>`;
+}
+sheetBody.addEventListener('input', e=>{ if(sheetSec==='whatif') whatIf(); });
+sheetBody.addEventListener('change', e=>{ if(sheetSec==='whatif') whatIf(); });
 
 /* ---------- savings goals: a name, a target, what's put aside so far and an optional date ----------
    Putting money aside here doesn't move any account balance; it tracks what's set apart for the goal. */
@@ -3535,7 +4358,7 @@ function renderGoals(){
         <button type="button" data-goal-edit="${g.id}">${L('تعديل','Edit')}</button>
         <button type="button" class="x" data-goal-del="${g.id}" aria-label="${L('حذف','Delete')}">×</button></div></div>`; }).join('')
     + (state.goals.length ? '' : `<div class="note">${L('عربية، عُمرة، جواز، مقدّم شقة… حدّد المبلغ والميعاد، ونماء يقولك تحوّش كام كل شهر ويتابع تقدّمك.', 'A car, a trip, a wedding, a down payment… set the amount and date, and Namaa tells you how much to put aside each month and tracks your progress.')}</div>`)
-    + `<button type="button" class="add" data-goal-new>+ ${L('هدف جديد','New goal')}</button>`;
+    + `<div class="row"><button type="button" class="add" data-goal-new>+ ${L('هدف جديد','New goal')}</button><button type="button" class="ask-btn" data-whatif>🔮 ${L('لو… (محاكي)','What if… (simulator)')}</button></div>`;
 }
 let goalId = null;
 function openGoal(id){
@@ -3583,6 +4406,7 @@ sheetBody.addEventListener('click', e=>{
 document.getElementById('goals-body').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.goalNew!==undefined) openGoal();
+  else if(b.dataset.whatif!==undefined) openWhatIf();
   else if(b.dataset.goalEdit) openGoal(b.dataset.goalEdit);
   else if(b.dataset.goalAdd) openGoalAdd(b.dataset.goalAdd);
   else if(b.dataset.goalDel){
@@ -3640,7 +4464,9 @@ document.getElementById('money-body').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.txdel) delTx(b.dataset.txdel);
   else if(b.dataset.txexport!==undefined) exportTx();
-  else if(b.dataset.txpdf!==undefined) exportPdf();  else if(b.dataset.txclear!==undefined){ txF.q = ''; txF.cat = ''; txF.min = ''; renderMoney(); }
+  else if(b.dataset.txpdf!==undefined) exportPdf();
+  else if(b.dataset.rules!==undefined) openRules();
+  else if(b.dataset.subIgnore){ state.subIgnore.push(b.dataset.subIgnore); save(); renderMoney(); toast(L('اتشال من الاشتراكات.', 'Removed from subscriptions.')); }  else if(b.dataset.txclear!==undefined){ txF.q = ''; txF.cat = ''; txF.min = ''; renderMoney(); }
   else if(b.dataset.txadd) openTx(b.dataset.txadd);
   else if(b.dataset.budedit!==undefined) openBudgets();
   else if(b.dataset.recdel){ const snap = JSON.stringify(state); state.recurring = state.recurring.filter(r=>r.id!==b.dataset.recdel); state.deletedRec.push(b.dataset.recdel); save(); render(); offerUndo(L('اتوقف التكرار. العمليات اللي اتسجّلت قبل كدا فضلت زي ما هي.', 'Repeat stopped. Past transactions stay.'), snap); }
@@ -3689,8 +4515,10 @@ function renderTxSheet(fresh){
   const row = acctById(d.acct), curLbl = row && row.c!=='EGP' ? lbl(CURRENCIES.find(c=>c.id===row.c)) : L('ج.م','EGP');
   document.getElementById('sheet-title').textContent = d.type==='exp' ? L('مصروف جديد','New expense') : L('دخل جديد','New income');
   sheetBody.innerHTML = `
-    ${aiReady() && d.type==='exp' ? `<button type="button" class="scan-btn" data-txscan>🧾 ${L('صوّر فاتورة وهي تتملي لوحدها','Snap a receipt to fill this in')}</button>
-      <input type="file" id="t-scan" accept="image/*" capture="environment" hidden>` : ''}
+    ${(aiReady() && d.type==='exp') || SpeechRec ? `<div class="tx-tools">
+      ${SpeechRec ? `<button type="button" class="mic-btn" data-txvoice>🎤 ${L('قولها بصوتك','Say it')}</button>` : ''}
+      ${aiReady() && d.type==='exp' ? `<button type="button" class="scan-btn" data-txscan>🧾 ${L('صوّر فاتورة','Snap a receipt')}</button>
+      <input type="file" id="t-scan" accept="image/*" capture="environment" hidden>` : ''}</div>` : ''}
     <div class="seg"><button type="button" data-txtype="exp" aria-pressed="${d.type==='exp'}">${L('مصروف','Expense')}</button><button type="button" data-txtype="inc" aria-pressed="${d.type==='inc'}">${L('دخل','Income')}</button></div>
     ${fld(L(`المبلغ (${curLbl})`, `Amount (${curLbl})`), `<input id="t-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${esc(amt)}">`)}
     <div class="field"><span>${L('الفئة','Category')}</span><div class="chips">${cats(d.type).map(c=>{
@@ -3855,7 +4683,7 @@ function ingestSms(raw, from){
   if(!p) return 'bad';
   const sig = p.raw.replace(/\s+/g,' ');
   if(state.pending.some(x=>x.raw.replace(/\s+/g,' ')===sig) || state.tx.some(t=>t.sig===sig)) return 'dup';   // the same message twice
-  const known = state.merchantCats[merchantKey(p.merchant)];
+  const known = ruleCat(p) || state.merchantCats[merchantKey(p.merchant)];   // the person's own rules come first
   const item = {id:newId('p'), ...p, date: today(), acct: matchAcct(p), cat: known || (p.type==='inc' ? 'otherin' : 'other'), known: !!known};
   if(known && state.autoKnown && (catById(known).id===known)){
     const tx = addTx({type:item.type, amount:item.amount, cat:known, acct:item.acct, date:item.date, note:item.merchant});
@@ -4435,6 +5263,16 @@ function mergeData(loc, rem, preferRemote){
   st.deletedCats = join(st.deletedCats, os.deletedCats);
   st.deletedGoals = join(st.deletedGoals, os.deletedGoals);
   st.goals = byId(st.goals, os.goals, new Set(st.deletedGoals));
+  st.deletedLoans = join(st.deletedLoans, os.deletedLoans); st.deletedGam = join(st.deletedGam, os.deletedGam);
+  st.deletedRules = join(st.deletedRules, os.deletedRules);
+  st.rules = byId(st.rules, os.rules, new Set(st.deletedRules));
+  st.subIgnore = join(st.subIgnore, os.subIgnore);
+  st.subNotified = {...(os.subNotified||{}), ...(st.subNotified||{})};
+  st.loans = byId(st.loans, os.loans, new Set(st.deletedLoans));
+  st.gamaeyas = byId(st.gamaeyas, os.gamaeyas, new Set(st.deletedGam));
+  // an achievement earned on either device counts, dated the first time
+  st.badges = {...(os.badges||{})}; for(const [k,v] of Object.entries(base.state.badges||{})) if(!st.badges[k] || v < st.badges[k]) st.badges[k] = v;
+  st.badgesInit = !!(st.badgesInit || os.badgesInit);
   st.customCats = byId(st.customCats, os.customCats, new Set(st.deletedCats));
   // the bell: both sides' entries (minus anything cleared), the same alert fired on two devices kept once, seen = the later of the two
   st.notesClearedAt = Math.max(st.notesClearedAt||0, os.notesClearedAt||0);
@@ -4803,13 +5641,19 @@ document.getElementById('rep-share-pct').addEventListener('click', ()=>curReport
 /* ---------- privacy ---------- */
 const privBtn = document.getElementById('btn-private');
 const isPrivate = () => 'private' in document.documentElement.dataset;
+// an eye icon, open while amounts show and struck through while they're hidden; one on Home, one atop every other tab
+const EYE_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+function paintPrivate(){
+  const on = isPrivate(), label = on ? L('إظهار المبالغ','Show amounts') : L('إخفاء المبالغ','Hide amounts');
+  document.querySelectorAll('[data-private-btn]').forEach(b=>{ b.innerHTML = on ? EYE_OFF : EYE_ON; b.setAttribute('aria-pressed', on); b.setAttribute('aria-label', label); b.title = label; });
+}
 function applyPrivate(on){
   if(on) document.documentElement.dataset.private = ''; else delete document.documentElement.dataset.private;
-  privBtn.setAttribute('aria-pressed', on);
-  privBtn.textContent = on ? L('👁 إظهار المبالغ','👁 Show amounts') : L('👁 إخفاء المبالغ','👁 Hide amounts');
+  paintPrivate();
   try{ localStorage.setItem('wealth-private', on ? '1' : '0'); }catch(e){}
 }
-privBtn.addEventListener('click', ()=>applyPrivate(!isPrivate()));
+privBtn.addEventListener('click', ()=>{ applyPrivate(!isPrivate()); buzz(6); });
 
 /* ---------- backup ---------- */
 document.getElementById('btn-export').addEventListener('click', ()=>{
@@ -4876,11 +5720,14 @@ document.querySelectorAll('section.card').forEach(sec=>{
 function renderFoldAll(){
   const ico = d => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
   document.querySelectorAll('.fold-all').forEach(el=>{ el.innerHTML =
+    // phones: the hide-amounts eye rides along at the top of every tab but Home (Home has its own)
+    (el.classList.contains('mob') ? `<button type="button" class="eye-btn" data-private-btn></button>` : '') +
     `<button type="button" data-fold-all="1" aria-label="${L('طي كل الأقسام','Collapse all')}" title="${L('طي كل الأقسام','Collapse all')}">${ico('M7 4l5 5 5-5M7 20l5-5 5 5')}</button>
      <button type="button" data-fold-all="0" aria-label="${L('فتح كل الأقسام','Expand all')}" title="${L('فتح كل الأقسام','Expand all')}">${ico('M7 9l5-5 5 5M7 15l5 5 5-5')}</button>`; });
 }
 renderFoldAll();
 document.querySelectorAll('.fold-all').forEach(el=>el.addEventListener('click', e=>{
+  if(e.target.closest('[data-private-btn]')){ applyPrivate(!isPrivate()); buzz(6); return; }
   const b = e.target.closest('[data-fold-all]'); if(!b) return;
   const phone = matchMedia('(max-width:640px)').matches;
   document.querySelectorAll('section.card').forEach(s=>{ if(!phone || s.dataset.tab===tab) setCollapsed(s, b.dataset.foldAll==='1'); });
