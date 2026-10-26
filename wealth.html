@@ -3307,7 +3307,7 @@ function renderMoney(){
         ${rate2!==null ? `<span class="s">${L('نسبة التوفير','Savings rate')} ${fmt(rate2,0)}${PCT()}</span>` : ''}</div>
     </div>
     ${txs.length ? '' : `<div class="rep-empty">${L('مفيش عمليات في الشهر دا. سجّل مصروف أو دخل من زرار الإضافة (+) أو من هنا.', 'No transactions this month. Add spending or income with the add (+) button or here.')}</div>`}
-    <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button>${AI_URL ? `<button type="button" class="ask-btn" data-ask>💬 ${L('اسأل نماء AI','Ask Namaa AI')}</button>` : ''}</div>
+    <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button></div>
     ${parts.length ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}${vsPrev(p.v, prevBy[p.id])}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
     ${notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : ''}
     <div class="m-sub"><h3>${L('الميزانيات','Budgets')}</h3><button type="button" data-budedit>${budIds.length || bTotal ? L('تعديل الميزانيات','Edit budgets') : L('حدّد ميزانية','Set budgets')}</button></div>
@@ -3394,8 +3394,8 @@ function renderAi(){
   pill.className = 'pill ' + (aiReady() ? 'ok' : 'idle');
   pill.textContent = aiReady() ? L('شغال','On') : L('مقفول','Off');
   if(!AI_URL){ box.innerHTML = `<div class="note">${L('الميزة دي لسه بتتجهّز.','This feature is being set up.')}</div>`; return; }
-  box.innerHTML = `<div class="note">${L('💬 <b>اسأل نماء AI</b> عن فلوسك بالكلام، و🧾 <b>صوّر فاتورة</b> وهي تتسجّل لوحدها. مجاني، بحد يومي: 20 سؤال و20 فاتورة.',
-      '💬 <b>Ask Namaa AI</b> about your money in plain words, and 🧾 <b>snap a receipt</b> to record it. Free, with a daily allowance: 20 questions and 20 receipts.')}</div>
+  box.innerHTML = `<div class="note">${L('💬 <b>اسأل نماء AI</b> عن فلوسك بالكلام، و🧾 <b>صوّر فاتورة</b> وهي تتسجّل لوحدها. مجاني، بعدد محدود من المرات في اليوم.',
+      '💬 <b>Ask Namaa AI</b> about your money in plain words, and 🧾 <b>snap a receipt</b> to record it. Free, with a daily allowance.')}</div>
     <div class="note">🔒 ${L('لما تشغّلها، <b>ملخص أرقامك</b> (إجماليات الفئات والأصول والأهداف، من غير أسماء محلات ولا عمليات) بيتبعت لـ Cloudflare عشان يتحلل ويرجعلك الرد، وصورة الفاتورة بتتبعت عشان تتقرا. مش بيتحفظوا ومش بيتستخدموا في تدريب أي ذكاء اصطناعي.',
       'When on, a <b>summary of your figures</b> (totals by category, assets and goals — no shop names or transactions) goes to Cloudflare to be analysed, and receipt photos go to be read. Neither is stored or used to train any AI.')}</div>
     <label class="checks"><span style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="ai-toggle" ${state.aiOn?'checked':''}> ${L('شغّل الذكاء الاصطناعي على أجهزتي','Turn on AI on my devices')}</span></label>`;
@@ -3640,9 +3640,7 @@ document.getElementById('money-body').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.txdel) delTx(b.dataset.txdel);
   else if(b.dataset.txexport!==undefined) exportTx();
-  else if(b.dataset.txpdf!==undefined) exportPdf();
-  else if(b.dataset.ask!==undefined) openAsk();
-  else if(b.dataset.txclear!==undefined){ txF.q = ''; txF.cat = ''; txF.min = ''; renderMoney(); }
+  else if(b.dataset.txpdf!==undefined) exportPdf();  else if(b.dataset.txclear!==undefined){ txF.q = ''; txF.cat = ''; txF.min = ''; renderMoney(); }
   else if(b.dataset.txadd) openTx(b.dataset.txadd);
   else if(b.dataset.budedit!==undefined) openBudgets();
   else if(b.dataset.recdel){ const snap = JSON.stringify(state); state.recurring = state.recurring.filter(r=>r.id!==b.dataset.recdel); state.deletedRec.push(b.dataset.recdel); save(); render(); offerUndo(L('اتوقف التكرار. العمليات اللي اتسجّلت قبل كدا فضلت زي ما هي.', 'Repeat stopped. Past transactions stay.'), snap); }
