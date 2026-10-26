@@ -124,12 +124,10 @@ header>div:first-child{flex:1;min-width:0}
 .fold-all button{width:36px;height:36px;padding:0;display:grid;place-items:center;border-radius:10px;color:var(--muted)}
 .fold-all button:hover{color:var(--fg)}
 .fold-all svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.fold-all.mob{display:none}
-@media (max-width:640px){
-  .fold-all.desk{display:none}
-  .fold-all.mob{display:flex;margin-bottom:-6px}
-  :root[data-tab="home"] .fold-all.mob{display:none}
-}
+/* collapse/expand and the eye sit atop every tab but Home (which has its own eye) */
+.fold-all.desk{display:none}
+.fold-all.mob{display:flex;margin-bottom:-6px}
+:root[data-tab="home"] .fold-all.mob{display:none}
 .ticker{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 @media (min-width:560px){.ticker{grid-template-columns:repeat(3,1fr)}}
 @media (min-width:900px){.ticker{grid-template-columns:repeat(6,1fr)}}
@@ -659,20 +657,39 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .wel-choices{display:grid;gap:10px;width:100%}
 .wel-choices button{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;background:var(--bg);font-weight:500}
 .wel-choices button.done{border-color:var(--up);color:var(--up)}
-/* bottom navigation (phones only) */
-.bnav{display:none}
+/* tab navigation, one area at a time on every screen: a bottom bar on phones, a top bar on medium screens,
+   a sidebar on wide ones */
+.wrap>.tab-off{display:none!important}
+.bnav{display:flex;position:fixed;z-index:14;background:var(--surface)}
+.bnav button{border:0;background:none;color:var(--muted);border-radius:10px}
+.bnav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.bnav button[aria-current=page]{color:var(--accent);font-weight:600}
 @media (max-width:640px){
-  .bnav{display:flex;position:fixed;inset-inline:0;bottom:0;z-index:14;background:var(--surface);border-top:1px solid var(--line);
+  .bnav{inset-inline:0;bottom:0;border-top:1px solid var(--line);
     padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
-  .bnav button{flex:1;border:0;background:none;display:grid;justify-items:center;gap:2px;padding:4px 0;font-size:.7rem;color:var(--muted);border-radius:10px}
-  .bnav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-  .bnav button[aria-current=page]{color:var(--accent);font-weight:600}
+  .bnav button{flex:1;display:grid;justify-items:center;gap:2px;padding:4px 0;font-size:.7rem}
   .wrap{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
   .fab{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
   .fab-ai:not([hidden]){display:grid}
   .tools .ask-btn{display:none}
   .toasts{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
-  .wrap>.tab-off{display:none!important}
+}
+@media (min-width:641px) and (max-width:1099px){
+  .bnav{inset-inline:0;top:0;justify-content:center;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.08)}
+  .bnav button{display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:.88rem}
+  .bnav svg{width:20px;height:20px}
+  .bnav button:hover{color:var(--fg)}
+  .bnav button[aria-current=page]{background:var(--bg)}
+  .bnav .badge{position:static;margin-inline-start:2px}
+  body{padding-top:60px}
+}
+@media (min-width:1100px){
+  .bnav{flex-direction:column;top:0;bottom:0;inset-inline-start:0;width:220px;padding:28px 12px;gap:4px;border-inline-end:1px solid var(--line)}
+  .bnav button{display:flex;align-items:center;gap:12px;padding:11px 14px;font-size:.95rem;text-align:start}
+  .bnav button:hover{background:var(--bg);color:var(--fg)}
+  .bnav button[aria-current=page]{background:var(--bg)}
+  .bnav .badge{position:static;margin-inline-start:auto}
+  body{padding-inline-start:220px}
 }
 
 /* swipeable insight cards */
@@ -739,7 +756,7 @@ section.card.collapsed .tabs{display:none}
 @media print{
   :root,:root[data-theme="dark"]{--bg:#fff;--surface:#fff;--fg:#151a18;--muted:#5d6662;--line:#dcdad2;--accent:#8a6420;--up:#1f7a45;--down:#b3372a;color-scheme:light}
   @page{margin:14mm}
-  body{background:#fff}
+  body{background:#fff;padding:0!important}
   body>*:not(#report){display:none!important}
   #report{position:static;display:block;border:0;box-shadow:none;width:100%;max-width:none;max-height:none;overflow:visible;margin:0}
   #report .dlg-head{display:none}
@@ -3041,6 +3058,13 @@ function setTab(t, scroll=true){
   if(t==='reports'){ drawChart(); goSlide(slideIdx, false); }   // the chart measures its width, which is 0 while hidden
 }
 document.getElementById('bnav').addEventListener('click', e=>{ const t = e.target.closest('button')?.dataset.goto; if(t){ setTab(t); buzz(6); } });
+// keys 1–6 switch tabs (not while typing, or with a dialog or the year story open)
+document.addEventListener('keydown', e=>{
+  if(e.ctrlKey || e.metaKey || e.altKey || !/^[1-6]$/.test(e.key)) return;
+  if(e.target.closest?.('input,textarea,select,[contenteditable]') || document.querySelector('dialog[open]') || !document.getElementById('story').hidden) return;
+  const b = document.querySelectorAll('#bnav [data-goto]')[+e.key - 1]; if(b){ setTab(b.dataset.goto); }
+});
+document.querySelectorAll('#bnav [data-goto]').forEach((b, i)=>b.setAttribute('aria-keyshortcuts', String(i + 1)));
 
 /* ---------- quick add sheet ---------- */
 const sheet = document.getElementById('sheet'), sheetBody = document.getElementById('sheet-body');
@@ -5729,8 +5753,7 @@ renderFoldAll();
 document.querySelectorAll('.fold-all').forEach(el=>el.addEventListener('click', e=>{
   if(e.target.closest('[data-private-btn]')){ applyPrivate(!isPrivate()); buzz(6); return; }
   const b = e.target.closest('[data-fold-all]'); if(!b) return;
-  const phone = matchMedia('(max-width:640px)').matches;
-  document.querySelectorAll('section.card').forEach(s=>{ if(!phone || s.dataset.tab===tab) setCollapsed(s, b.dataset.foldAll==='1'); });
+  document.querySelectorAll('section.card').forEach(s=>{ if(s.dataset.tab===tab) setCollapsed(s, b.dataset.foldAll==='1'); });
   buzz(6);
 }));
 
