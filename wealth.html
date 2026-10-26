@@ -310,6 +310,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .tx-found{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.85rem;color:var(--muted);margin:6px 0}
 .tx-found .linkish{margin-inline-start:auto;font-size:.85rem}
 /* daily allowance (Home) */
+.allow[hidden]{display:none}
 .allow{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:16px 18px;display:grid;gap:8px}
 .allow .l{font-size:.85rem;color:var(--muted)}
 .allow .big{font:700 1.9rem/1.15 var(--display);color:var(--up)}
@@ -926,9 +927,9 @@ section.card.collapsed{gap:0}
   </div>
 
   <!-- what can be spent today, from the month's budget -->
-  <div class="allow" id="allow" data-tab="home"></div>
+  <div class="allow" id="allow" data-tab="money"></div>
   <!-- how many months of spending the cash covers -->
-  <div class="allow" id="efund" data-tab="home" hidden></div>
+  <div class="allow" id="efund" data-tab="money" hidden></div>
 
   <!-- three swipeable cards: history chart, monthly reports, yearly reports -->
   <section class="card" id="sec-insights" data-tab="reports">
@@ -1207,6 +1208,7 @@ section.card.collapsed{gap:0}
     <span class="note" id="backup-note"></span>
     <span id="import-confirm"></span>
     <div class="note" data-en="Your data lives only in this browser on this device. A backup file lets you move it to your phone or keep it safe.">بياناتك محفوظة في المتصفح دا على الجهاز دا بس. ملف النسخة الاحتياطية بيخليك تنقلها لموبايلك أو تحتفظ بيها في أمان.</div>
+    <button type="button" class="x" id="btn-reset-money" style="justify-self:start;color:var(--down)" data-en="🗑 Reset spending and income">🗑 تصفير المصروفات والدخل</button>
   </div>
 </dialog>
 
@@ -3206,12 +3208,13 @@ function addTx(t){
 const TOMBS = ['deletedTx','deletedPending','deletedRec','deletedCats','deletedGoals','deletedLoans','deletedGam','deletedRules'];
 function offerUndo(msg, snap){
   toast(msg, {label: L('تراجع','Undo'), fn: ()=>{
-    const old = JSON.parse(snap);
-    let s = snap;
+    const old = JSON.parse(snap), swap = new Map();
     for(const k of TOMBS){
       const had = new Set(old[k] || []);
-      for(const id of state[k] || []) if(!had.has(id)) s = s.split(`"${id}"`).join(`"${newId('u')}"`);
+      for(const id of state[k] || []) if(!had.has(id)) swap.set(id, newId('u'));
     }
+    // one pass over the saved state, however many items came back (a full reset can bring back thousands)
+    const s = swap.size ? snap.replace(/"([^"\\]{4,40})"/g, (m, id) => swap.has(id) ? `"${swap.get(id)}"` : m) : snap;
     state = withDefaults(JSON.parse(s)); save(); render(); buzz();
     if(sheet.open && sheetSec==='tx') renderTxSheet();
   }});
@@ -4114,6 +4117,39 @@ function checkWrap(){
     notify(L(`🎁 ملخص سنتك ${y} جاهز! افتحه من التقارير.`, `🎁 Your ${y} in review is ready! Open it from Reports.`), 'wrap', true);
   }
 }
+
+/* ---------- reset spending and income: clears the transactions, with choices for what goes with them ----------
+   Each removed item leaves a tombstone so a synced device doesn't bring it back; undo is offered as with other deletes. */
+function openResetMoney(){
+  sheetSec = 'reset';
+  document.getElementById('sheet-title').textContent = '🗑 ' + L('تصفير المصروفات والدخل','Reset spending and income');
+  const n = state.tx.length;
+  const box = (id, on, text) => `<label class="checks"><span style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="${id}" ${on?'checked':''}> ${text}</span></label>`;
+  sheetBody.innerHTML = `<div class="note">${L(`هيتمسح <b>${fmt(n,0)} عملية</b> (كل المصاريف والدخل في كل الشهور). الأصول والذهب والأسهم مش هتتلمس.`, `This deletes <b>${n} transactions</b> (all spending and income, every month). Assets, gold and stocks aren't touched.`)}</div>
+    ${box('rs-pending', true, L(`رسايل البنك المستنية تصنيف (${fmt(state.pending.length,0)})`, `Bank messages waiting to be filed (${state.pending.length})`))}
+    ${box('rs-rec', false, L(`العمليات المتكررة كل شهر (${fmt(state.recurring.length,0)})`, `Monthly repeats (${state.recurring.length})`))}
+    ${box('rs-bud', false, L('الميزانيات','Budgets'))}
+    ${box('rs-bal', false, L('رجّع المبالغ لأرصدة الحسابات (كأن العمليات ماحصلتش)', 'Put the amounts back into account balances (as if they never happened)'))}
+    <div class="note">${L('من غير الاختيار الأخير، أرصدة الكاش والبنوك بتفضل زي ما هي دلوقتي.', 'Without the last option, cash and bank balances stay as they are now.')}</div>
+    <button type="button" class="go-btn" data-reset-go style="background:var(--down);color:#fff">${L('امسح','Delete')}</button>`;
+  if(!sheet.open) sheet.showModal();
+}
+sheetBody.addEventListener('click', e=>{
+  if(sheetSec!=='reset') return;
+  const b = e.target.closest('[data-reset-go]'); if(!b) return;
+  // second tap confirms
+  if(!b.dataset.armed){ b.dataset.armed = '1'; b.textContent = L('متأكد؟ دوس تاني للمسح','Sure? Tap again to delete'); buzz([20,40,20]); return; }
+  const snap = JSON.stringify(state), n = state.tx.length;
+  const ck = id => document.getElementById(id).checked;
+  if(ck('rs-bal')) for(const t of state.tx) applyTx(t, -1);
+  state.deletedTx.push(...state.tx.map(t=>t.id)); state.tx = [];
+  if(ck('rs-pending')){ state.deletedPending.push(...state.pending.map(p=>p.id)); state.pending = []; }
+  if(ck('rs-rec')){ state.deletedRec.push(...state.recurring.map(r=>r.id)); state.recurring = []; }
+  if(ck('rs-bud')){ state.budgets = {}; state.budgetTotal = ''; }
+  save(); render(); sheet.close(); buzz([10,40,10]);
+  offerUndo(L(`اتمسحت ${fmt(n,0)} عملية.`, `${n} transactions deleted.`), snap);
+});
+document.getElementById('btn-reset-money').addEventListener('click', ()=>{ dlg.close(); openResetMoney(); });
 
 /* ---------- spending averages shared by the emergency fund, the forecast and the simulator ---------- */
 // the last up-to-3 finished months that have any spending recorded
