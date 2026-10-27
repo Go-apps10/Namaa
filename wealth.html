@@ -882,6 +882,9 @@ html,body{overscroll-behavior-y:contain;overscroll-behavior-x:none}   /* turns o
   tbody[id$="-rows"] td.del{position:absolute;top:8px;inset-inline-end:6px}
   tbody[id$="-rows"] td.empty{grid-column:1/-1}
   tbody[id$="-rows"] td.nosym,tbody[id$="-rows"] td.no-rate{display:none}
+  /* profit/loss with its percentage is too long for half a card: it gets the whole row so nothing lands on it */
+  tbody[id$="-rows"] td.plc{grid-column:1/-1}
+  tbody[id$="-rows"] td.plc .pl{white-space:normal;overflow-wrap:anywhere}
   tbody[id$="-rows"] td.num{font-weight:600}
   tbody[id$="-rows"] .sname{max-width:100%}
 }
@@ -1823,12 +1826,12 @@ function rowHtml(sec, r, i){
       const unit = k.grams ? L('عدد الجنيهات', 'coins') : L('جرام', 'grams');
       return `<tr>${T(LB.karat(), sIn(sec,i,'k',GOLD_KARATS,r.k), 'class="lead"')}${T(LB.weight(), nIn(sec,i,'w',r.w,'any',unit))}
         ${T(LB.price(), fmt(goldPrice(r.k)), 'class="num" data-c')}${val}${T(LB.paid(), nIn(sec,i,'cost',r.cost??'','any',OPTIONAL()))}
-        ${T(LB.pl(), plHtml(v, rowCost(sec,r)), 'data-c')}${T(LB.worn(), `<input type="checkbox" ${ctl(sec,i,'worn')} ${r.worn?'checked':''} aria-label="${LB.worn()}">`)}${del(sec,i)}</tr>`;
+        ${T(LB.pl(), plHtml(v, rowCost(sec,r)), 'class="plc" data-c')}${T(LB.worn(), `<input type="checkbox" ${ctl(sec,i,'worn')} ${r.worn?'checked':''} aria-label="${LB.worn()}">`)}${del(sec,i)}</tr>`;
     }
     case 'silver':
       return `<tr>${T(LB.karat(), sIn(sec,i,'k',SILVER_KARATS,r.k), 'class="lead"')}${T(LB.weightG(), nIn(sec,i,'w',r.w))}
         ${T(LB.price(), fmt(silverPrice(r.k)), 'class="num" data-c')}${val}${T(LB.paid(), nIn(sec,i,'cost',r.cost??'','any',OPTIONAL()))}
-        ${T(LB.pl(), plHtml(v, rowCost(sec,r)), 'data-c')}${del(sec,i)}</tr>`;
+        ${T(LB.pl(), plHtml(v, rowCost(sec,r)), 'class="plc" data-c')}${del(sec,i)}</tr>`;
     case 'cash': {
       const bk = r.b || 'home';
       return `<tr>${T(LB.bank(), `<div class="stk">${bankLogoHtml(bk)}<div class="stk-in">${sIn(sec,i,'b',BANKS,bk)}</div></div>`, 'class="lead"')}
@@ -1839,7 +1842,7 @@ function rowHtml(sec, r, i){
       const extra = sym ? (sp ? `<span class="sname" title="${esc(nm)}">${esc(nm)}</span>` : `<span class="sname bad">${L('رمز غير معروف أو جاري التحميل', 'Unknown ticker or still loading')}</span>`) : '';
       return `<tr>${T(LB.ticker(), `<div class="stk">${logoHtml(sym)}<div class="stk-in"><input class="sym" list="egx-list" ${ctl(sec,i,'s')} value="${esc(sym)}" placeholder="COMI">${extra}</div></div>`, 'class="lead"')}
         ${T(LB.shares(), nIn(sec,i,'q',r.q,'1'))}${T(LB.price(), `${fmt(sp?.close)} ${chg(sp?.change)}`, 'class="num" data-c')}
-        ${T(LB.avg(), nIn(sec,i,'cost',r.cost??'','any',OPTIONAL()))}${val}${T(LB.pl(), plHtml(v, rowCost(sec,r)), 'data-c')}${del(sec,i)}</tr>`;
+        ${T(LB.avg(), nIn(sec,i,'cost',r.cost??'','any',OPTIONAL()))}${val}${T(LB.pl(), plHtml(v, rowCost(sec,r)), 'class="plc" data-c')}${del(sec,i)}</tr>`;
     }
     case 'other':
       return `<tr>${T(LB.desc(), tIn(sec,i,'name',r.name,L('مثلاً: شقة التجمع','e.g. New Cairo flat')), 'class="lead"')}${T(LB.type(), sIn(sec,i,'type',OTHER_TYPES,r.type))}${T(LB.est(), nIn(sec,i,'v',r.v))}${del(sec,i)}</tr>`;
