@@ -3675,6 +3675,8 @@ sheetBody.addEventListener('change', e=>{ if(e.target.id==='t-scan' && e.target.
 /* ---------- daily allowance: what the month's budget leaves for today ----------
    (budget − spent before today) ÷ days left including today, minus what today already took. Spend less today and
    tomorrow's share grows; spend more and it shrinks. */
+// a card's look changes with its numbers, but the tab-off class (which hides it on other tabs) must survive every re-render
+function setAllowClass(el, cls){ el.className = cls + (el.classList.contains('tab-off') ? ' tab-off' : ''); }
 function allowance(){
   const b = num(state.budgetTotal); if(!(b > 0)) return null;
   const t = today(), mk = t.slice(0,7), dim = new Date(+mk.slice(0,4), +mk.slice(5,7), 0).getDate();
@@ -3687,13 +3689,13 @@ function renderAllow(){
   const el = document.getElementById('allow'); if(!el) return;
   const a = allowance();
   if(!a){
-    el.className = 'allow empty';
+    setAllowClass(el, 'allow empty');
     el.innerHTML = `<span>💡 ${L('حط ميزانية للشهر، ونماء يقولك مسموحلك تصرف كام كل يوم.', 'Set a monthly budget and Namaa tells you how much you can spend each day.')}</span>
       <button type="button" class="go-btn sm" data-allow-bud>${L('حدّد ميزانية','Set a budget')}</button>`;
     return;
   }
   const over = a.leftToday < 0, gone = a.leftMonth <= 0, p = a.perDay > 0 ? Math.min(100, a.spentToday / a.perDay * 100) : 100;
-  el.className = 'allow' + (over || gone ? ' over' : p >= 80 ? ' warn' : '');
+  setAllowClass(el, 'allow' + (over || gone ? ' over' : p >= 80 ? ' warn' : ''));
   el.innerHTML = `<div class="l">${gone ? L('ميزانية الشهر خلصت','This month\'s budget is used up') : over ? L('عدّيت حد النهارده بـ','Over today\'s share by') : L('مسموحلك تصرف النهارده','You can spend today')}</div>
     <div class="big m">${gone ? egp(-a.leftMonth) + ' ' + L('زيادة','over') : egp(Math.abs(a.leftToday))}</div>
     <div class="bar2"><span style="width:${p}%"></span></div>
@@ -4177,7 +4179,7 @@ function renderEfund(){
   el.hidden = !(per > 0) || !isFinite(cash);
   if(el.hidden) return;
   const months = cash / per, p = Math.min(100, months / 6 * 100), short = Math.max(0, per * 6 - cash);
-  el.className = 'allow' + (months < 1 ? ' over' : months < 3 ? ' warn' : '');
+  setAllowClass(el, 'allow' + (months < 1 ? ' over' : months < 3 ? ' warn' : ''));
   el.innerHTML = `<div class="l">🛟 ${L('صندوق الطوارئ','Emergency fund')}</div>
     <div class="big m">${L(`يكفّيك ${fmt(months,1)} شهر`, `${fmt(months,1)} months covered`)}</div>
     <div class="bar2"><span style="width:${p}%"></span></div>
