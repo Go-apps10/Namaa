@@ -19,6 +19,7 @@
   // apply the saved theme, privacy mode and language before first paint to avoid a flash
   try{
     const t = localStorage.getItem('wealth-theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme = t;
+    const st = localStorage.getItem('wealth-style'); if(st && st!=='namaa') document.documentElement.dataset.style = st;
     if(localStorage.getItem('wealth-private')==='1') document.documentElement.dataset.private = '';
     const saved = JSON.parse(localStorage.getItem('wealth-v1')) || {};
     if(saved.lang==='en'){ document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr'; }
@@ -41,7 +42,7 @@
 :root{
   --bg:#f6f5f1; --surface:#ffffff; --fg:#1d2321; --muted:#68716d; --line:#e2e0d8;
   --gold:#b8862b; --silver:#7d8a92; --cash:#2f7a5b; --stocks:#3a5a9b; --certs:#7b4f9e; --other:#a65d3a;
-  --up:#1f8a4c; --down:#c0392b; --warn:#b7791f; --accent:#8a6420;
+  --up:#1f8a4c; --down:#c0392b; --warn:#b7791f; --accent:#8a6420; --on-accent:#fff;
   --display:"Rubik","Alexandria","IBM Plex Sans Arabic",Tahoma,sans-serif;
   --body:"Rubik","IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
   --page-dir:rtl;
@@ -51,17 +52,51 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141716; --surface:#1d2120; --fg:#ecebe6; --muted:#9aa29e; --line:#2e3331;
   --gold:#e0b257; --silver:#aab6bd; --cash:#5cb48d; --stocks:#7c9de0; --certs:#b58ad8; --other:#de9670;
-  --up:#4cc27c; --down:#ec6b5d; --warn:#e6b350; --accent:#e0b257; color-scheme:dark;}}
+  --up:#4cc27c; --down:#ec6b5d; --warn:#e6b350; --accent:#e0b257; --on-accent:#14110a; color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#141716; --surface:#1d2120; --fg:#ecebe6; --muted:#9aa29e; --line:#2e3331;
   --gold:#e0b257; --silver:#aab6bd; --cash:#5cb48d; --stocks:#7c9de0; --certs:#b58ad8; --other:#de9670;
-  --up:#4cc27c; --down:#ec6b5d; --warn:#e6b350; --accent:#e0b257; color-scheme:dark;}
+  --up:#4cc27c; --down:#ec6b5d; --warn:#e6b350; --accent:#e0b257; --on-accent:#14110a; color-scheme:dark;}
+
+/* interface styles (Settings → Appearance): each recolours the page and the accent, in light and in dark.
+   Asset colours (gold, cash…) and up/down stay the same in every style so charts read the same.
+   Each style has three blocks: light, dark by system setting, dark chosen in the app. */
+:root[data-style="ocean"]{--bg:#f3f6f9;--surface:#fff;--fg:#172330;--muted:#5f6f7d;--line:#dde5ec;--accent:#1f6fb2;--on-accent:#fff}
+@media (prefers-color-scheme:dark){:root[data-style="ocean"]:not([data-theme="light"]){--bg:#0e1620;--surface:#16212d;--fg:#e6edf3;--muted:#8fa1b3;--line:#243243;--accent:#4fa8f0;--on-accent:#06121f}}
+:root[data-style="ocean"][data-theme="dark"]{--bg:#0e1620;--surface:#16212d;--fg:#e6edf3;--muted:#8fa1b3;--line:#243243;--accent:#4fa8f0;--on-accent:#06121f}
+
+:root[data-style="royal"]{--bg:#f6f4fa;--surface:#fff;--fg:#221c2e;--muted:#6b6380;--line:#e6e1ef;--accent:#6d3fc0;--on-accent:#fff}
+@media (prefers-color-scheme:dark){:root[data-style="royal"]:not([data-theme="light"]){--bg:#15121c;--surface:#1e1a28;--fg:#ece8f4;--muted:#a39cb5;--line:#2f2a3c;--accent:#b18cff;--on-accent:#170e2b}}
+:root[data-style="royal"][data-theme="dark"]{--bg:#15121c;--surface:#1e1a28;--fg:#ece8f4;--muted:#a39cb5;--line:#2f2a3c;--accent:#b18cff;--on-accent:#170e2b}
+
+:root[data-style="rose"]{--bg:#faf5f4;--surface:#fff;--fg:#2a1d1c;--muted:#7a6462;--line:#efe2df;--accent:#c0503f;--on-accent:#fff}
+@media (prefers-color-scheme:dark){:root[data-style="rose"]:not([data-theme="light"]){--bg:#1a1312;--surface:#241b1a;--fg:#f3e9e7;--muted:#b39d9a;--line:#3a2b29;--accent:#ff8a73;--on-accent:#2a0c06}}
+:root[data-style="rose"][data-theme="dark"]{--bg:#1a1312;--surface:#241b1a;--fg:#f3e9e7;--muted:#b39d9a;--line:#3a2b29;--accent:#ff8a73;--on-accent:#2a0c06}
+
+:root[data-style="desert"]{--bg:#f7f1e6;--surface:#fffaf1;--fg:#2b2418;--muted:#7a6b55;--line:#eadfcb;--accent:#a8641c;--on-accent:#fff}
+@media (prefers-color-scheme:dark){:root[data-style="desert"]:not([data-theme="light"]){--bg:#1b1712;--surface:#25201a;--fg:#f1e8d9;--muted:#b3a48c;--line:#3a3226;--accent:#e9a35a;--on-accent:#1e1205}}
+:root[data-style="desert"][data-theme="dark"]{--bg:#1b1712;--surface:#25201a;--fg:#f1e8d9;--muted:#b3a48c;--line:#3a3226;--accent:#e9a35a;--on-accent:#1e1205}
+
+:root[data-style="graphite"]{--bg:#f4f4f5;--surface:#fff;--fg:#18181b;--muted:#6b6b74;--line:#e4e4e7;--accent:#27272a;--on-accent:#fff}
+@media (prefers-color-scheme:dark){:root[data-style="graphite"]:not([data-theme="light"]){--bg:#0f0f10;--surface:#19191b;--fg:#f4f4f5;--muted:#a1a1aa;--line:#2a2a2e;--accent:#e4e4e7;--on-accent:#111113}}
+:root[data-style="graphite"][data-theme="dark"]{--bg:#0f0f10;--surface:#19191b;--fg:#f4f4f5;--muted:#a1a1aa;--line:#2a2a2e;--accent:#e4e4e7;--on-accent:#111113}
+
+/* true black for OLED phones: only the dark look changes; in light it is the classic style */
+@media (prefers-color-scheme:dark){:root[data-style="amoled"]:not([data-theme="light"]){--bg:#000;--surface:#0c0c0c;--fg:#f2f2ee;--muted:#9a9a94;--line:#1f1f1f}}
+:root[data-style="amoled"][data-theme="dark"]{--bg:#000;--surface:#0c0c0c;--fg:#f2f2ee;--muted:#9a9a94;--line:#1f1f1f}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 .gold-tbl td:first-child,.alerts-tbl td:first-child{min-width:170px}
 body{margin:0;background:var(--bg);color:var(--fg);font:.9375rem/1.6 var(--body);font-variant-numeric:tabular-nums;transition:background-color .2s,color .2s}
 @media (prefers-reduced-motion:reduce){body{transition:none}}
-.wrap{max-width:1040px;margin:0 auto;padding-block:24px 48px;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));display:grid;gap:20px}
+/* the page never moves sideways: iPhones otherwise let it slide under the finger if anything is a pixel too wide
+   (inner strips like tables and the report cards still scroll on their own); clip where supported, hidden elsewhere */
+html,body{overflow-x:hidden;overscroll-behavior-x:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@supports (overflow-x:clip){html,body{overflow-x:clip}}
+/* installed on iPhone the page draws up under the status bar and the Dynamic Island (viewport-fit=cover), so the content
+   starts below it, and a solid strip there keeps scrolled content from showing through the clock */
+body::before{content:"";position:fixed;inset-inline:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:13;pointer-events:none}
+.wrap{max-width:1040px;margin:0 auto;padding-block:calc(24px + env(safe-area-inset-top,0px)) 48px;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));display:grid;gap:20px}
 header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 h1{font:700 2rem/1.2 var(--display);margin:0;color:var(--accent)}
 .brand{display:flex;align-items:center;gap:12px}
@@ -118,6 +153,12 @@ header>div:first-child{flex:1;min-width:0}
 .theme button[aria-pressed=true],.toggle[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.88rem}
 .fold-all{display:flex;gap:6px;justify-content:flex-end;margin-inline-start:auto}
+.styles{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.style-card{display:grid;justify-items:center;gap:6px;padding:10px 6px;border-radius:12px;background:var(--bg);font-size:.82rem;color:var(--fg)}
+.style-card[aria-checked=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;font-weight:600}
+.style-card .sw{position:relative;width:52px;height:36px;border-radius:9px;border:1px solid rgba(128,128,128,.35);overflow:hidden}
+.style-card .sw i{position:absolute;inset-inline-start:8px;top:8px;width:14px;height:14px;border-radius:50%}
+.style-card .sw b{position:absolute;inset-inline:8px;bottom:7px;height:5px;border-radius:3px;opacity:.55}
 .eye-btn{width:36px;height:36px;padding:0;display:grid;place-items:center;border-radius:10px;color:var(--muted)}
 .eye-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .eye-btn[aria-pressed=true]{color:var(--accent);border-color:var(--accent)}
@@ -370,7 +411,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .st-slide ol{margin:0;padding:0;list-style:none;display:grid;gap:8px;text-align:start}
 .st-slide ol li{display:flex;justify-content:space-between;gap:10px;background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px}
 .st-slide .row{justify-content:center}
-.st-slide .row button{background:#ffd27a;color:#14110a;border:0;font-weight:600;border-radius:12px;padding:12px 18px}
+.st-slide .row button{background:#ffd27a;color:var(--on-accent);border:0;font-weight:600;border-radius:12px;padding:12px 18px}
 .st-slide .row button.ghost{background:rgba(255,255,255,.15);color:#fff}
 /* notifications dropdown (laptops) */
 .notes-pop{position:fixed;z-index:30;width:min(380px,calc(100vw - 24px));max-height:min(70vh,560px);overflow:auto;background:var(--surface);
@@ -383,6 +424,10 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 @keyframes mic{50%{opacity:.55}}
 .tx-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tx-tools>:only-child{grid-column:1/-1}
+.place{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;padding:8px 2px;color:var(--fg);text-align:start;font:inherit}
+.place:hover{background:var(--bg)}
+.place .n{min-width:0;display:grid}
+.place small{color:var(--muted);font-size:.76rem}
 .gc-out{display:grid;gap:0;border:1px solid var(--line);border-radius:12px;padding:4px 12px;background:var(--bg)}
 .gc-out:empty{display:none}
 .gc-out .cal-ev:last-child{border-bottom:0}
@@ -391,7 +436,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .scan-btn{border:1.5px dashed var(--accent);color:var(--accent);background:none;border-radius:12px;padding:12px;font-weight:600}
 .ai-chat{display:grid;gap:8px;max-height:50dvh;overflow:auto;align-content:start;padding:2px}
 .ai-msg{max-width:88%;padding:9px 13px;border-radius:14px;font-size:.93rem;line-height:1.65;white-space:normal;overflow-wrap:anywhere}
-.ai-msg.me{justify-self:end;background:var(--accent);color:#14110a;border-end-end-radius:4px}
+.ai-msg.me{justify-self:end;background:var(--accent);color:var(--on-accent);border-end-end-radius:4px}
 .ai-msg.ai{justify-self:start;background:var(--bg);border:1px solid var(--line);border-end-start-radius:4px}
 .ai-msg.typing{display:flex;gap:4px;padding:12px 14px}
 .ai-msg.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:ai-dot 1s infinite}
@@ -464,7 +509,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .pend-who{color:var(--muted);font-size:.85rem;min-width:0;overflow-wrap:anywhere}
 .pend-raw summary{font-size:.78rem}
 .pend-raw div{font-size:.8rem;color:var(--muted);margin-top:6px;white-space:pre-wrap}
-.go-btn.sm{background:var(--accent);color:#14110a;border:0;font-weight:600;padding:8px 18px;border-radius:10px}
+.go-btn.sm{background:var(--accent);color:var(--on-accent);border:0;font-weight:600;padding:8px 18px;border-radius:10px}
 .bnav button{position:relative}
 .bnav .badge{position:absolute;top:0;inset-inline-start:calc(50% + 6px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--down);color:#fff;font-size:.65rem;font-weight:700;display:grid;place-items:center}
 
@@ -474,7 +519,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .cached{color:var(--warn)}
 /* floating add button and bottom sheet */
 .fab{position:fixed;inset-inline-end:max(18px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:15;
-  width:56px;height:56px;border-radius:18px;border:0;background:var(--accent);color:#14110a;display:grid;place-items:center;
+  width:56px;height:56px;border-radius:18px;border:0;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;
   box-shadow:0 8px 22px rgba(0,0,0,.28)}
 .fab-ai{display:none;position:fixed;z-index:15;width:46px;height:46px;border-radius:50%;padding:0;place-items:center;
   inset-inline-end:calc(max(18px,env(safe-area-inset-right,0px)) + 5px);bottom:calc(144px + env(safe-area-inset-bottom,0px));
@@ -483,7 +528,8 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .fab:hover{filter:brightness(1.06)}
 :root.locked .fab,:root.locked .bnav{visibility:hidden}
 .sheet{border:1px solid var(--line);border-radius:18px 18px 0 0;padding:0;background:var(--surface);color:var(--fg);
-  width:min(560px,100%);max-width:100%;margin:auto auto 0;max-height:88dvh;overflow:auto;box-shadow:0 -10px 40px rgba(0,0,0,.3)}
+  width:min(560px,100%);max-width:100%;margin:auto auto 0;max-height:calc(92dvh - env(safe-area-inset-top,0px));overflow:auto;box-shadow:0 -10px 40px rgba(0,0,0,.3);
+  padding-bottom:env(safe-area-inset-bottom,0px)}   /* clear of the iPhone's home bar */
 .sheet::backdrop{background:rgba(10,16,14,.5)}
 .sheet[open]{animation:sheetup .22s ease-out}
 @keyframes sheetup{from{transform:translateY(40px);opacity:.4}}
@@ -495,7 +541,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .type-grid i{width:12px;height:12px;border-radius:50%}
 .sheet .field{font-size:.85rem}
 .sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.sheet .go-btn{background:var(--accent);color:#14110a;border:0;font-weight:600;padding:12px;border-radius:12px;font-size:1rem}
+.sheet .go-btn{background:var(--accent);color:var(--on-accent);border:0;font-weight:600;padding:12px;border-radius:12px;font-size:1rem}
 .sheet .back{justify-self:start}
 /* animated how-to for the background inbox: mock screens with a moving finger */
 .guide{width:min(480px,calc(100% - 24px));max-height:calc(100dvh - 24px);overflow:auto}
@@ -568,7 +614,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .g-pill.warn{color:var(--warn);border-color:var(--warn)}
 .g-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .g-ab{border:1px solid var(--line);border-radius:8px;padding:5px 10px}
-.g-ab.go{background:var(--accent);color:#14110a;border-color:transparent;font-weight:600}
+.g-ab.go{background:var(--accent);color:var(--on-accent);border-color:transparent;font-weight:600}
 .g-in{border:1px solid var(--line);border-radius:8px;padding:6px 8px;direction:ltr;text-align:left;color:var(--muted);min-height:28px;font-size:11px;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .g-in span{color:var(--fg)}
 .g-toast{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);border-radius:8px;padding:6px 14px;white-space:nowrap;animation:gin .3s}
@@ -636,7 +682,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .tour-text h2{margin:0;font:600 1.3rem/1.3 var(--display);justify-content:center}
 .tour-text p{margin:0;color:var(--muted);font-size:.93rem;line-height:1.7}
 .tour-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px 20px}
-.tour-foot .go-btn{background:var(--accent);color:#14110a;border:0;font-weight:600;padding:11px 26px;border-radius:12px;font-size:1rem}
+.tour-foot .go-btn{background:var(--accent);color:var(--on-accent);border:0;font-weight:600;padding:11px 26px;border-radius:12px;font-size:1rem}
 .tour-foot .back{border:0;background:none;color:var(--muted);padding:8px}
 @keyframes t-pop{from{transform:scale(.6);opacity:0}}
 @keyframes t-float{from{transform:translateY(10px);opacity:0}}
@@ -651,7 +697,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .wel-body p{margin:0;color:var(--muted);font-size:.92rem;max-width:34ch}
 .wel-body .field{width:100%;text-align:start}
 .wel-body .row{justify-content:center}
-.wel-body .go-btn{background:var(--accent);color:#14110a;border:0;font-weight:600;padding:12px 28px;border-radius:12px;font-size:1rem}
+.wel-body .go-btn{background:var(--accent);color:var(--on-accent);border:0;font-weight:600;padding:12px 28px;border-radius:12px;font-size:1rem}
 .wel-steps{display:flex;gap:6px}
 .wel-steps i{width:8px;height:8px;border-radius:50%;background:var(--line)}
 .wel-steps i.on{background:var(--accent);width:22px;border-radius:4px}
@@ -676,7 +722,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
   .toasts{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
 }
 @media (min-width:641px) and (max-width:1099px){
-  .bnav{inset-inline:0;top:0;justify-content:center;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.08)}
+  .bnav{inset-inline:0;top:0;justify-content:center;gap:4px;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.08)}
   .bnav button{display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:.88rem}
   .bnav svg{width:20px;height:20px}
   .bnav button:hover{color:var(--fg)}
@@ -770,6 +816,10 @@ section.card.collapsed .tabs{display:none}
   @page{size:A4;@bottom-center{content:counter(page) " / " counter(pages);font:9pt 'IBM Plex Sans Arabic',sans-serif;color:#8a8f8c}}
 }
 #pdf-host{display:none}
+/* centred windows stay between the Dynamic Island and the home bar on iPhones (the insets are 0 elsewhere) */
+#settings,.guide,#report,.welcome{max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+  translate:0 calc((env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) / 2);overflow:auto}
+.notes-pop{max-height:calc(70vh - env(safe-area-inset-top,0px))}
 .zk-hl{border-radius:6px;padding:2px 6px;margin-inline-start:-6px;animation:zk-hl 5s ease forwards}
 @keyframes zk-hl{0%,70%{background:color-mix(in srgb,var(--accent) 35%,transparent);box-shadow:0 0 0 2px var(--accent)}100%{background:transparent;box-shadow:0 0 0 2px transparent}}
 /* opening animation: the ingot rises, the price line draws itself, the dot lands, then the name */
@@ -814,7 +864,7 @@ section.card.collapsed .tabs{display:none}
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 11v3M8.5 7.5A5 5 0 0 1 17 11v1.5M7 11v1c0 3 .8 5.4 2.4 7.4M17 15.5c-.2 1.6-.7 3-1.4 4.2M12 3a8 8 0 0 0-8 8v1M20 12v-1a8 8 0 0 0-3-6.2M12 14c0 2.6.6 4.8 1.8 6.6'/%3E%3C/svg%3E") center/contain no-repeat}
 .lock .confirm{max-width:320px;text-align:center;justify-content:center}
 /* pull to refresh */
-html,body{overscroll-behavior-y:contain}   /* turns off the browser's own pull-to-reload so the page's refresh is used */
+html,body{overscroll-behavior-y:contain;overscroll-behavior-x:none}   /* turns off the browser's own pull-to-reload so the page's refresh is used */
 .ptr{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translate(-50%,-60px);z-index:30;
   background:var(--fg);color:var(--bg);border-radius:999px;padding:6px 16px;font-size:.85rem;box-shadow:0 4px 14px rgba(0,0,0,.2);pointer-events:none}
 .goal-plan{font-size:.85rem;color:var(--muted)}
@@ -1153,6 +1203,8 @@ section.card.collapsed{gap:0}
       <button type="button" data-theme-set="system" data-en="Auto">تلقائي</button>
       <button type="button" data-theme-set="dark" data-en="☾ Dark">☾ داكن</button>
     </div>
+    <div class="field"><span data-en="Style">الستايل</span>
+      <div class="styles" id="styles" role="radiogroup" aria-label="الستايل" data-en-label="Style"></div></div>
   </div>
 
   <div class="dlg-sec">
@@ -1395,7 +1447,7 @@ const DEFAULT_STATE = {
   deletedTx:[], deletedPending:[], deletedRec:[], deletedCats:[], hiddenCats:[], notes:[], notesSeenAt:0, notesClearedAt:0, _savedAt:0,
   nDebt:true, goals:[], deletedGoals:[], aiOn:false,
   loans:[], gamaeyas:[], deletedLoans:[], deletedGam:[], badges:{}, badgesInit:false,
-  rules:[], deletedRules:[], subIgnore:[], subNotified:{},
+  rules:[], deletedRules:[], subIgnore:[], subNotified:{}, smsSeen:[], _mod:{},
   userName:'', avatar:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
 };
 
@@ -1405,6 +1457,35 @@ let state = load();
 // cash rows get a stable id so spending and income can point at the account they came from or went to
 function newId(p){ return p + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 state.cash.forEach(r => { if(!r.id) r.id = newId('a'); });
+
+/* ---------- what changed, and when: lets sync keep each device's real edits ----------
+   Sync used to keep one whole copy (the one saved last), so a background save on one device (a price refresh, a reminder)
+   could throw away a real edit made on the other. Now every save notes which parts actually changed:
+   - lists of items with ids (transactions, goals…): each changed item gets its own time, _m
+   - everything else (gold, cash, stocks, budgets, settings…): the time each key last changed, in state._mod
+   and merging keeps, part by part, whichever side changed it last. */
+const ITEM_LISTS = ['tx','pending','recurring','goals','loans','gamaeyas','customCats','rules'];
+// merged their own way in mergeData, or bookkeeping
+const NOT_WHOLE = new Set([...ITEM_LISTS, '_savedAt','_mod','notifyOn','notes','notesSeenAt','notesClearedAt','badges','badgesInit','merchantCats',
+  'reports','yearReports','subIgnore','subNotified','smsSeen','deletedTx','deletedPending','deletedRec','deletedCats','deletedGoals','deletedLoans','deletedGam','deletedRules']);
+const wholeKeys = () => Object.keys(DEFAULT_STATE).filter(k=>!NOT_WHOLE.has(k));
+const lastJ = new Map();   // what each part looked like at the last save (or load / sync)
+function trackChanges(mark){
+  const now = Date.now();
+  if(!state._mod) state._mod = {};
+  for(const k of wholeKeys()){
+    const j = JSON.stringify(state[k] ?? null);
+    if(mark && lastJ.has(k) && lastJ.get(k) !== j) state._mod[k] = now;
+    lastJ.set(k, j);
+  }
+  for(const k of ITEM_LISTS) for(const x of state[k] || []){
+    if(!x || !x.id) continue;
+    const {_m, ...rest} = x, kk = k + '\u0001' + x.id, j = JSON.stringify(rest);
+    if(mark && lastJ.get(kk) !== j) x._m = now;   // new or edited
+    lastJ.set(kk, j);
+  }
+}
+trackChanges(false);
 let prices = {};      // TradingView symbol -> {close, change}
 let stockPx = {};     // EGX symbol -> {close, change, desc, logo}
 let egxNames = {}, egxLogos = {};
@@ -1425,6 +1506,7 @@ function load(){
 }
 function save(){
   state._savedAt = Date.now();
+  trackChanges(true);
   try{ localStorage.setItem('wealth-v1', JSON.stringify(state)); }catch(e){}
   try{ scheduleSync(); }catch(e){}   // the cloud copy follows a few seconds later
 }
@@ -1463,7 +1545,7 @@ function applyLang(){
   document.title = L('نماء', 'Namaa');
   applyStatic();
   document.querySelectorAll('.fold').forEach(b=>b.setAttribute('aria-label', L('طي أو فتح القسم', 'Collapse or expand section')));
-  renderFoldAll();
+  renderFoldAll(); renderStyles();
   document.getElementById('install-hint').textContent = isIOS && !installEvt
     ? L('من Safari اضغط زرار المشاركة ⬆︎ وبعدين "إضافة إلى الشاشة الرئيسية".', 'In Safari, tap Share ⬆︎ then "Add to Home Screen".')
     : L('افتحه زي أي تطبيق من الشاشة الرئيسية.', 'Open it like any app from your home screen.');
@@ -3453,7 +3535,7 @@ function renderMoney(){
   const totalBar = bTotal > 0 ? (()=>{ const p = exp/bTotal;
     return `<div class="bud total ${p>=1?'over':p>=.8?'warn':''}"><div class="top"><span>${L('الميزانية الكلية','Total budget')}</span><span class="m">${egp(exp)} / ${egp(bTotal)}</span></div>
       <div class="bar2"><span style="width:${Math.min(100,p*100)}%"></span></div>
-      <span class="note">${p>=1 ? L(`عدّيت الميزانية بـ ${egp(exp-bTotal)}`, `${egp(exp-bTotal)} over budget`) : L(`فاضل ${egp(bTotal-exp)} للشهر`, `${egp(bTotal-exp)} left this month`)}${
+      <span class="note m">${p>=1 ? L(`عدّيت الميزانية بـ ${egp(exp-bTotal)}`, `${egp(exp-bTotal)} over budget`) : L(`فاضل ${egp(bTotal-exp)} للشهر`, `${egp(bTotal-exp)} left this month`)}${
         bSplit > bTotal ? ' · ' + L(`التوزيع على الفئات أكتر من الكلية بـ ${egp(bSplit-bTotal)}`, `categories add up to ${egp(bSplit-bTotal)} more than the total`)
         : bSplit < bTotal && bSplit > 0 ? ' · ' + L(`${egp(bTotal-bSplit)} مش موزّعة على فئات`, `${egp(bTotal-bSplit)} not split into categories`) : ''}</span></div>`; })() : '';
   const buds = totalBar + budIds.map(id=>{ const b = num(state.budgets[id]), s = byCat[id]||0, p = s/b;
@@ -3474,6 +3556,7 @@ function renderMoney(){
     ${moneyMonth===monthKey(Date.now()) ? forecastHtml() : ''}
     ${parts.length ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}${vsPrev(p.v, prevBy[p.id])}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
     ${notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : ''}
+    ${placesHtml(txs, monthTx(prevMk))}
     <div class="m-sub"><h3>${L('الميزانيات','Budgets')}</h3><button type="button" data-budedit>${budIds.length || bTotal ? L('تعديل الميزانيات','Edit budgets') : L('حدّد ميزانية','Set budgets')}</button></div>
     ${budIds.length || bTotal ? `<div class="budgets">${buds}</div>` : `<div class="note">${L('حدّد مبلغ لكل فئة في الشهر، والتطبيق ينبهك لما تقرّب منه.', "Set a monthly amount per category and you'll be warned as you get close.")}</div>`}
     ${subsHtml()}
@@ -4153,6 +4236,29 @@ sheetBody.addEventListener('click', e=>{
 });
 document.getElementById('btn-reset-money').addEventListener('click', ()=>{ dlg.close(); openResetMoney(); });
 
+/* ---------- 🏪 where the money goes, by shop: the top places this month against last month ----------
+   Shops come from the transaction's note (a bank message's shop name, or what was typed), grouped loosely so
+   "Carrefour Maadi" and "CARREFOUR" count as one. Tapping a shop searches all its transactions. */
+function placesHtml(list, prevList){
+  const group = l => { const m = {}; for(const x of l){ if(x.type!=='exp' || !x.note) continue; const k = merchantKey(x.note).split(' ')[0]; if(!k || k.length < 2) continue;
+    const o = m[k] = m[k] || {name: x.note, v: 0, n: 0}; o.v += txEgp(x); o.n++; } return m; };
+  const now = group(list), before = group(prevList);
+  const top = Object.entries(now).sort((a,b)=>b[1].v - a[1].v).slice(0, 5);
+  const big = list.filter(x=>x.type==='exp').sort((a,b)=>txEgp(b) - txEgp(a))[0];
+  if(top.length < 2 && !big) return '';
+  return `<div><div class="m-sub"><h3>🏪 ${L('أكتر أماكن صرفت فيها','Where you spent most')}</h3></div>
+    ${top.map(([k, o])=>{ const pv = before[k]?.v || 0, d = pv ? (o.v - pv) / pv * 100 : null;
+      return `<button type="button" class="place" data-place="${esc(o.name)}"><span class="n">${esc(o.name)}<small>${L(o.n===1 ? 'مرة واحدة' : o.n===2 ? 'مرتين' : `${fmt(o.n,0)} ${o.n <= 10 ? 'مرات' : 'مرة'}`, `${o.n} time${o.n>1?'s':''}`)}${d === null ? (Object.keys(before).length ? ' · ' + L('جديد الشهر دا','new this month') : '')
+        : Math.abs(d) >= 5 ? ` · <span class="${d>0?'down-t':'up-t'}">${d>0?'▲':'▼'} ${fmt(Math.abs(d),0)}${PCT()}</span>` : ''}</small></span><b class="m">${egp(o.v)}</b></button>`; }).join('')}
+    ${big ? `<div class="note m">💸 ${L(`أكبر مصروف الشهر دا: ${egp(txEgp(big))} (${esc(big.note || catName(catById(big.cat)))}، ${new Date(big.date+'T12:00').toLocaleDateString(LOC(), {day:'numeric', month:'short'})})`,
+      `Biggest expense this month: ${egp(txEgp(big))} (${esc(big.note || catName(catById(big.cat)))}, ${new Date(big.date+'T12:00').toLocaleDateString(LOC(), {day:'numeric', month:'short'})})`)}</div>` : ''}</div>`;
+}
+document.getElementById('money-body').addEventListener('click', e=>{
+  const b = e.target.closest('[data-place]'); if(!b) return;
+  txF.q = merchantKey(b.dataset.place).split(' ')[0]; txF.cat = ''; txF.min = '';
+  renderMoney(); document.getElementById('tx-q')?.scrollIntoView({block:'center'}); buzz(6);
+});
+
 /* ---------- spending averages shared by the emergency fund, the forecast and the simulator ---------- */
 // the last up-to-3 finished months that have any spending recorded
 function pastMonths(n = 3){
@@ -4175,8 +4281,10 @@ function avgMonthlySpend(){
 /* ---------- 🛟 emergency fund: months of spending the cash covers (aim: 6) ---------- */
 function renderEfund(){
   const el = document.getElementById('efund'); if(!el) return;
-  const per = avgMonthlySpend(), cash = totals().cash;
-  el.hidden = !(per > 0) || !isFinite(cash);
+  // hidden until there's enough spending to measure against; a cash row in a currency whose rate hasn't loaded yet
+  // is left out of the total rather than hiding the card
+  const per = avgMonthlySpend(), cash = state.cash.reduce((a, r)=>{ const v = rowValue('cash', r); return a + (isFinite(v) ? v : 0); }, 0);
+  el.hidden = !(per > 0);
   if(el.hidden) return;
   const months = cash / per, p = Math.min(100, months / 6 * 100), short = Math.max(0, per * 6 - cash);
   setAllowClass(el, 'allow' + (months < 1 ? ' over' : months < 3 ? ' warn' : ''));
@@ -4415,7 +4523,7 @@ function renderGoals(){
     return `<div class="goal${saved >= target && target > 0 ? ' done' : ''}">
       <div class="top"><b>${esc(g.name || L('هدف','Goal'))}</b><span class="m">${egp(saved)} / ${egp(target)} · ${fmt(p,0)}${PCT()}</span></div>
       <div class="bar2"><span style="width:${p}%"></span></div>
-      <div class="plan">${goalPlan(g)}${g.date ? ` · ${L('الميعاد','by')} ${dateFmt(new Date(g.date+'T12:00'))}` : ''}</div>
+      <div class="plan m">${goalPlan(g)}${g.date ? ` · ${L('الميعاد','by')} ${dateFmt(new Date(g.date+'T12:00'))}` : ''}</div>
       <div class="row"><button type="button" class="go-btn sm" data-goal-add="${g.id}">+ ${L('حوّش','Add')}</button>
         <button type="button" data-goal-edit="${g.id}">${L('تعديل','Edit')}</button>
         <button type="button" class="x" data-goal-del="${g.id}" aria-label="${L('حذف','Delete')}">×</button></div></div>`; }).join('')
@@ -4745,8 +4853,18 @@ function ingestSms(raw, from){
   if(!p) return 'bad';
   const sig = p.raw.replace(/\s+/g,' ');
   if(state.pending.some(x=>x.raw.replace(/\s+/g,' ')===sig) || state.tx.some(t=>t.sig===sig)) return 'dup';   // the same message twice
+  // the same payment sent again in the other language: keep one, and take any detail only the second copy has
+  const twin = findTwin(p);
+  if(twin){
+    // a pair is matched once: a third message of the same amount is a new payment
+    if(twin.pend){ twin.pend.paired = true; if(!twin.pend.merchant && p.merchant) twin.pend.merchant = p.merchant; if(!twin.pend.last4 && p.last4) twin.pend.last4 = p.last4; }
+    if(twin.seen) twin.seen.paired = true;
+    rememberSms(p, true); save();
+    return 'dup';
+  }
   const known = ruleCat(p) || state.merchantCats[merchantKey(p.merchant)];   // the person's own rules come first
-  const item = {id:newId('p'), ...p, date: today(), acct: matchAcct(p), cat: known || (p.type==='inc' ? 'otherin' : 'other'), known: !!known};
+  const item = {id:newId('p'), ...p, date: today(), at: Date.now(), acct: matchAcct(p), cat: known || (p.type==='inc' ? 'otherin' : 'other'), known: !!known};
+  rememberSms(p);
   if(known && state.autoKnown && (catById(known).id===known)){
     const tx = addTx({type:item.type, amount:item.amount, cat:known, acct:item.acct, date:item.date, note:item.merchant});
     tx.sig = sig; save();
@@ -4754,6 +4872,39 @@ function ingestSms(raw, from){
   }
   state.pending.unshift(item); save();
   return 'queued';
+}
+/* Banks often send each payment twice, in Arabic and in English. Two messages are one payment when the amount, currency,
+   direction and bank match (a missing bank or card number doesn't count against it), they came within 30 minutes,
+   and they're in different languages — so two real same-price purchases in one language stay two. */
+const smsLang = raw => (String(raw).match(/[؀-ۿ]/g) || []).length > (String(raw).match(/[A-Za-z]/g) || []).length ? 'ar' : 'en';
+const sameTxn = (a, b) => a.amount===b.amount && a.type===b.type && (a.cur||'EGP')===(b.cur||'EGP')
+  && (!a.bank || !b.bank || a.bank===b.bank) && (!a.last4 || !b.last4 || a.last4===b.last4);
+function findTwin(p){
+  const now = Date.now(), lang = smsLang(p.raw), win = 30*60e3;
+  const pend = state.pending.find(x => !x.paired && sameTxn(x, p) && smsLang(x.raw)!==lang && x.date===today() && (!x.at || now - x.at < win));
+  if(pend) return {pend, seen: (state.smsSeen||[]).find(x => !x.paired && sameTxn(x, p) && x.lang!==lang && now - x.at < win)};
+  const seen = (state.smsSeen||[]).find(x => !x.paired && sameTxn(x, p) && x.lang!==lang && now - x.at < win);
+  return seen ? {seen} : null;
+}
+function rememberSms(p, paired){
+  state.smsSeen = [...(state.smsSeen||[]), {at: Date.now(), amount: p.amount, type: p.type, cur: p.cur, bank: p.bank, last4: p.last4, lang: smsLang(p.raw), paired: !!paired}].slice(-40);
+}
+// twins already waiting from before this check existed: fold each pair into one
+function foldPendingTwins(){
+  let changed = false;
+  for(let i = 0; i < state.pending.length; i++){
+    const a = state.pending[i];
+    for(let j = i + 1; j < state.pending.length; j++){
+      const b = state.pending[j];
+      if(a.paired || b.paired || !sameTxn(a, b) || a.date!==b.date || smsLang(a.raw)===smsLang(b.raw)) continue;
+      a.paired = true;
+      if(!a.merchant && b.merchant) a.merchant = b.merchant;
+      if(!a.last4 && b.last4) a.last4 = b.last4;
+      state.deletedPending.push(b.id); state.pending.splice(j, 1); j--; changed = true;
+    }
+  }
+  if(changed) save();
+  return changed;
 }
 function filePending(id){
   const i = state.pending.findIndex(p=>p.id===id); if(i < 0) return;
@@ -5310,16 +5461,31 @@ function setSync(s, err=''){
 function mergeData(loc, rem, preferRemote){
   const remBase = preferRemote || (rem.savedAt||0) >= (loc.state._savedAt||0);
   const base = remBase ? rem : {state: loc.state, history: loc.history}, other = remBase ? {state: loc.state, history: loc.history} : rem;
-  const st = structuredClone(base.state), os = other.state;
+  const st = structuredClone(base.state), os = other.state, bs = base.state;
   const join = (a, b) => [...new Set([...(a||[]), ...(b||[])])].slice(-3000);
+  // each part goes to whichever side changed it last (a device joining for the first time takes the cloud's)
+  const modB = bs._mod || {}, modO = os._mod || {};
+  const otherNewer = k => !preferRemote && (modO[k] || 0) > (modB[k] || 0);
+  for(const k of wholeKeys()) if(otherNewer(k) && os[k] !== undefined) st[k] = structuredClone(os[k]);
+  st._mod = {...modB}; for(const [k, v] of Object.entries(modO)) if(!st._mod[k] || v > st._mod[k]) st._mod[k] = v;
+  // items with ids: both sides' items, each in the version edited last (ties go to the base)
+  const byId = (a, b, dead) => { const m = new Map();
+    for(const x of [...(b||[]), ...(a||[])]){ if(dead.has(x.id)) continue; const cur = m.get(x.id); if(!cur || (x._m||0) >= (cur._m||0)) m.set(x.id, x); }
+    return [...m.values()]; };
   st.deletedTx = join(st.deletedTx, os.deletedTx); st.deletedPending = join(st.deletedPending, os.deletedPending); st.deletedRec = join(st.deletedRec, os.deletedRec);
   const deadTx = new Set(st.deletedTx), deadP = new Set(st.deletedPending), deadR = new Set(st.deletedRec);
-  st.tx = st.tx || []; st.cash = st.cash || [];
-  const have = new Set(st.tx.map(t=>t.id));
-  for(const t of os.tx||[]) if(!have.has(t.id) && !deadTx.has(t.id)){ st.tx.push(t); applyTxTo(st.cash, t, 1); }
-  st.tx = st.tx.filter(t => { if(deadTx.has(t.id)){ applyTxTo(st.cash, t, -1); return false; } return true; });
+  // transactions move account balances, so the balances are rebuilt from the side the cash came from:
+  // anything that side hadn't counted is added, anything deleted is taken back, and an edited amount counts the difference
+  const cashSrc = otherNewer('cash') ? os : bs, srcTx = new Map((cashSrc.tx || []).map(t=>[t.id, t]));
+  st.cash = structuredClone(cashSrc.cash || []);
+  st.tx = byId(bs.tx, os.tx, deadTx);
+  for(const t of st.tx){
+    const was = srcTx.get(t.id);
+    if(!was) applyTxTo(st.cash, t, 1);
+    else if(was.amount !== t.amount || was.acct !== t.acct || was.type !== t.type){ applyTxTo(st.cash, was, -1); applyTxTo(st.cash, t, 1); }
+  }
+  for(const [id, t] of srcTx) if(deadTx.has(id)) applyTxTo(st.cash, t, -1);
   st.tx.sort((a,b)=>a.date.localeCompare(b.date));
-  const byId = (a, b, dead) => { const m = new Map(); for(const x of [...(b||[]), ...(a||[])]) if(!dead.has(x.id)) m.set(x.id, x); return [...m.values()]; };
   st.pending = byId(st.pending, os.pending, deadP);
   st.recurring = byId(st.recurring, os.recurring, deadR);
   st.deletedCats = join(st.deletedCats, os.deletedCats);
@@ -5385,6 +5551,8 @@ async function pullNow(opts={}){
     const keepNotify = state.notifyOn;
     const merged = mergeData({state, history}, remote, !!opts.first);
     state = withDefaults(merged.state); state.notifyOn = keepNotify; history = merged.history;
+    trackChanges(false);   // what came in is the new starting point, not a local edit
+    foldPendingTwins();
     try{ localStorage.setItem('wealth-v1', JSON.stringify(state)); localStorage.setItem(HKEY, JSON.stringify(history)); }catch(e){}
     remoteSeen = meta.updatedAt; remoteN = meta.n;
     syncStatic(); applyLang(); render();
@@ -5753,11 +5921,48 @@ function applyTheme(t){
   if(t==='light' || t==='dark') document.documentElement.dataset.theme = t;
   else delete document.documentElement.dataset.theme;
   try{ localStorage.setItem('wealth-theme', t); }catch(e){}
+  try{ paintThemeColor(); }catch(e){}
   document.querySelectorAll('#theme button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.themeSet===t));
 }
 document.getElementById('theme').addEventListener('click', e=>{
-  const t = e.target.closest('button')?.dataset.themeSet; if(t) applyTheme(t);
+  const t = e.target.closest('button')?.dataset.themeSet; if(t){ applyTheme(t); renderStyles(); }
 });
+
+/* ---------- interface styles: colour sets on top of light/dark (CSS in :root[data-style]); kept per device like the theme ---------- */
+// [id, Arabic, English, light background, light accent, dark background, dark accent] — the swatches show the look in use
+const STYLES = [
+  ['namaa',    'نماء',        'Namaa',     '#f6f5f1', '#8a6420', '#141716', '#e0b257'],
+  ['ocean',    'محيط',        'Ocean',     '#f3f6f9', '#1f6fb2', '#0e1620', '#4fa8f0'],
+  ['royal',    'ملكي',        'Royal',     '#f6f4fa', '#6d3fc0', '#15121c', '#b18cff'],
+  ['rose',     'ورد',         'Rose',      '#faf5f4', '#c0503f', '#1a1312', '#ff8a73'],
+  ['desert',   'صحراوي',      'Desert',    '#f7f1e6', '#a8641c', '#1b1712', '#e9a35a'],
+  ['graphite', 'جرافيت',      'Graphite',  '#f4f4f5', '#27272a', '#0f0f10', '#e4e4e7'],
+  ['amoled',   'أسود (OLED)', 'Black (OLED)', '#f6f5f1', '#8a6420', '#000000', '#e0b257'],
+];
+const curStyle = () => document.documentElement.dataset.style || 'namaa';
+const isDarkNow = () => document.documentElement.dataset.theme==='dark' || (document.documentElement.dataset.theme!=='light' && matchMedia('(prefers-color-scheme: dark)').matches);
+function renderStyles(){
+  const box = document.getElementById('styles'); if(!box) return;
+  const dark = isDarkNow(), cur = curStyle();
+  box.innerHTML = STYLES.map(([id, ar, en, lb, la, db, da])=>{ const bg = dark ? db : lb, ac = dark ? da : la;
+    return `<button type="button" role="radio" aria-checked="${id===cur}" data-style-set="${id}" class="style-card">
+      <span class="sw" style="background:${bg}"><i style="background:${ac}"></i><b style="background:${ac}"></b></span><span>${L(ar, en)}</span></button>`; }).join('');
+}
+function applyStyle(id){
+  if(!id || id==='namaa') delete document.documentElement.dataset.style; else document.documentElement.dataset.style = id;
+  try{ localStorage.setItem('wealth-style', id || 'namaa'); }catch(e){}
+  paintThemeColor(); renderStyles();
+  // charts and anything drawn with the colours need a redraw
+  try{ render(); }catch(e){}
+}
+// the phone's status bar follows the page background
+function paintThemeColor(){
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#141716';
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute('content', bg));
+}
+document.getElementById('styles').addEventListener('click', e=>{ const id = e.target.closest('[data-style-set]')?.dataset.styleSet; if(id){ applyStyle(id); buzz(6); } });
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{ renderStyles(); paintThemeColor(); });
+renderStyles(); paintThemeColor();
 
 /* ---------- collapsible sections ---------- */
 const CHEVRON = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M6 9l6 6 6-6"/></svg>';
@@ -5849,6 +6054,7 @@ processRecurring();
 render();
 goSlide(slideIdx, false);
 setTab(tab, false);
+if(foldPendingTwins()) render();
 takeIncomingSms();
 takeShortcut();
 takeJoinLink();
