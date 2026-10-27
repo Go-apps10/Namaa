@@ -3104,7 +3104,17 @@ document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){ hiddenAt = Date.now(); try{ sessionStorage.setItem('wealth-hidden-at', hiddenAt); }catch(e){} return; }
   try{ sessionStorage.removeItem('wealth-hidden-at'); }catch(e){}
   if(getPin() && hiddenAt && Date.now() - hiddenAt > LOCK_AFTER && lockMode!=='unlock') showLock('unlock');
+  // coming back after a while counts as opening the app again: start on Home. On a computer the app window
+  // usually stays open behind others (or the browser keeps the page), so a fresh load alone wouldn't do it.
+  if(hiddenAt && Date.now() - hiddenAt > BACK_HOME_AFTER) goHomeFresh();
 });
+const BACK_HOME_AFTER = 2 * 60e3;
+function goHomeFresh(){
+  if(document.querySelector('dialog[open]') || !document.getElementById('story').hidden) return;   // leave anything the person has open
+  setTab('home'); window.scrollTo({top: 0});
+}
+// a page the browser brings back from its cache (back/forward, or a restored session) also starts on Home
+window.addEventListener('pageshow', e=>{ if(e.persisted) goHomeFresh(); });
 
 /* ---------- pull to refresh ---------- */
 const ptr = document.getElementById('ptr');
