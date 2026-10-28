@@ -844,7 +844,15 @@ section.card.collapsed .tabs{display:none}
     overflow:visible!important;translate:none!important;inset:auto;margin:0;background:#fff;color:#151a18}
   #report .dlg-head{display:none}
   #report .m{filter:none!important}
-  .rep{padding:0;gap:16px}
+  /* a little tighter than on screen, so a month fits one page and the closing note doesn't spill onto a page of its own */
+  #report{font-size:13px}
+  .rep{padding:0;gap:12px}
+  .rep-chart svg{height:130px}
+  .kpis>div{padding:8px 10px}
+  .hl>div{padding:7px 10px}
+  .rep td,.rep th{padding:5px 8px}
+  .rep-foot{break-before:avoid;padding-top:8px}
+  @page{margin:10mm}
   .kpis{grid-template-columns:repeat(4,1fr)}
   .hl{grid-template-columns:repeat(3,1fr)}
   .kpis>div,.hl>div,.rep tr,.rep-chart,.rep-hero{break-inside:avoid}
