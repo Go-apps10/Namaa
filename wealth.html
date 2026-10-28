@@ -238,7 +238,16 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex:none
 table.cash-tbl{min-width:680px}
 .cash-tbl td:first-child{min-width:220px}
 .cash-tbl td:nth-child(2){min-width:140px}
-table.gold-tbl,table.stocks-tbl{min-width:760px}
+table.gold-tbl{min-width:760px}
+table.stocks-tbl{min-width:900px}
+.brc select{min-width:140px}
+/* a brokerage portfolio's heading row: firm, number of stocks, its total and profit / loss, and + to add a stock to it */
+tr.grp td{padding:10px;border-top:2px solid var(--line);background:color-mix(in srgb,var(--stocks) 7%,transparent)}
+tr.grp:first-child td{border-top:0}
+.grp-h{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap}
+.grp-n{color:var(--muted);font-size:.8rem}
+.grp-sum{margin-inline-start:auto;font-weight:600;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.grp-add{font-size:1.1rem;line-height:1;padding:3px 10px}
 table.alerts-tbl{min-width:760px}
 #cash-banks{display:grid;gap:8px}
 #cash-banks:empty{display:none}
@@ -468,6 +477,20 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .seg button[aria-pressed=true]{background:var(--surface);color:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .seg button[data-txtype=exp][aria-pressed=true]{color:var(--down)}
 .seg button[data-txtype=inc][aria-pressed=true]{color:var(--up)}
+.seg:has(> button:nth-child(3)){grid-template-columns:repeat(3,1fr)}
+.seg button[data-txtype=tr][aria-pressed=true]{color:var(--accent)}
+/* wallet / bank picker: one card per account with its balance */
+.acct-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.acct-chips button{display:flex;align-items:center;gap:8px;text-align:start;padding:8px 10px;border-radius:12px;background:var(--bg);min-width:0}
+.acct-chips button span{display:grid;min-width:0}
+.acct-chips button b{font-size:.82rem;font-weight:600;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.acct-chips button small{font-size:.74rem;color:var(--muted)}
+.acct-chips button[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg))}
+.acct-chips button.none{border-style:dashed}
+.acct-chips .logo{flex:none}
+.tr-arrow{text-align:center;color:var(--muted);margin:-6px 0}
+.tr-list{display:grid;gap:4px;font-size:.84rem}
+.tr-list>div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:4px 0}
 .amt-in{font-size:1.8rem!important;font-weight:600;text-align:center!important;padding:10px!important}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chips button{display:flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:.85rem;background:var(--bg)}
@@ -507,6 +530,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .pend-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 .pend-top .amt{font-size:1.15rem;font-weight:600}
 .pend-who{color:var(--muted);font-size:.85rem;min-width:0;overflow-wrap:anywhere}
+.pend-when{color:var(--muted);font-size:.8rem;margin-top:-2px}
 .pend-raw summary{font-size:.78rem}
 .pend-raw div{font-size:.8rem;color:var(--muted);margin-top:6px;white-space:pre-wrap}
 .go-btn.sm{background:var(--accent);color:var(--on-accent);border:0;font-weight:600;padding:8px 18px;border-radius:10px}
@@ -801,14 +825,25 @@ section.card.collapsed .tabs{display:none}
   .rep-month{text-align:start}
 }
 @media print{
-  :root,:root[data-theme="dark"]{--bg:#fff;--surface:#fff;--fg:#151a18;--muted:#5d6662;--line:#dcdad2;--accent:#8a6420;--up:#1f7a45;--down:#b3372a;color-scheme:light}
+  /* paper is always white, whatever the theme or style: !important beats the dark and style blocks, which are more specific */
+  :root{--bg:#fff!important;--surface:#fff!important;--fg:#151a18!important;--muted:#5d6662!important;--line:#dcdad2!important;
+    --accent:#8a6420!important;--up:#1f7a45!important;--down:#b3372a!important;
+    --gold:#b8862b!important;--silver:#7d8a92!important;--cash:#2f7a5b!important;--stocks:#3a5a9b!important;--certs:#7b4f9e!important;--other:#a65d3a!important;color-scheme:light!important}
   @page{margin:14mm}
-  body{background:#fff;padding:0!important}
+  html,body{background:#fff!important;color:#151a18;overflow:visible!important;height:auto!important}
+  body{padding:0!important}
+  body::before,#report::backdrop{display:none!important}
   body>*:not(#report){display:none!important}
-  #report{position:static;display:block;border:0;box-shadow:none;width:100%;max-width:none;max-height:none;overflow:visible;margin:0}
+  /* the window's height cap, scrolling and iPhone shift would cut the report to one page */
+  #report{position:static!important;display:block;border:0;box-shadow:none;width:100%!important;max-width:none!important;max-height:none!important;
+    overflow:visible!important;translate:none!important;inset:auto;margin:0;background:#fff;color:#151a18}
   #report .dlg-head{display:none}
   #report .m{filter:none!important}
-  .rep{padding:0}
+  .rep{padding:0;gap:16px}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .hl{grid-template-columns:repeat(3,1fr)}
+  .kpis>div,.hl>div,.rep tr,.rep-chart,.rep-hero{break-inside:avoid}
+  .rep h4{break-after:avoid}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   /* the PDF statement of transactions prints alone */
   :root.pdf-printing #report{display:none!important}
@@ -884,6 +919,9 @@ html,body{overscroll-behavior-y:contain;overscroll-behavior-x:none}   /* turns o
   tbody[id$="-rows"] td.nosym,tbody[id$="-rows"] td.no-rate{display:none}
   /* profit/loss with its percentage is too long for half a card: it gets the whole row so nothing lands on it */
   tbody[id$="-rows"] td.plc{grid-column:1/-1}
+  tbody[id$="-rows"] tr.grp{display:block;border:0;border-radius:10px;padding:0;margin-top:8px;background:none}
+  tbody[id$="-rows"] tr.grp:first-child{margin-top:0}
+  tbody[id$="-rows"] tr.grp td{display:block;border:0;border-radius:10px;padding:10px 12px}
   tbody[id$="-rows"] td.plc .pl{white-space:normal;overflow-wrap:anywhere}
   tbody[id$="-rows"] td.num{font-weight:600}
   tbody[id$="-rows"] .sname{max-width:100%}
@@ -1121,13 +1159,14 @@ section.card.collapsed{gap:0}
   <section class="card" id="sec-cash" data-tab="assets">
     <div class="sec-head"><h2><span class="dot" style="background:var(--cash)"></span><span data-en="Cash">الكاش</span></h2><span class="sec-sum m" id="sum-cash"></span></div>
     <div class="tbl-wrap"><table class="cash-tbl"><thead><tr><th data-en="Bank">البنك</th><th data-en="Currency">العملة</th><th data-en="Amount">المبلغ</th><th data-en="Rate in EGP">السعر بالجنيه</th><th data-en="Value">القيمة</th><th></th></tr></thead><tbody id="cash-rows"></tbody></table></div>
-    <button class="add" type="button" data-add="cash" data-en="+ Add amount">+ إضافة مبلغ</button>
+    <div class="row" style="gap:8px;flex-wrap:wrap"><button class="add" type="button" data-add="cash" data-en="+ Add amount">+ إضافة مبلغ</button>
+      <button class="add" type="button" id="btn-transfer" data-en="⇄ Move money (bank → wallet)">⇄ تحويل (من البنك للمحفظة)</button></div>
     <div id="cash-banks"></div>
   </section>
 
   <section class="card" id="sec-stocks" data-tab="assets">
     <div class="sec-head"><h2><span class="dot" style="background:var(--stocks)"></span><span data-en="Egyptian stocks (EGX)">أسهم البورصة المصرية</span> <span class="pill due" id="egx-status"></span></h2><span class="sec-sum m" id="sum-stocks"></span></div>
-    <div class="tbl-wrap"><table class="stocks-tbl"><thead><tr><th data-en="Ticker">الرمز</th><th data-en="Shares">عدد الأسهم</th><th data-en="Price">السعر</th><th data-en="Average buy price">متوسط سعر الشراء</th><th data-en="Value">القيمة</th><th data-en="Profit / loss">الربح / الخسارة</th><th></th></tr></thead><tbody id="stocks-rows"></tbody></table></div>
+    <div class="tbl-wrap"><table class="stocks-tbl"><thead><tr><th data-en="Ticker">الرمز</th><th data-en="Broker">شركة السمسرة</th><th data-en="Shares">عدد الأسهم</th><th data-en="Price">السعر</th><th data-en="Average buy price">متوسط سعر الشراء</th><th data-en="Value">القيمة</th><th data-en="Profit / loss">الربح / الخسارة</th><th></th></tr></thead><tbody id="stocks-rows"></tbody></table></div>
     <datalist id="egx-list"></datalist>
     <button class="add" type="button" data-add="stocks" data-en="+ Add stock">+ إضافة سهم</button>
     <div class="note" data-en="Type the EGX ticker (e.g. COMI for CIB, TMGH for Talaat Moustafa). Stock prices are delayed about 15 minutes.">اكتب رمز السهم كما في البورصة (مثل COMI لبنك CIB، TMGH لطلعت مصطفى). أسعار الأسهم متأخرة حوالي 15 دقيقة.</div>
@@ -1391,7 +1430,7 @@ const ALERT_TARGETS = [
 const ALERT_OPS = [{id:'below', label:'أقل من', en:'below'}, {id:'above', label:'أعلى من', en:'above'}];
 // Egyptian banks. Logo: tv = TradingView logo id (listed banks), fav = website for its icon, ab = fallback letters
 const BANKS = [
-  {id:'home',   label:'كاش في البيت', en:'Cash at home', home:true},
+  {id:'home',   label:'المحفظة / كاش في البيت', en:'Wallet / cash at home', home:true},
   {id:'NBE',    label:'البنك الأهلي المصري', en:'National Bank of Egypt', fav:'nbe.com.eg', ab:'NBE'},
   {id:'BM',     label:'بنك مصر', en:'Banque Misr', fav:'banquemisr.com', ab:'BM'},
   {id:'BDC',    label:'بنك القاهرة', en:'Banque du Caire', fav:'bdc.com.eg', ab:'BDC'},
@@ -1423,6 +1462,25 @@ const BANKS = [
   {id:'POST',   label:'البريد المصري (توفير)', en:'Egypt Post (savings)', ab:'بريد'},
   {id:'OTHER',  label:'بنك آخر', en:'Other bank', ab:'؟'},
 ];
+// Egyptian brokerage firms: each stock row can sit in the portfolio of the firm it's held with
+const BROKERS = [
+  {id:'',         label:'بدون شركة', en:'No broker set'},
+  {id:'THNDR',    label:'ثاندر Thndr', en:'Thndr'},
+  {id:'EFG',      label:'إي إف جي هيرميس', en:'EFG Hermes'},
+  {id:'CICAP',    label:'سي آي كابيتال', en:'CI Capital'},
+  {id:'BELTONE',  label:'بلتون', en:'Beltone'},
+  {id:'HC',       label:'إتش سي للأوراق المالية', en:'HC Securities'},
+  {id:'NAEEM',    label:'نعيم', en:'Naeem'},
+  {id:'PHAROS',   label:'فاروس', en:'Pharos'},
+  {id:'PRIME',    label:'برايم', en:'Prime Securities'},
+  {id:'MUBASHER', label:'مباشر', en:'Mubasher'},
+  {id:'ARQAAM',   label:'أرقام كابيتال', en:'Arqaam Capital'},
+  {id:'CIBC',     label:'التجاري الدولي للسمسرة', en:'CI Brokerage (CIBC)'},
+  {id:'NICAP',    label:'إن آي كابيتال', en:'NI Capital'},
+  {id:'SIGMA',    label:'سيجما كابيتال', en:'Sigma Capital'},
+  {id:'ARABEYA',  label:'العربية أون لاين', en:'Arabeya Online'},
+  {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
+];
 const ASSETS = ['gold','silver','cash','stocks','other'];
 const COLORS = {gold:'var(--gold)', silver:'var(--silver)', cash:'var(--cash)', certs:'var(--certs)', stocks:'var(--stocks)', other:'var(--other)', debts:'var(--down)'};
 const NAMES_AR = {gold:'الذهب', silver:'الفضة', cash:'الكاش', certs:'الشهادات والودائع', stocks:'الأسهم', other:'أصول أخرى', debts:'الديون'};
@@ -1433,7 +1491,7 @@ const NEW_ROW = {
   gold:   () => ({k:'21', w:0, cost:'', worn:false}),
   silver: () => ({k:'999', w:0, cost:''}),
   cash:   () => ({id: newId('a'), b:'NBE', c:'EGP', a:0}),
-  stocks: () => ({s:'', q:0, cost:''}),
+  stocks: () => ({s:'', q:0, cost:'', br: state.stocks.at(-1)?.br || ''}),   // a new stock joins the last portfolio used
   other:  () => ({name:'', type:'realestate', v:0}),
   debts:  () => ({name:'', a:0, inst:''}),
   alerts: () => ({what:'g21', sym:'', op:'below', val:'', done:false}),
@@ -1445,7 +1503,7 @@ const DEFAULT_STATE = {
   zExcludeWorn:true, zDeductDebts:true, zDate:'', lastBackup:null,
   notifyOn:false, nPrice:true, nZakat:true, nBackup:true, zNotified:'', backupNotifiedAt:0,
   goalDate:'', nMonthly:true, monthlySent:'', reports:{}, yearReports:{},
-  tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'',
+  tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'', transfers:[],
   pending:[], merchantCats:{}, autoKnown:true, budgetTotal:'',
   deletedTx:[], deletedPending:[], deletedRec:[], deletedCats:[], hiddenCats:[], notes:[], notesSeenAt:0, notesClearedAt:0, _savedAt:0,
   nDebt:true, goals:[], deletedGoals:[], aiOn:false,
@@ -1598,6 +1656,8 @@ function renderHello(){
 const logoUrl = id => `https://s3-symbol-logo.tradingview.com/${id}.svg`;
 const bankById = id => BANKS.find(b=>b.id===id) || BANKS[0];
 const HOUSE_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>';
+// a plain bifold wallet (the kind that goes in a trouser pocket) for the wallet / cash-at-home account
+const WALLET_SVG = '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round"><path d="M4 8V7a2 2 0 0 1 2-2h11v3"/><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M21 12h-4a2 2 0 0 0 0 4h4"/><circle cx="17" cy="14" r=".6" style="fill:currentColor"/></svg>';
 function imgOr(src, ph, cls='logo'){
   return `<img class="${cls}" src="${src}" alt="" loading="lazy" onerror="this.outerHTML='${ph.replace(/"/g,'&quot;')}'">`;
 }
@@ -1608,7 +1668,7 @@ function logoHtml(sym){
 }
 function bankLogoHtml(id){
   const b = bankById(id);
-  if(b.home) return `<span class="logo ph">${HOUSE_SVG}</span>`;
+  if(b.home) return `<span class="logo ph">${WALLET_SVG}</span>`;
   const ph = `<span class="logo ph">${b.ab}</span>`;
   if(b.tv) return imgOr(logoUrl(b.tv), ph);
   if(b.fav) return imgOr(`https://www.google.com/s2/favicons?domain=${b.fav}&sz=64`, ph, 'logo fav');
@@ -1803,7 +1863,7 @@ const LB = {
   price: () => L('السعر','Price'), value: () => L('القيمة','Value'), paid: () => L('اشتريته بكام (إجمالي)','Total paid'),
   pl: () => L('الربح / الخسارة','Profit / loss'), worn: () => L('ملبوس','Worn'), bank: () => L('البنك','Bank'),
   cur: () => L('العملة','Currency'), amount: () => L('المبلغ','Amount'), rate: () => L('السعر بالجنيه','Rate in EGP'),
-  ticker: () => L('الرمز','Ticker'), shares: () => L('عدد الأسهم','Shares'), avg: () => L('متوسط سعر الشراء','Average buy price'),
+  ticker: () => L('الرمز','Ticker'), broker: () => L('شركة السمسرة','Broker'), shares: () => L('عدد الأسهم','Shares'), avg: () => L('متوسط سعر الشراء','Average buy price'),
   desc: () => L('الوصف','Description'), type: () => L('النوع','Type'), est: () => L('القيمة التقديرية','Estimated value'),
   remain: () => L('المبلغ المتبقي','Remaining'), inst: () => L('القسط الشهري','Monthly instalment'), dueDay: () => L('يوم القسط','Due day'),
   when: () => L('نبهني لما','Alert me when'), goes: () => L('يبقى','Goes'), target: () => L('السعر','Price'),
@@ -1814,7 +1874,7 @@ const EMPTY = {
   debts: () => L('لو عليك ديون أو أقساط، ضيفها هنا عشان تتخصم من صافي الثروة.', 'Add any debts or instalments here so they come off your net worth.'),
   alerts: () => L('مثلاً: نبهني لما جرام عيار 21 يبقى أقل من سعر معين.', 'For example: alert me when the 21k gold gram drops below a price.'),
 };
-const COLS = {gold:8, silver:7, cash:6, stocks:7, other:4, debts:5, alerts:7};
+const COLS = {gold:8, silver:7, cash:6, stocks:8, other:4, debts:5, alerts:7};
 const OPTIONAL = () => L('اختياري', 'optional');
 
 function rowHtml(sec, r, i){
@@ -1841,6 +1901,7 @@ function rowHtml(sec, r, i){
       const sym = (r.s||'').trim().toUpperCase(), sp = stockPx[sym], nm = sp?.desc || egxNames[sym];
       const extra = sym ? (sp ? `<span class="sname" title="${esc(nm)}">${esc(nm)}</span>` : `<span class="sname bad">${L('رمز غير معروف أو جاري التحميل', 'Unknown ticker or still loading')}</span>`) : '';
       return `<tr>${T(LB.ticker(), `<div class="stk">${logoHtml(sym)}<div class="stk-in"><input class="sym" list="egx-list" ${ctl(sec,i,'s')} value="${esc(sym)}" placeholder="COMI">${extra}</div></div>`, 'class="lead"')}
+        ${T(LB.broker(), sIn(sec,i,'br',BROKERS,r.br||''), 'class="brc"')}
         ${T(LB.shares(), nIn(sec,i,'q',r.q,'1'))}${T(LB.price(), `${fmt(sp?.close)} ${chg(sp?.change)}`, 'class="num" data-c')}
         ${T(LB.avg(), nIn(sec,i,'cost',r.cost??'','any',OPTIONAL()))}${val}${T(LB.pl(), plHtml(v, rowCost(sec,r)), 'class="plc" data-c')}${del(sec,i)}</tr>`;
     }
@@ -1861,7 +1922,25 @@ function rowHtml(sec, r, i){
 }
 function rowsHtml(sec){
   if(!state[sec].length && EMPTY[sec]) return `<tr><td colspan="${COLS[sec]}" class="empty">${EMPTY[sec]()}</td></tr>`;
+  if(sec==='stocks' && state.stocks.some(r=>r.br)) return stockGroupsHtml();
   return state[sec].map((r,i)=>rowHtml(sec,r,i)).join('');
+}
+// once any stock has a broker, the stocks split into one portfolio per firm, each with its total and profit / loss
+function stockGroupsHtml(){
+  const groups = new Map();
+  state.stocks.forEach((r,i)=>{ const b = r.br || ''; if(!groups.has(b)) groups.set(b, []); groups.get(b).push(i); });
+  return [...groups].map(([b, idx])=>{
+    let val = 0, cost = 0, pv = 0;
+    for(const i of idx){ const r = state.stocks[i], v = rowValue('stocks', r), c = rowCost('stocks', r);
+      const priced = !!stockPx[(r.s||'').trim().toUpperCase()];   // a price still loading isn't a 100% loss
+      if(isFinite(v)) val += v; if(c > 0 && priced && isFinite(v)){ cost += c; pv += v; } }
+    const name = lbl(BROKERS.find(x=>x.id===b) || BROKERS.at(-1));
+    return `<tr class="grp"><td colspan="${COLS.stocks}"><div class="grp-h">
+        <b>💼 ${esc(name)}</b><span class="grp-n">${L(`${fmt(idx.length,0)} سهم`, `${idx.length} stock${idx.length>1?'s':''}`)}</span>
+        <span class="grp-sum"><span class="m">${egp(val)}</span>${cost > 0 ? ` <span class="m">${plHtml(pv, cost)}</span>` : ''}</span>
+        <button class="x grp-add" type="button" data-add="stocks" data-br="${b}" aria-label="${L(`إضافة سهم في ${name}`, `Add a stock to ${name}`)}">+</button></div></td></tr>`
+      + idx.map(i=>rowHtml('stocks', state.stocks[i], i)).join('');
+  }).join('');
 }
 
 /* ---------- alerts ---------- */
@@ -2438,7 +2517,8 @@ document.addEventListener('input', e=>{
 document.addEventListener('change', e=>{ const f = e.target.dataset.f; if(f==='s' || f==='sym') refresh(); });
 document.addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
-  if(b.dataset.add){ state[b.dataset.add].push(NEW_ROW[b.dataset.add]()); save(); render(); buzz(); }
+  if(b.dataset.add){ const row = NEW_ROW[b.dataset.add](); if(b.dataset.br!==undefined) row.br = b.dataset.br;
+    state[b.dataset.add].push(row); save(); render(); buzz(); }
   else if(b.dataset.del){
     // delete right away, keep the row for a few seconds so it can be put back
     const sec = b.dataset.del, i = +b.dataset.i, [row] = state[sec].splice(i, 1);
@@ -3191,6 +3271,7 @@ function sheetForm(sec){
     silver: fld(LB.karat(), qSel('q-k', SILVER_KARATS, '999')) + `<div class="two">${fld(LB.weightG(), qNum('q-w'))}${fld(LB.paid(), qNum('q-cost', opt))}</div>`,
     cash:   fld(LB.bank(), qSel('q-b', BANKS, 'NBE')) + `<div class="two">${fld(LB.cur(), qSel('q-c', CURRENCIES, 'EGP'))}${fld(LB.amount(), qNum('q-a'))}</div>`,
     stocks: fld(LB.ticker(), `<input id="q-s" class="sym" list="egx-list" placeholder="COMI" autocapitalize="characters">`)
+            + fld(LB.broker(), qSel('q-br', BROKERS, state.stocks.at(-1)?.br || ''))
             + `<div class="two">${fld(LB.shares(), qNum('q-q','', '1'))}${fld(LB.avg(), qNum('q-cost', opt))}</div>`,
     other:  fld(LB.desc(), `<input id="q-name" type="text" placeholder="${L('مثلاً: شقة التجمع','e.g. New Cairo flat')}">`)
             + `<div class="two">${fld(LB.type(), qSel('q-type', OTHER_TYPES, 'realestate'))}${fld(LB.est(), qNum('q-v'))}</div>`,
@@ -3212,7 +3293,7 @@ function sheetSave(){
     case 'gold':   Object.assign(row, {k:v('q-k'), w:v('q-w'), cost:v('q-cost'), worn:document.getElementById('q-worn').checked}); break;
     case 'silver': Object.assign(row, {k:v('q-k'), w:v('q-w'), cost:v('q-cost')}); break;
     case 'cash':   Object.assign(row, {b:v('q-b'), c:v('q-c'), a:v('q-a')}); break;
-    case 'stocks': Object.assign(row, {s:v('q-s').trim().toUpperCase(), q:v('q-q'), cost:v('q-cost')}); break;
+    case 'stocks': Object.assign(row, {s:v('q-s').trim().toUpperCase(), q:v('q-q'), cost:v('q-cost'), br:v('q-br')}); break;
     case 'other':  Object.assign(row, {name:v('q-name'), type:v('q-type'), v:v('q-v')}); break;
     case 'debts':  Object.assign(row, {name:v('q-name'), a:v('q-a'), inst:v('q-inst'), day:v('q-day')}); break;
   }
@@ -4692,9 +4773,69 @@ function moveCat(st, id){
   for(const k in st.merchantCats || {}) if(st.merchantCats[k]===id) delete st.merchantCats[k];
   return n;
 }
+/* accounts as tappable cards (wallet or bank, with the balance). "WALLET" stands for a wallet that isn't in Cash yet:
+   it's made on save. name is the draft field the pick goes to: acct, from or to */
+const WALLET = 'WALLET';
+const typeSeg = d => `<div class="seg"><button type="button" data-txtype="exp" aria-pressed="${d.type==='exp'}">${L('مصروف','Expense')}</button><button type="button" data-txtype="inc" aria-pressed="${d.type==='inc'}">${L('دخل','Income')}</button><button type="button" data-txtype="tr" aria-pressed="${d.type==='tr'}">⇄ ${L('تحويل','Transfer')}</button></div>`;
+function acctChips(name, sel, none){
+  const rows = [...state.cash];
+  const short = b => b==='home' ? L('المحفظة','Wallet') : lbl(bankById(b));
+  const list = rows.map(r=>({id:r.id, b:r.b||'home', name: short(r.b||'home'), bal: `${fmt(num(r.a))} ${r.c==='EGP' ? L('ج.م','EGP') : r.c}`}));
+  if(!rows.some(r=>(r.b||'home')==='home' && r.c==='EGP')) list.unshift({id:WALLET, b:'home', name: short('home'), bal: L('هتتعمل لوحدها','made for you')});
+  return `<div class="acct-chips">${list.map(a=>`<button type="button" data-acctpick="${name}" data-id="${a.id}" aria-pressed="${a.id===sel}">
+      ${bankLogoHtml(a.b)}<span><b>${esc(a.name)}</b><small class="m">${a.bal}</small></span></button>`).join('')}
+    ${none ? `<button type="button" class="none" data-acctpick="${name}" data-id="" aria-pressed="${!sel}"><span><b>${L('من غير خصم','No account')}</b><small>${L('مش هيغيّر أي رصيد','changes no balance')}</small></span></button>` : ''}</div>
+    <input type="hidden" id="t-${name}" value="${esc(sel||'')}">`;
+}
+// turns the WALLET stand-in into a real Cash row (EGP, starting at 0)
+function ensureWallet(id){
+  if(id!==WALLET) return id;
+  const r = {id:newId('a'), b:'home', c:'EGP', a:0}; state.cash.unshift(r); return r.id;
+}
+const homeAcct = () => (state.cash.find(r=>(r.b||'home')==='home' && r.c==='EGP') || {id:WALLET}).id;
+const bankAcct = () => (acctById(state.lastAcct) && (acctById(state.lastAcct).b||'home')!=='home' ? acctById(state.lastAcct) : state.cash.find(r=>(r.b||'home')!=='home'))?.id || '';
+
+// moving money between your own accounts (bank to wallet, mostly): balances change, spending and income don't
+function transferForm(amt, note, date){
+  const d = txDraft, from = acctById(d.from), to = acctById(d.to);
+  const cur = from && from.c!=='EGP' ? lbl(CURRENCIES.find(c=>c.id===from.c)) : L('ج.م','EGP');
+  const recent = (state.transfers||[]).slice(-5).reverse();
+  const nm = id => acctById(id) ? lbl(bankById(acctById(id).b||'home')) : L('حساب اتشال','removed account');
+  return `${fld(L(`المبلغ (${cur})`, `Amount (${cur})`), `<input id="t-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${esc(amt)}">`)}
+    ${fld(L('من','From'), acctChips('from', d.from))}
+    <div class="tr-arrow" aria-hidden="true">⬇</div>
+    ${fld(L('إلى','To'), acctChips('to', d.to))}
+    ${from && to && from.c!==to.c ? `<div class="note">${L(`هيتحوّل بسعر النهارده: ${from.c} ← ${to.c}`, `Converted at today's rate: ${from.c} → ${to.c}`)}</div>` : ''}
+    <div class="two">${fld(L('التاريخ','Date'), `<input id="t-date" type="date" value="${esc(date)}">`)}${fld(L('ملاحظة','Note'), `<input id="t-note" type="text" value="${esc(note)}" placeholder="${L('مثلاً: سحب من الـ ATM','e.g. ATM withdrawal')}">`)}</div>
+    <div class="note">${L('التحويل بيغيّر الأرصدة بس، ومش بيتحسب مصروف ولا دخل.', "A transfer only moves balances; it doesn't count as spending or income.")}</div>
+    <button type="button" class="go-btn" data-trsave>${L('حوّل','Transfer')}</button>
+    ${recent.length ? `<div class="field"><span>${L('آخر التحويلات','Recent transfers')}</span><div class="tr-list">${recent.map(t=>`<div><span>${esc(dateFmt(new Date(t.date + 'T00:00')))} · ${esc(nm(t.from))} ${L('←','→')} ${esc(nm(t.to))}</span><b class="m">${fmt(t.amount)}</b></div>`).join('')}</div></div>` : ''}`;
+}
+function trSave(){
+  const amount = num(document.getElementById('t-amt').value), d = txDraft;
+  if(!(amount > 0)){ buzz([30,40,30]); toast(L('اكتب المبلغ الأول.', 'Enter the amount first.')); return; }
+  if(!d.from || !d.to || d.from===d.to){ buzz([30,40,30]); toast(L('اختار حسابين مختلفين: من وإلى.', 'Pick two different accounts: from and to.')); return; }
+  const date = document.getElementById('t-date').value || today(), note = document.getElementById('t-note').value.trim();
+  if(date > today()){ toast(L('التاريخ لسه ماجاش. اختار النهارده أو قبله.', 'That date is in the future. Pick today or earlier.')); return; }
+  const snap = JSON.stringify(state);
+  const from = acctById(ensureWallet(d.from)), to = acctById(ensureWallet(d.to));
+  const k = rate(from.c) / rate(to.c), got = Math.round(amount * (isFinite(k) && k > 0 ? k : 1) * 100) / 100;
+  from.a = Math.round((num(from.a) - amount) * 100) / 100;
+  to.a = Math.round((num(to.a) + got) * 100) / 100;
+  state.transfers = [...(state.transfers||[]), {id:newId('x'), date, at:Date.now(), from:from.id, to:to.id, amount, got, note}].slice(-100);
+  save(); render(); buzz(); sheet.close(); txDraft = null;
+  if(num(from.a) < 0) toast(L(`رصيد ${acctName(from)} بقى بالسالب.`, `${acctName(from)} balance is now negative.`));
+  offerUndo(L(`اتحوّل ${fmt(amount)} من ${lbl(bankById(from.b||'home'))} لـ ${lbl(bankById(to.b||'home'))}.`, `Moved ${fmt(amount)} from ${lbl(bankById(from.b||'home'))} to ${lbl(bankById(to.b||'home'))}.`), snap);
+}
 function renderTxSheet(fresh){
   const d = txDraft, keep = id => fresh ? undefined : document.getElementById(id)?.value;
   const amt = keep('t-amt') ?? '', note = keep('t-note') ?? '', date = keep('t-date') || today(), rep = !fresh && document.getElementById('t-rep')?.checked || false;
+  if(d.type==='tr'){
+    if(d.from===undefined){ d.from = bankAcct(); d.to = homeAcct(); }
+    document.getElementById('sheet-title').textContent = L('تحويل بين حساباتك','Move money between accounts');
+    sheetBody.innerHTML = typeSeg(d) + transferForm(amt, note, date);
+    return;
+  }
   const row = acctById(d.acct), curLbl = row && row.c!=='EGP' ? lbl(CURRENCIES.find(c=>c.id===row.c)) : L('ج.م','EGP');
   document.getElementById('sheet-title').textContent = d.type==='exp' ? L('مصروف جديد','New expense') : L('دخل جديد','New income');
   sheetBody.innerHTML = `
@@ -4702,7 +4843,7 @@ function renderTxSheet(fresh){
       ${SpeechRec ? `<button type="button" class="mic-btn" data-txvoice>🎤 ${L('قولها بصوتك','Say it')}</button>` : ''}
       ${aiReady() && d.type==='exp' ? `<button type="button" class="scan-btn" data-txscan>🧾 ${L('صوّر فاتورة','Snap a receipt')}</button>
       <input type="file" id="t-scan" accept="image/*" capture="environment" hidden>` : ''}</div>` : ''}
-    <div class="seg"><button type="button" data-txtype="exp" aria-pressed="${d.type==='exp'}">${L('مصروف','Expense')}</button><button type="button" data-txtype="inc" aria-pressed="${d.type==='inc'}">${L('دخل','Income')}</button></div>
+    ${typeSeg(d)}
     ${fld(L(`المبلغ (${curLbl})`, `Amount (${curLbl})`), `<input id="t-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${esc(amt)}">`)}
     <div class="field"><span>${L('الفئة','Category')}</span><div class="chips">${cats(d.type).map(c=>{
       const pick = `<button type="button" data-txcat="${c.id}" aria-pressed="${c.id===d.cat}"><i style="background:${c.color}"></i>${esc(catName(c))}</button>`;
@@ -4711,7 +4852,7 @@ function renderTxSheet(fresh){
     }).join('')}
       <button type="button" data-txnewcat>+ ${L('فئة جديدة','New category')}</button>
       ${state.hiddenCats.length ? `<button type="button" class="linkish" data-txrestore style="border:0;background:none">${L(`↺ رجّع الفئات الأساسية (${fmt(state.hiddenCats.length,0)})`, `↺ Bring back built-in categories (${state.hiddenCats.length})`)}</button>` : ''}</div></div>
-    ${fld(d.type==='exp' ? L('اتدفع من','Paid from') : L('اتحط في','Paid into'), `<select id="t-acct"><option value="">${L('من غير خصم من رصيد','Don’t change any balance')}</option>${state.cash.map(r=>`<option value="${r.id}" ${r.id===d.acct?'selected':''}>${esc(acctName(r))}</option>`).join('')}</select>`)}
+    ${fld(d.type==='exp' ? L('هتدفع منين؟','Paying from') : L('اتحط في','Paid into'), acctChips('acct', d.acct, true))}
     <div class="two">${fld(L('التاريخ','Date'), `<input id="t-date" type="date" value="${esc(date)}">`)}${fld(L('ملاحظة','Note'), `<input id="t-note" type="text" value="${esc(note)}" placeholder="${L('اختياري','optional')}">`)}</div>
     <label class="field" style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="t-rep" ${rep?'checked':''}> <span>${L('يتكرر كل شهر في نفس اليوم','Repeat every month on this day')}</span></label>
     <button type="button" class="go-btn" data-txsave>${L('حفظ','Save')}</button>`;
@@ -4719,8 +4860,9 @@ function renderTxSheet(fresh){
 function txSave(){
   const amount = num(document.getElementById('t-amt').value);
   if(!(amount > 0)){ buzz([30,40,30]); toast(L('اكتب المبلغ الأول.', 'Enter the amount first.')); return; }
-  const date = document.getElementById('t-date').value || today(), acct = document.getElementById('t-acct').value, note = document.getElementById('t-note').value;
+  const date = document.getElementById('t-date').value || today(), note = document.getElementById('t-note').value;
   if(date > today()){ toast(L('التاريخ لسه ماجاش. اختار النهارده أو قبله.', 'That date is in the future. Pick today or earlier.')); return; }
+  const acct = ensureWallet(document.getElementById('t-acct').value);
   const tx = addTx({type:txDraft.type, amount, cat:txDraft.cat, acct, date, note});
   if(document.getElementById('t-rep').checked){
     const rec = {id:newId('r'), type:tx.type, amount, cat:tx.cat, note:tx.note, acct, day: +date.slice(8,10), start: date, lastMonth: monthOf(date)};
@@ -4786,13 +4928,21 @@ sheetBody.addEventListener('click', e=>{
     state.customCats.push(c); txDraft.cat = c.id; save(); renderTxSheet();
   }
   else if(b.dataset.txsave!==undefined) txSave();
+  else if(b.dataset.trsave!==undefined) trSave();
+  else if(b.dataset.acctpick){
+    const f = b.dataset.acctpick, id = b.dataset.id;
+    // picking the account already on the other side swaps them, so from and to never match
+    if(f==='from' && id===txDraft.to) txDraft.to = txDraft.from;
+    if(f==='to' && id===txDraft.from) txDraft.from = txDraft.to;
+    txDraft[f] = id; buzz(6); renderTxSheet();
+  }
   else if(b.dataset.budsave!==undefined){
     sheetBody.querySelectorAll('[data-bud]').forEach(i=>{ const v = num(i.value); if(v > 0) state.budgets[i.dataset.bud] = v; else delete state.budgets[i.dataset.bud]; });
     const tot = num(document.getElementById('bud-total').value); state.budgetTotal = tot > 0 ? tot : '';
     save(); render(); sheet.close(); buzz(); toast(L('اتحفظت الميزانيات.', 'Budgets saved.'));
   }
 });
-sheetBody.addEventListener('change', e=>{ if(e.target.id==='t-acct'){ txDraft.acct = e.target.value; renderTxSheet(); } });
+document.getElementById('btn-transfer').addEventListener('click', ()=>{ txDraft = null; openTx('tr'); });
 
 /* ---------- bank messages: read an SMS, queue it, file it ---------- */
 // sender names and words that point at each bank (matched against the sender and the text)
@@ -4839,7 +4989,7 @@ function parseBankSms(raw, from=''){
   const last4 = (text.match(/(?:ending(?: with| in)?|المنتهية(?: ب| بـ|ب)?|منتهي(?:ة)? ب|card|بطاقة|حساب(?:ك)?(?: رقم)?|account|رقم)\D{0,12}(\d{4})\b/i) || text.match(/[*xX•]{2,}\s?(\d{4})\b/) || [])[1] || '';
   // shop or payee: "at …"/"لدى …" are surest, "to/from …"/"إلى/من …" are tried after them
   let merchant = '';
-  const enEnd = `(?=\\s+(?:on|dated|via|using|with|ref|at\\s+\\d)\\b|\\s*[,;:]|[.](?:\\s|$)|\\s+\\d{1,2}[\\/-]|$)`;
+  const enEnd = `(?=\\s+(?:on|dated|via|using|with|ref|at\\s+\\d)\\b|\\s*[,;:]|[.](?:\\s|$)|\\s+\\d{1,2}[\\/-]|\\s+\\d{4}[\\/.-]|\\s+\\d{1,2}:\\d{2}|\\s+\\d{1,2}\\s?(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)|$)`;
   const arEnd = `(?=\\s+(?:بتاريخ|يوم|في|عبر|من حسابك|من بطاقتك|الرصيد|رصيد|برقم|رقم)|\\s*[.,،:]|\\s+\\d|$)`;
   const tries = [
     new RegExp(`\\b(?:at|@)\\s+([A-Za-z0-9][A-Za-z0-9 .&'*\\-\\/]{1,38}?)${enEnd}`, 'i'),
@@ -4852,7 +5002,43 @@ function parseBankSms(raw, from=''){
     const v = m[1].trim();
     if(!/^(?:your|the|card|account|حسابك|بطاقتك|حساب|بطاقة)(?:\s|$)/i.test(v)){ merchant = v.replace(/\s{2,}/g,' '); break; }
   }
-  return {type: isCredit ? 'inc' : 'exp', amount: pick.n, cur, bank: bankHit ? bankHit[0] : '', last4, merchant, raw: String(raw).trim(), from: String(from||'').trim()};
+  return {type: isCredit ? 'inc' : 'exp', amount: pick.n, cur, bank: bankHit ? bankHit[0] : '', last4, merchant, ...smsWhen(text), raw: String(raw).trim(), from: String(from||'').trim()};
+}
+// the date and time the bank wrote in the message (27/10/2026, 27-10-26, 2026-10-27, 27 Oct, 14:32, 2:32 PM / م).
+// A date that's in the future or more than two months back is a misread, so it's dropped
+const MONTHS_EN = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+function smsWhen(text){
+  const now = new Date(), out = {};
+  const yr = s => !s ? now.getFullYear() : s.length===2 ? 2000 + +s : +s;
+  let y, mo, d, m;
+  if((m = text.match(/\b(20\d\d)[\/.-](\d{1,2})[\/.-](\d{1,2})\b/))) [y, mo, d] = [+m[1], +m[2], +m[3]];
+  else if((m = text.match(/\b(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{4}|\d{2}))?\b/) || text.match(/\b(\d{1,2})\.(\d{1,2})\.(\d{4}|\d{2})\b/)))
+    [d, mo, y] = [+m[1], +m[2], yr(m[3])];
+  else if((m = text.match(/\b(\d{1,2})[\s-]?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*(?:[\s-](\d{4}|\d{2})(?![:\d]))?/i)))
+    [d, mo, y] = [+m[1], MONTHS_EN.indexOf(m[2].toLowerCase()) + 1, yr(m[3])];
+  if(d && mo >= 1 && mo <= 12 && d <= 31){
+    let dt = new Date(y, mo - 1, d);
+    if(dt - now > DAY && m[3]===undefined) dt = new Date(y - 1, mo - 1, d);   // "31/12" with no year, read in January, is last year's
+    if(dt.getMonth()===mo - 1 && dt - now <= DAY && now - dt < 62 * DAY) out.date = dayKey(+dt);
+  }
+  // "م" / "ص" count only as a word of their own, so "2:32 مبلغ" isn't read as 2:32 PM
+  const t = text.match(/\b(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm|ص|م)?(?![\p{L}\d:])/iu);
+  if(t){
+    let h = +t[1]; const ap = (t[3] || '').toLowerCase();
+    if((ap==='pm' || ap==='م') && h < 12) h += 12;
+    if((ap==='am' || ap==='ص') && h===12) h = 0;
+    if(h < 24 && +t[2] < 60) out.time = `${String(h).padStart(2,'0')}:${t[2]}`;
+  }
+  return out;
+}
+// "Tue 27 Oct · 2:32 PM" for a bank message: what the bank wrote, else when the message reached the app
+function pendWhen(p){
+  const at = p.at ? new Date(p.at) : null;
+  const day = p.date ? new Date(p.date + 'T00:00') : at;
+  if(!day) return '';
+  const hm = p.time || (at && (!p.date || dayKey(+at)===p.date) ? `${String(at.getHours()).padStart(2,'0')}:${String(at.getMinutes()).padStart(2,'0')}` : '');
+  const time = hm ? new Date(`2000-01-01T${hm}`).toLocaleTimeString(LOC(), {hour:'numeric', minute:'2-digit'}) : '';
+  return [day.toLocaleDateString(LOC(), {weekday:'short', day:'numeric', month:'short'}), time].filter(Boolean).join(' · ');
 }
 const merchantKey = m => (m||'').toLowerCase().replace(/[^a-z0-9؀-ۿ]+/g,' ').trim().split(' ').slice(0,2).join(' ');
 // the account the message is about: same bank and currency, then same bank, then the last one used
@@ -4876,7 +5062,7 @@ function ingestSms(raw, from){
     return 'dup';
   }
   const known = ruleCat(p) || state.merchantCats[merchantKey(p.merchant)];   // the person's own rules come first
-  const item = {id:newId('p'), ...p, date: today(), at: Date.now(), acct: matchAcct(p), cat: known || (p.type==='inc' ? 'otherin' : 'other'), known: !!known};
+  const item = {id:newId('p'), ...p, date: p.date || today(), at: Date.now(), acct: matchAcct(p), cat: known || (p.type==='inc' ? 'otherin' : 'other'), known: !!known};
   rememberSms(p);
   if(known && state.autoKnown && (catById(known).id===known)){
     const tx = addTx({type:item.type, amount:item.amount, cat:known, acct:item.acct, date:item.date, note:item.merchant});
@@ -4936,6 +5122,7 @@ function pendingHtml(){
       return `<div class="pend-item">
         <div class="pend-top"><span class="amt m ${p.type==='exp'?'down-t':'up-t'}"><bdi>${p.type==='exp'?'−':'+'}${fmt(p.amount)} ${p.cur==='EGP'?L('ج.م','EGP'):p.cur}</bdi></span>
           <span class="pend-who">${esc(p.merchant || L('من غير اسم محل','No shop name'))}${p.bank ? ' · ' + esc(lbl(bankById(p.bank))) : ''}${p.last4 ? ' · ••' + p.last4 : ''}</span></div>
+        ${pendWhen(p) ? `<div class="pend-when">🕒 ${pendWhen(p)}</div>` : ''}
         <div class="two">
           <label class="field"><span>${L('الفئة','Category')}</span><select data-pcat="${p.id}">${cats(p.type).map(x=>`<option value="${x.id}" ${x.id===p.cat?'selected':''}>${esc(catName(x))}</option>`).join('')}</select></label>
           <label class="field"><span>${p.type==='exp'?L('اتدفع من','Paid from'):L('اتحط في','Paid into')}</span><select data-pacct="${p.id}"><option value="">${L('من غير خصم','Not linked')}</option>${state.cash.map(r=>`<option value="${r.id}" ${r.id===p.acct?'selected':''}>${esc(acctName(r))}</option>`).join('')}</select></label>
