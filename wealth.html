@@ -248,6 +248,11 @@ tr.grp:first-child td{border-top:0}
 .grp-n{color:var(--muted);font-size:.8rem}
 .grp-sum{margin-inline-start:auto;font-weight:600;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .grp-add{font-size:1.1rem;line-height:1;padding:3px 10px}
+.grp-h[data-brfold]{cursor:pointer;user-select:none}
+.grp-chev{display:inline-block;color:var(--muted);transition:transform .2s;transform:rotate(-90deg)}
+:root[dir="rtl"] .grp-chev,[dir="rtl"] .grp-chev{transform:rotate(90deg)}
+tr.grp.open .grp-chev{transform:none}
+tr.brf-off{display:none!important}
 table.alerts-tbl{min-width:760px}
 #cash-banks{display:grid;gap:8px}
 #cash-banks:empty{display:none}
@@ -1934,14 +1939,30 @@ function stockGroupsHtml(){
     for(const i of idx){ const r = state.stocks[i], v = rowValue('stocks', r), c = rowCost('stocks', r);
       const priced = !!stockPx[(r.s||'').trim().toUpperCase()];   // a price still loading isn't a 100% loss
       if(isFinite(v)) val += v; if(c > 0 && priced && isFinite(v)){ cost += c; pv += v; } }
-    const name = lbl(BROKERS.find(x=>x.id===b) || BROKERS.at(-1));
-    return `<tr class="grp"><td colspan="${COLS.stocks}"><div class="grp-h">
-        <b>💼 ${esc(name)}</b><span class="grp-n">${L(`${fmt(idx.length,0)} سهم`, `${idx.length} stock${idx.length>1?'s':''}`)}</span>
+    const name = lbl(BROKERS.find(x=>x.id===b) || BROKERS.at(-1)), open = brOpen.has(b);
+    return `<tr class="grp${open ? ' open' : ''}"><td colspan="${COLS.stocks}"><div class="grp-h" role="button" tabindex="0" data-brfold="${b}" aria-expanded="${open}">
+        <span class="grp-chev" aria-hidden="true">▾</span><b>💼 ${esc(name)}</b><span class="grp-n">${L(`${fmt(idx.length,0)} سهم`, `${idx.length} stock${idx.length>1?'s':''}`)}</span>
         <span class="grp-sum"><span class="m">${egp(val)}</span>${cost > 0 ? ` <span class="m">${plHtml(pv, cost)}</span>` : ''}</span>
         <button class="x grp-add" type="button" data-add="stocks" data-br="${b}" aria-label="${L(`إضافة سهم في ${name}`, `Add a stock to ${name}`)}">+</button></div></td></tr>`
-      + idx.map(i=>rowHtml('stocks', state.stocks[i], i)).join('');
+      + idx.map(i=>rowHtml('stocks', state.stocks[i], i).replace('<tr>', `<tr class="${open ? '' : 'brf-off'}">`)).join('');
   }).join('');
 }
+// portfolios start folded (just the firm and its totals); the ones opened are remembered on this device
+let brOpen = new Set();
+try{ brOpen = new Set(JSON.parse(localStorage.getItem('wealth-bropen') || '[]')); }catch(e){}
+function setBrOpen(b, open){
+  if(open) brOpen.add(b); else brOpen.delete(b);
+  try{ localStorage.setItem('wealth-bropen', JSON.stringify([...brOpen])); }catch(e){}
+}
+function toggleBr(h){
+  if(!h) return;
+  const b = h.dataset.brfold, open = !brOpen.has(b);
+  setBrOpen(b, open); buzz(6);
+  const tr = h.closest('tr'); tr.classList.toggle('open', open); h.setAttribute('aria-expanded', open);
+  for(let r = tr.nextElementSibling; r && !r.classList.contains('grp'); r = r.nextElementSibling) r.classList.toggle('brf-off', !open);
+}
+document.getElementById('stocks-rows').addEventListener('click', e=>{ if(!e.target.closest('button')) toggleBr(e.target.closest('[data-brfold]')); });
+document.getElementById('stocks-rows').addEventListener('keydown', e=>{ if((e.key==='Enter' || e.key===' ') && e.target.dataset?.brfold!==undefined){ e.preventDefault(); toggleBr(e.target); } });
 
 /* ---------- alerts ---------- */
 function alertCurrent(a){
@@ -2518,6 +2539,7 @@ document.addEventListener('change', e=>{ const f = e.target.dataset.f; if(f==='s
 document.addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.add){ const row = NEW_ROW[b.dataset.add](); if(b.dataset.br!==undefined) row.br = b.dataset.br;
+    if(b.dataset.add==='stocks') setBrOpen(row.br || '', true);   // the new stock shows, in its opened portfolio
     state[b.dataset.add].push(row); save(); render(); buzz(); }
   else if(b.dataset.del){
     // delete right away, keep the row for a few seconds so it can be put back
@@ -3293,7 +3315,7 @@ function sheetSave(){
     case 'gold':   Object.assign(row, {k:v('q-k'), w:v('q-w'), cost:v('q-cost'), worn:document.getElementById('q-worn').checked}); break;
     case 'silver': Object.assign(row, {k:v('q-k'), w:v('q-w'), cost:v('q-cost')}); break;
     case 'cash':   Object.assign(row, {b:v('q-b'), c:v('q-c'), a:v('q-a')}); break;
-    case 'stocks': Object.assign(row, {s:v('q-s').trim().toUpperCase(), q:v('q-q'), cost:v('q-cost'), br:v('q-br')}); break;
+    case 'stocks': Object.assign(row, {s:v('q-s').trim().toUpperCase(), q:v('q-q'), cost:v('q-cost'), br:v('q-br')}); setBrOpen(row.br, true); break;
     case 'other':  Object.assign(row, {name:v('q-name'), type:v('q-type'), v:v('q-v')}); break;
     case 'debts':  Object.assign(row, {name:v('q-name'), a:v('q-a'), inst:v('q-inst'), day:v('q-day')}); break;
   }
