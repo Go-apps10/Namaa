@@ -305,6 +305,8 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 #settings::backdrop{background:rgba(10,16,14,.5)}
 .dlg-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
 .dlg-sec{padding:16px 18px;display:grid;gap:12px;border-bottom:1px solid var(--line)}
+.app-ver{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 18px 16px;font-size:.82rem;color:var(--muted)}
+.app-ver b{color:var(--fg)}
 .dlg-sec:last-child{border-bottom:0}
 .dlg-sec h3{margin:0;font:500 1.02rem/1.3 var(--display);display:flex;align-items:center;gap:8px}
 .field{display:grid;gap:4px;font-size:.84rem;color:var(--muted)}
@@ -1317,6 +1319,8 @@ section.card.collapsed{gap:0}
     <div class="note" data-en="Your data lives only in this browser on this device. A backup file lets you move it to your phone or keep it safe.">بياناتك محفوظة في المتصفح دا على الجهاز دا بس. ملف النسخة الاحتياطية بيخليك تنقلها لموبايلك أو تحتفظ بيها في أمان.</div>
     <button type="button" class="x" id="btn-reset-money" style="justify-self:start;color:var(--down)" data-en="🗑 Reset spending and income">🗑 تصفير المصروفات والدخل</button>
   </div>
+  <div class="app-ver"><span><span data-en="Namaa · version">نماء · الإصدار</span> <b id="app-ver"></b></span>
+    <button type="button" class="x" id="btn-update" data-en="↻ Check for an update">↻ دوّر على تحديث</button></div>
 </dialog>
 
 <dialog id="report" aria-labelledby="rep-title">
@@ -1494,6 +1498,8 @@ const BROKERS = [
   {id:'ARABEYA',  label:'العربية أون لاين', en:'Arabeya Online'},
   {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
 ];
+// shown at the bottom of Settings; raised together with CACHE in sw.js on every release
+const APP_VERSION = 27;
 const ASSETS = ['gold','silver','cash','stocks','other'];
 const COLORS = {gold:'var(--gold)', silver:'var(--silver)', cash:'var(--cash)', certs:'var(--certs)', stocks:'var(--stocks)', other:'var(--other)', debts:'var(--down)'};
 const NAMES_AR = {gold:'الذهب', silver:'الفضة', cash:'الكاش', certs:'الشهادات والودائع', stocks:'الأسهم', other:'أصول أخرى', debts:'الديون'};
@@ -4359,6 +4365,26 @@ sheetBody.addEventListener('click', e=>{
   offerUndo(L(`اتمسحت ${fmt(n,0)} عملية.`, `${n} transactions deleted.`), snap);
 });
 document.getElementById('btn-reset-money').addEventListener('click', ()=>{ dlg.close(); openResetMoney(); });
+document.getElementById('app-ver').textContent = 'v' + APP_VERSION;
+// asks the server for a newer sw.js (the browser does this past the cache); a new one installs itself, and the page reloads onto it
+document.getElementById('btn-update').addEventListener('click', async e=>{
+  const b = e.currentTarget, label = b.textContent;
+  b.disabled = true; b.textContent = L('بيدوّر…','Checking…');
+  try{
+    const reg = await navigator.serviceWorker?.getRegistration();
+    if(!reg) throw 0;
+    await reg.update();
+    const nw = reg.installing || reg.waiting;
+    if(nw){
+      toast(L('فيه إصدار جديد، بيتحمّل وهيفتح لوحده…', 'A new version is downloading and will open by itself…'));
+      navigator.serviceWorker.addEventListener('controllerchange', ()=>location.reload(), {once: true});
+      setTimeout(()=>location.reload(), 8000);   // in case the switch-over event never comes
+      return;
+    }
+    toast(L(`انت على آخر إصدار (v${APP_VERSION}).`, `You're on the latest version (v${APP_VERSION}).`));
+  }catch(err){ toast(L('مقدرتش أدوّر دلوقتي. اتأكد من النت وجرّب تاني.', "Couldn't check right now. Check your connection and try again.")); }
+  b.disabled = false; b.textContent = label;
+});
 
 /* ---------- 🏪 where the money goes, by shop: the top places this month against last month ----------
    Shops come from the transaction's note (a bank message's shop name, or what was typed), grouped loosely so
