@@ -1577,7 +1577,7 @@ const BROKERS = [
   {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
 ];
 // the version people see is 1.<build>, like store apps; APP_BUILD goes up with CACHE in sw.js on every release
-const APP_BUILD = 30, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
+const APP_BUILD = 31, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
@@ -1587,6 +1587,7 @@ const WHATS_NEW = {
     ['🔄 لو نزل إصدار جديد وانت فاتح التطبيق، هيقولك على طول وتحدّث بدوسة.', '🔄 If a new version lands while the app is open, it tells you and updates in one tap.'],
   ],
   fix: [
+    ['زرار «دوّر على تحديث» كان بيقول «انت على آخر إصدار» لو الإصدار الجديد اتنزّل في الخلفية ولسه مافتحش. دلوقتي بيفتحه على طول.', '"Check for an update" said you were up to date when the new version had downloaded in the background but not opened yet. Now it opens it.'],
     ['أيقونات البار اللي تحت مبقتش بتتحرك وانت بتنقل بين الأقسام.', 'Bottom bar icons no longer bounce when switching areas.'],
   ],
 };
@@ -4703,16 +4704,23 @@ document.getElementById('btn-whatsnew').addEventListener('click', ()=>{ dlg.clos
    with a button that reloads onto it (where the notes above then pop up) */
 if('serviceWorker' in navigator){
   let hadCtl = !!navigator.serviceWorker.controller, selfUpdate = false;
-  const check = () => navigator.serviceWorker.getRegistration().then(r=>r?.update()).catch(()=>{});
-  setInterval(check, 30 * 60e3);
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') check(); });
-  window.__selfUpdate = () => { selfUpdate = true; };
-  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
-    if(!hadCtl){ hadCtl = true; return; }   // the first install taking control isn't an update
-    if(selfUpdate) return;   // "Check for an update" reloads by itself
+  let told = false;
+  const tell = () => {
+    if(told || selfUpdate) return; told = true;   // once per visit; "Check for an update" reloads by itself
     toast(L('🎉 نزل إصدار جديد من نماء', '🎉 A new version of Namaa is out'), {label: L('حدّث دلوقتي','Update now'), fn: ()=>location.reload()});
     if(notifyOn()) navigator.serviceWorker.getRegistration().then(r=>r?.showNotification(L('نماء','Namaa'),
       {body: L('نزل إصدار جديد. افتح التطبيق وحدّثه تشوف الجديد.', 'A new version is out. Open the app to update and see what\'s new.'), tag:'update', icon:'icons/icon-192.png', badge:'icons/badge-96.png'})).catch(()=>{});
+  };
+  // newer than the page on screen = it arrived in the background (now, or when this visit began)
+  const compare = async () => { if(await downloadedBuild() > APP_BUILD) tell(); };
+  const check = () => navigator.serviceWorker.getRegistration().then(r=>r?.update()).then(()=>setTimeout(compare, 3000)).catch(()=>{});
+  setInterval(check, 30 * 60e3);
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') check(); });
+  setTimeout(compare, 5000);   // the browser's own check at opening has usually finished by then
+  window.__selfUpdate = () => { selfUpdate = true; };
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(!hadCtl){ hadCtl = true; return; }   // the first install taking control isn't an update
+    tell();
   });
 }
 // asks the server for a newer sw.js (the browser does this past the cache); a new one installs itself, and the page reloads onto it
@@ -4723,18 +4731,26 @@ document.getElementById('btn-update').addEventListener('click', async e=>{
     const reg = await navigator.serviceWorker?.getRegistration();
     if(!reg) throw 0;
     await reg.update();
+    // a newer copy downloading now: wait (up to 10 s) for it to finish and take over
     const nw = reg.installing || reg.waiting;
-    if(nw){
+    if(nw) await new Promise(res=>{ const t = setTimeout(res, 10e3); nw.addEventListener('statechange', ()=>{ if(nw.state==='activated'){ clearTimeout(t); res(); } }); });
+    // the open page can be older than the copy on the device: a new version often downloads in the background while
+    // the old one is on screen. So the check is the build saved on the device, not only whether one is downloading now
+    const b2 = await downloadedBuild();
+    if(b2 > APP_BUILD){
       window.__selfUpdate?.();
-      toast(L('فيه إصدار جديد، بيتحمّل وهيفتح لوحده…', 'A new version is downloading and will open by itself…'));
-      navigator.serviceWorker.addEventListener('controllerchange', ()=>location.reload(), {once: true});
-      setTimeout(()=>location.reload(), 8000);   // in case the switch-over event never comes
+      toast(L(`فيه إصدار أحدث (1.${b2})، بيفتح دلوقتي…`, `A newer version (1.${b2}) is ready, opening it…`));
+      setTimeout(()=>location.reload(), 900);
       return;
     }
     toast(L(`انت على آخر إصدار (${APP_VERSION}).`, `You're on the latest version (${APP_VERSION}).`));
   }catch(err){ toast(L('مقدرتش أدوّر دلوقتي. اتأكد من النت وجرّب تاني.', "Couldn't check right now. Check your connection and try again.")); }
   b.disabled = false; b.textContent = label;
 });
+// the build of the app copy saved on this device (the service worker's cache is named wealth-shell-v<build>)
+async function downloadedBuild(){
+  try{ return Math.max(0, ...(await caches.keys()).map(k=>+(k.match(/^wealth-shell-v(\d+)$/)||[])[1] || 0)); }catch(e){ return 0; }
+}
 
 /* ---------- 🏪 where the money goes, by shop: the top places this month against last month ----------
    Shops come from the transaction's note (a bank message's shop name, or what was typed), grouped loosely so
