@@ -19,7 +19,9 @@
   // apply the saved theme, privacy mode and language before first paint to avoid a flash
   try{
     const t = localStorage.getItem('wealth-theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme = t;
-    const st = localStorage.getItem('wealth-style'); if(st && st!=='namaa') document.documentElement.dataset.style = st;
+    // the new look (trial) has its own colours, so the style is only applied with the original look
+    if(localStorage.getItem('wealth-ui')==='calm') document.documentElement.dataset.ui = 'calm';
+    else{ const st = localStorage.getItem('wealth-style'); if(st && st!=='namaa') document.documentElement.dataset.style = st; }
     if(localStorage.getItem('wealth-private')==='1') document.documentElement.dataset.private = '';
     const saved = JSON.parse(localStorage.getItem('wealth-v1')) || {};
     if(saved.lang==='en'){ document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr'; }
@@ -264,6 +266,69 @@ tr.grp:first-child td{border-top:0}
 .stale{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:12px;font-size:.84rem;
   background:color-mix(in srgb,var(--warn) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 40%,transparent)}
 .stale[hidden]{display:none}
+
+/* ===== the new look (trial), Settings → Appearance → "New": calm and clear =====
+   Everything here is scoped to :root[data-ui="calm"], so the original look is untouched and comes back with one tap.
+   Its own colours (the style picker is for the original look), light and dark */
+:root[data-ui="calm"]{
+  --bg:#F3F6F4; --surface:#FFFFFF; --fg:#13201B; --muted:#5B6B64; --line:#E3E9E6;
+  --accent:#0F3D2E; --on-accent:#FFFFFF; --hero:#0F3D2E; --hero-soft:#CFE3D9; --pill:#DCE7E1; --gold-hi:#E7B84A;
+  --up:#15803D; --down:#B42318; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root[data-ui="calm"]:not([data-theme="light"]){
+  --bg:#0E1513; --surface:#17201C; --fg:#ECF1EE; --muted:#9AA8A2; --line:#25302B;
+  --accent:#7FD1A8; --on-accent:#0B1F17; --hero:#123C2D; --hero-soft:#A9CDBC; --pill:#1F3A2F; --gold-hi:#E7B84A;
+  --up:#4ADE80; --down:#F87171; color-scheme:dark;}}
+:root[data-ui="calm"][data-theme="dark"]{
+  --bg:#0E1513; --surface:#17201C; --fg:#ECF1EE; --muted:#9AA8A2; --line:#25302B;
+  --accent:#7FD1A8; --on-accent:#0B1F17; --hero:#123C2D; --hero-soft:#A9CDBC; --pill:#1F3A2F; --gold-hi:#E7B84A;
+  --up:#4ADE80; --down:#F87171; color-scheme:dark;}
+/* big soft cards instead of boxed ones */
+:root[data-ui="calm"] section.card,:root[data-ui="calm"] .total,:root[data-ui="calm"] .tday,:root[data-ui="calm"] .allow,
+:root[data-ui="calm"] .ticker{border:0;border-radius:24px;box-shadow:0 1px 2px rgba(15,61,46,.04),0 6px 20px rgba(15,61,46,.05)}
+:root[data-ui="calm"] section.card{padding:18px 18px}
+:root[data-ui="calm"] .ticker{gap:0;background:var(--surface)}
+:root[data-ui="calm"] .tk{border-radius:0}
+:root[data-ui="calm"] button{border-radius:12px}
+:root[data-ui="calm"] input,:root[data-ui="calm"] select{border-radius:12px}
+:root[data-ui="calm"] .wrap{gap:16px}
+/* Home in reading order: the net worth first, then the quick actions, then today, then prices */
+:root[data-ui="calm"] .wrap>header{order:-6}
+:root[data-ui="calm"] .wrap>.tools{order:-5}
+:root[data-ui="calm"] .wrap>.stale{order:-4}
+:root[data-ui="calm"] .wrap>.total{order:-3}
+:root[data-ui="calm"] .wrap>.qacts{order:-2}
+:root[data-ui="calm"] .wrap>.tday{order:-1}
+/* the hero: net worth on the brand green */
+:root[data-ui="calm"] .total{padding:8px;gap:12px}
+:root[data-ui="calm"] .total>div:first-child{background:var(--hero);color:#FFFFFF;border-radius:20px;padding:20px 20px 18px}
+:root[data-ui="calm"] .total>div:first-child .note,:root[data-ui="calm"] .total>div:first-child .usd,
+:root[data-ui="calm"] .total>div:first-child .assets-line{color:var(--hero-soft)}
+:root[data-ui="calm"] .total .big{font-size:clamp(2.2rem,9vw,3rem);letter-spacing:-.5px}
+:root[data-ui="calm"] .total .big .cur{color:var(--hero-soft)}
+:root[data-ui="calm"] .total>div:first-child .up-t{color:#0B1F17;background:var(--gold-hi);border-radius:999px;padding:1px 9px;font-weight:600}
+:root[data-ui="calm"] .total>div:first-child .down-t{color:#FFFFFF;background:rgba(255,255,255,.16);border-radius:999px;padding:1px 9px}
+:root[data-ui="calm"] .total>.bar,:root[data-ui="calm"] .total>.legend,:root[data-ui="calm"] .total>.note,:root[data-ui="calm"] .total>.goal{margin-inline:12px}
+:root[data-ui="calm"] .total>.goal{margin-bottom:10px}
+/* four quick actions under the net worth (only in this look) */
+.qacts{display:none}
+#styles-field.dim{opacity:.55}
+:root[data-ui="calm"] .qacts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.qacts button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.78rem;color:var(--fg);padding:0}
+.qacts .qi{width:56px;height:56px;border-radius:18px;background:var(--surface);display:grid;place-items:center;box-shadow:0 1px 2px rgba(15,61,46,.05),0 4px 14px rgba(15,61,46,.06)}
+.qacts svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.qacts .q-exp{color:var(--down)}.qacts .q-inc{color:var(--up)}.qacts .q-tr,.qacts .q-sms{color:var(--accent)}
+/* the bottom bar: rounded, the current tab in a soft pill, the add button in its middle */
+@media (max-width:640px){
+  :root[data-ui="calm"] .bnav{border-top:0;border-radius:26px 26px 0 0;box-shadow:0 -6px 24px rgba(15,61,46,.08)}
+  :root[data-ui="calm"] .bnav-ind{background:var(--pill);border-radius:999px}
+  :root[data-ui="calm"] .bnav button[aria-current=page]{color:var(--accent)}
+  :root[data-ui="calm"] .bnav button[data-goto="reports"]{margin-inline-end:64px}
+  /* the AI bubble sits low at the side, clear of the quick actions */
+  :root[data-ui="calm"] .fab-ai{bottom:calc(84px + env(safe-area-inset-bottom,0px));width:42px;height:42px}
+  :root[data-ui="calm"] .fab{inset-inline-end:auto;left:50%;translate:-50% 0;bottom:calc(30px + env(safe-area-inset-bottom,0px));
+    width:58px;height:58px;border-radius:20px;background:var(--hero);color:#FFFFFF;box-shadow:0 8px 20px rgba(15,61,46,.32)}
+}
 .grp-h[data-brfold]{cursor:pointer;user-select:none}
 .grp-chev{display:inline-block;color:var(--muted);transition:transform .2s;transform:rotate(-90deg)}
 :root[dir="rtl"] .grp-chev,[dir="rtl"] .grp-chev{transform:rotate(90deg)}
@@ -1141,6 +1206,14 @@ section.card.collapsed{gap:0}
     </div>
   </div>
 
+  <!-- the new look only: four quick actions under the net worth -->
+  <nav class="qacts" data-tab="home" aria-label="إجراءات سريعة" data-en-label="Quick actions">
+    <button type="button" data-qact="exp"><span class="qi q-exp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></span><span data-en="Expense">مصروف</span></button>
+    <button type="button" data-qact="inc"><span class="qi q-inc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span><span data-en="Income">دخل</span></button>
+    <button type="button" data-qact="tr"><span class="qi q-tr"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg></span><span data-en="Transfer">تحويل</span></button>
+    <button type="button" data-qact="sms"><span class="qi q-sms"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="12" rx="2"/><path d="M4 8l8 5 8-5"/></svg></span><span data-en="Bank message">رسالة بنك</span></button>
+  </nav>
+
   <!-- today at a glance: only what needs you (bank messages, instalments) and how the day is going -->
   <div class="tday" id="tday" data-tab="home" hidden></div>
 
@@ -1387,7 +1460,13 @@ section.card.collapsed{gap:0}
       <button type="button" data-theme-set="system" data-en="Auto">تلقائي</button>
       <button type="button" data-theme-set="dark" data-en="☾ Dark">☾ داكن</button>
     </div>
-    <div class="field"><span data-en="Style">الستايل</span>
+    <div class="field"><span data-en="Look">شكل الواجهة</span>
+      <div class="theme" id="ui-pick" role="radiogroup" aria-label="شكل الواجهة" data-en-label="Look">
+        <button type="button" role="radio" data-ui-set="classic" data-en="Original">الأصلية</button>
+        <button type="button" role="radio" data-ui-set="calm" data-en="✨ New (trial)">✨ الجديدة (تجريبي)</button>
+      </div>
+      <span class="note" id="ui-note"></span></div>
+    <div class="field" id="styles-field"><span data-en="Style">الستايل</span>
       <div class="styles" id="styles" role="radiogroup" aria-label="الستايل" data-en-label="Style"></div></div>
   </div>
 
@@ -1628,11 +1707,12 @@ const BROKERS = [
   {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
 ];
 // the version people see is 1.<build>, like store apps; APP_BUILD goes up with CACHE in sw.js on every release
-const APP_BUILD = 32, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
+const APP_BUILD = 33, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
   feat: [
+    ['✨ شكل جديد للتطبيق تقدر تجرّبه: هادي وواضح، بصافي ثروتك في كارت أخضر كبير و٤ أزرار سريعة وزرار + في نص البار. من الإعدادات ← المظهر ← شكل الواجهة، وترجع للأصلي بدوسة.', '✨ A new look to try: calm and clear, net worth in a big green card, four quick actions and + in the middle of the bar. Settings → Appearance → Look; the original is one tap away.'],
     ['📊 «نظرة عامة» في التقارير: صافي ثروتك اتغيّر قد إيه، وفّرت كام، نسبة التوفير، وأكبر بند صرف، لآخر ٣ أو ٦ شهور أو سنة.', '📊 Overview in Reports: how your net worth moved, what you saved, your savings rate and biggest spending, over 3, 6 or 12 months.'],
     ['📈 الدخل والمصاريف شهر بشهر في رسم واحد. دوس على أي شهر يفتحلك مصاريفه.', '📈 Income and spending month by month in one chart. Tap a month to open its spending.'],
     ['🏷️ فئات مصاريفك رايحة على فين: الشهر دا قدام متوسطك، بخط صغير للفترة كلها.', '🏷️ Where your categories are heading: this month against your average, with a small line for the period.'],
@@ -6794,7 +6874,8 @@ const STYLES = [
   ['graphite', 'جرافيت',      'Graphite',  '#f4f4f5', '#27272a', '#0f0f10', '#e4e4e7'],
   ['amoled',   'أسود (OLED)', 'Black (OLED)', '#f6f5f1', '#8a6420', '#000000', '#e0b257'],
 ];
-const curStyle = () => document.documentElement.dataset.style || 'namaa';
+// the chosen style, kept even while the new look (which ignores styles) is on
+const curStyle = () => { try{ return localStorage.getItem('wealth-style') || 'namaa'; }catch(e){ return document.documentElement.dataset.style || 'namaa'; } };
 const isDarkNow = () => document.documentElement.dataset.theme==='dark' || (document.documentElement.dataset.theme!=='light' && matchMedia('(prefers-color-scheme: dark)').matches);
 function renderStyles(){
   const box = document.getElementById('styles'); if(!box) return;
@@ -6804,12 +6885,46 @@ function renderStyles(){
       <span class="sw" style="background:${bg}"><i style="background:${ac}"></i><b style="background:${ac}"></b></span><span>${L(ar, en)}</span></button>`; }).join('');
 }
 function applyStyle(id){
-  if(!id || id==='namaa') delete document.documentElement.dataset.style; else document.documentElement.dataset.style = id;
   try{ localStorage.setItem('wealth-style', id || 'namaa'); }catch(e){}
+  // with the new look on, picking a style switches back to the original look, where styles apply
+  if(isCalm()){ applyUi('classic'); return; }
+  if(!id || id==='namaa') delete document.documentElement.dataset.style; else document.documentElement.dataset.style = id;
   paintThemeColor(); renderStyles();
   // charts and anything drawn with the colours need a redraw
   try{ render(); }catch(e){}
 }
+/* the look: the original (with its styles) or the new trial one. Only a setting on this device: nothing in the data changes,
+   so switching back is instant and complete */
+const isCalm = () => document.documentElement.dataset.ui==='calm';
+function applyUi(ui){
+  const root = document.documentElement;
+  try{ localStorage.setItem('wealth-ui', ui); }catch(e){}
+  if(ui==='calm'){ root.dataset.ui = 'calm'; delete root.dataset.style; }
+  else{ delete root.dataset.ui; let st = 'namaa'; try{ st = localStorage.getItem('wealth-style') || 'namaa'; }catch(e){} if(st!=='namaa') root.dataset.style = st; }
+  renderUiPick(); paintThemeColor(); renderStyles();
+  try{ render(); }catch(e){}
+  requestAnimationFrame(()=>{ document.getElementById('bnav').classList.remove('ready'); placeNavInd(); });
+}
+function renderUiPick(){
+  const calm = isCalm();
+  document.querySelectorAll('#ui-pick [data-ui-set]').forEach(b=>{ const on = (b.dataset.uiSet==='calm')===calm; b.setAttribute('aria-pressed', on); b.setAttribute('aria-checked', on); });
+  document.getElementById('ui-note').textContent = calm
+    ? L('بتجرّب الشكل الجديد. لو ماعجبكش، دوس «الأصلية» ويرجع زي ما كان بالظبط.', 'You\'re trying the new look. Tap "Original" to go back exactly as it was.')
+    : L('جرّب الشكل الجديد: أبسط وأوضح. بياناتك مش بتتأثر، وترجع للأصلي بدوسة.', 'Try the new look: simpler and clearer. Your data isn\'t touched, and the original is one tap away.');
+  document.getElementById('styles-field').classList.toggle('dim', calm);
+}
+document.getElementById('ui-pick').addEventListener('click', e=>{
+  const ui = e.target.closest('[data-ui-set]')?.dataset.uiSet; if(!ui || (ui==='calm')===isCalm()) return;
+  applyUi(ui); buzz(8);
+  toast(ui==='calm' ? L('✨ ده الشكل الجديد. ترجع للأصلي من نفس المكان.', '✨ This is the new look. Go back from the same place.') : L('رجع الشكل الأصلي.', 'The original look is back.'));
+});
+renderUiPick();
+// the four quick actions under the net worth (new look)
+document.querySelector('.qacts').addEventListener('click', e=>{
+  const a = e.target.closest('[data-qact]')?.dataset.qact; if(!a) return;
+  buzz(6);
+  if(a==='sms') openPaste(); else { txDraft = null; openTx(a); }
+});
 // the phone's status bar follows the page background
 function paintThemeColor(){
   const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#141716';
