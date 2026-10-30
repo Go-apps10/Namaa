@@ -20,7 +20,8 @@
   try{
     const t = localStorage.getItem('wealth-theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme = t;
     // the new look (trial) has its own colours, so the style is only applied with the original look
-    if(localStorage.getItem('wealth-ui')==='calm') document.documentElement.dataset.ui = 'calm';
+    const ui = localStorage.getItem('wealth-ui');
+    if(ui==='calm' || ui==='flat') document.documentElement.dataset.ui = ui;
     else{ const st = localStorage.getItem('wealth-style'); if(st && st!=='namaa') document.documentElement.dataset.style = st; }
     if(localStorage.getItem('wealth-private')==='1') document.documentElement.dataset.private = '';
     const saved = JSON.parse(localStorage.getItem('wealth-v1')) || {};
@@ -310,7 +311,60 @@ tr.grp:first-child td{border-top:0}
 :root[data-ui="calm"] .total>div:first-child .down-t{color:#FFFFFF;background:rgba(255,255,255,.16);border-radius:999px;padding:1px 9px}
 :root[data-ui="calm"] .total>.bar,:root[data-ui="calm"] .total>.legend,:root[data-ui="calm"] .total>.note,:root[data-ui="calm"] .total>.goal{margin-inline:12px}
 :root[data-ui="calm"] .total>.goal{margin-bottom:10px}
-/* four quick actions under the net worth (only in this look) */
+/* ===== the flat look (trial): minimal, black on white (white on black in dark), no cards, no shadows.
+   Sections are told apart by space and hairlines; the figures carry the page; one ink colour for every control ===== */
+:root[data-ui="flat"]{
+  --bg:#FFFFFF; --surface:#FFFFFF; --fg:#111111; --muted:#6B6B6B; --line:#ECECEC;
+  --accent:#111111; --on-accent:#FFFFFF; --up:#15803D; --down:#C2410C; --warn:#A16207; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root[data-ui="flat"]:not([data-theme="light"]){
+  --bg:#0A0A0A; --surface:#0A0A0A; --fg:#F4F4F4; --muted:#A1A1A1; --line:#232323;
+  --accent:#F4F4F4; --on-accent:#0A0A0A; --up:#4ADE80; --down:#FB923C; --warn:#FACC15; color-scheme:dark;}}
+:root[data-ui="flat"][data-theme="dark"]{
+  --bg:#0A0A0A; --surface:#0A0A0A; --fg:#F4F4F4; --muted:#A1A1A1; --line:#232323;
+  --accent:#F4F4F4; --on-accent:#0A0A0A; --up:#4ADE80; --down:#FB923C; --warn:#FACC15; color-scheme:dark;}
+:root[data-ui="flat"] *{box-shadow:none!important}
+:root[data-ui="flat"] section.card,:root[data-ui="flat"] .total,:root[data-ui="flat"] .tday,:root[data-ui="flat"] .allow{
+  border:0;border-bottom:1px solid var(--line);border-radius:0;padding-inline:2px;background:transparent}
+:root[data-ui="flat"] .wrap{gap:22px}
+:root[data-ui="flat"] h1{color:var(--fg)}
+:root[data-ui="flat"] .ticker{border:0;border-radius:0;background:var(--line);gap:1px}
+:root[data-ui="flat"] .tk{background:var(--bg)}
+:root[data-ui="flat"] button,:root[data-ui="flat"] input,:root[data-ui="flat"] select{border-radius:8px}
+:root[data-ui="flat"] .total{padding:6px 2px 22px;gap:16px}
+:root[data-ui="flat"] .total .big{font-weight:600;font-size:clamp(2.6rem,11vw,3.4rem);letter-spacing:-1.5px}
+:root[data-ui="flat"] .total .big .cur{font-size:.32em;letter-spacing:0}
+:root[data-ui="flat"] .bar{height:6px;border-radius:0}
+:root[data-ui="flat"] .total .goal{border:0;border-top:1px solid var(--line);border-radius:0;padding:14px 0 0;background:transparent}
+:root[data-ui="flat"] .legend i,:root[data-ui="flat"] .dot{border-radius:0}
+:root[data-ui="flat"] .tday{padding:0 0 10px}
+:root[data-ui="flat"] .tday-r{border-radius:0;padding-inline:2px}
+:root[data-ui="flat"] .tday-r.warn{background:transparent;color:var(--fg)}
+:root[data-ui="flat"] .tday-r.warn .tday-t{font-weight:600}
+:root[data-ui="flat"] .sec-head h2 .dot{display:none}
+/* same reading order on Home as the calm look */
+:root[data-ui="flat"] .wrap>header{order:-6}
+:root[data-ui="flat"] .wrap>.tools{order:-5}
+:root[data-ui="flat"] .wrap>.stale{order:-4}
+:root[data-ui="flat"] .wrap>.total{order:-3}
+:root[data-ui="flat"] .wrap>.qacts{order:-2}
+:root[data-ui="flat"] .wrap>.tday{order:-1}
+:root[data-ui="flat"] .qacts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-bottom:1px solid var(--line);padding-bottom:18px}
+:root[data-ui="flat"] .qacts .qi{width:48px;height:48px;border-radius:0;background:transparent;border:1px solid var(--fg);color:var(--fg)}
+/* the bar: a hairline on top, the current tab in full ink with a short line above it, the add button a plain square */
+@media (max-width:640px){
+  :root[data-ui="flat"] .bnav{border-top:1px solid var(--line);background:var(--bg)}
+  :root[data-ui="flat"] .bnav-ind{background:var(--fg);height:2px!important;border-radius:0;margin-top:-8px}
+  :root[data-ui="flat"] .bnav button{color:var(--muted)}
+  :root[data-ui="flat"] .bnav button[aria-current=page]{color:var(--fg)}
+  :root[data-ui="flat"] .bnav button[data-goto="reports"]{margin-inline-end:64px}
+  :root[data-ui="flat"] .fab{border-radius:14px;background:var(--fg);color:var(--bg);width:54px;height:54px;
+    inset-inline-end:auto;left:50%;translate:-50% 0;bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+  :root[data-ui="flat"] .fab-ai{border-radius:12px;background:var(--bg);color:var(--fg);border-color:var(--fg);
+    bottom:calc(84px + env(safe-area-inset-bottom,0px));width:42px;height:42px}
+}
+
+/* four quick actions under the net worth (only in the trial looks) */
 .qacts{display:none}
 #styles-field.dim{opacity:.55}
 :root[data-ui="calm"] .qacts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -1463,7 +1517,8 @@ section.card.collapsed{gap:0}
     <div class="field"><span data-en="Look">شكل الواجهة</span>
       <div class="theme" id="ui-pick" role="radiogroup" aria-label="شكل الواجهة" data-en-label="Look">
         <button type="button" role="radio" data-ui-set="classic" data-en="Original">الأصلية</button>
-        <button type="button" role="radio" data-ui-set="calm" data-en="✨ New (trial)">✨ الجديدة (تجريبي)</button>
+        <button type="button" role="radio" data-ui-set="calm" data-en="Calm (trial)">هادية (تجريبي)</button>
+        <button type="button" role="radio" data-ui-set="flat" data-en="Flat (trial)">بسيطة (تجريبي)</button>
       </div>
       <span class="note" id="ui-note"></span></div>
     <div class="field" id="styles-field"><span data-en="Style">الستايل</span>
@@ -1707,12 +1762,12 @@ const BROKERS = [
   {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
 ];
 // the version people see is 1.<build>, like store apps; APP_BUILD goes up with CACHE in sw.js on every release
-const APP_BUILD = 33, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
+const APP_BUILD = 34, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
   feat: [
-    ['✨ شكل جديد للتطبيق تقدر تجرّبه: هادي وواضح، بصافي ثروتك في كارت أخضر كبير و٤ أزرار سريعة وزرار + في نص البار. من الإعدادات ← المظهر ← شكل الواجهة، وترجع للأصلي بدوسة.', '✨ A new look to try: calm and clear, net worth in a big green card, four quick actions and + in the middle of the bar. Settings → Appearance → Look; the original is one tap away.'],
+    ['✨ شكلين جداد تجرّبهم من الإعدادات ← المظهر ← شكل الواجهة: «هادية» (كروت ناعمة وصافي ثروتك في كارت أخضر) و«بسيطة» (أبيض وأسود، من غير كروت ولا ظلال). الاتنين فيهم ٤ أزرار سريعة وزرار + في نص البار، وترجع للأصلية بدوسة.', '✨ Two new looks to try in Settings → Appearance → Look: "Calm" (soft cards, net worth on green) and "Flat" (black and white, no cards or shadows). Both have four quick actions and + in the middle of the bar; the original is one tap away.'],
     ['📊 «نظرة عامة» في التقارير: صافي ثروتك اتغيّر قد إيه، وفّرت كام، نسبة التوفير، وأكبر بند صرف، لآخر ٣ أو ٦ شهور أو سنة.', '📊 Overview in Reports: how your net worth moved, what you saved, your savings rate and biggest spending, over 3, 6 or 12 months.'],
     ['📈 الدخل والمصاريف شهر بشهر في رسم واحد. دوس على أي شهر يفتحلك مصاريفه.', '📈 Income and spending month by month in one chart. Tap a month to open its spending.'],
     ['🏷️ فئات مصاريفك رايحة على فين: الشهر دا قدام متوسطك، بخط صغير للفترة كلها.', '🏷️ Where your categories are heading: this month against your average, with a small line for the period.'],
@@ -6886,8 +6941,8 @@ function renderStyles(){
 }
 function applyStyle(id){
   try{ localStorage.setItem('wealth-style', id || 'namaa'); }catch(e){}
-  // with the new look on, picking a style switches back to the original look, where styles apply
-  if(isCalm()){ applyUi('classic'); return; }
+  // with a trial look on, picking a style switches back to the original look, where styles apply
+  if(trialLook()){ applyUi('classic'); return; }
   if(!id || id==='namaa') delete document.documentElement.dataset.style; else document.documentElement.dataset.style = id;
   paintThemeColor(); renderStyles();
   // charts and anything drawn with the colours need a redraw
@@ -6895,28 +6950,31 @@ function applyStyle(id){
 }
 /* the look: the original (with its styles) or the new trial one. Only a setting on this device: nothing in the data changes,
    so switching back is instant and complete */
-const isCalm = () => document.documentElement.dataset.ui==='calm';
+const TRIAL_LOOKS = ['calm', 'flat'];
+const trialLook = () => TRIAL_LOOKS.includes(document.documentElement.dataset.ui) ? document.documentElement.dataset.ui : '';
 function applyUi(ui){
   const root = document.documentElement;
   try{ localStorage.setItem('wealth-ui', ui); }catch(e){}
-  if(ui==='calm'){ root.dataset.ui = 'calm'; delete root.dataset.style; }
+  if(TRIAL_LOOKS.includes(ui)){ root.dataset.ui = ui; delete root.dataset.style; }
   else{ delete root.dataset.ui; let st = 'namaa'; try{ st = localStorage.getItem('wealth-style') || 'namaa'; }catch(e){} if(st!=='namaa') root.dataset.style = st; }
   renderUiPick(); paintThemeColor(); renderStyles();
   try{ render(); }catch(e){}
   requestAnimationFrame(()=>{ document.getElementById('bnav').classList.remove('ready'); placeNavInd(); });
 }
 function renderUiPick(){
-  const calm = isCalm();
-  document.querySelectorAll('#ui-pick [data-ui-set]').forEach(b=>{ const on = (b.dataset.uiSet==='calm')===calm; b.setAttribute('aria-pressed', on); b.setAttribute('aria-checked', on); });
-  document.getElementById('ui-note').textContent = calm
-    ? L('بتجرّب الشكل الجديد. لو ماعجبكش، دوس «الأصلية» ويرجع زي ما كان بالظبط.', 'You\'re trying the new look. Tap "Original" to go back exactly as it was.')
-    : L('جرّب الشكل الجديد: أبسط وأوضح. بياناتك مش بتتأثر، وترجع للأصلي بدوسة.', 'Try the new look: simpler and clearer. Your data isn\'t touched, and the original is one tap away.');
-  document.getElementById('styles-field').classList.toggle('dim', calm);
+  const cur = trialLook() || 'classic';
+  document.querySelectorAll('#ui-pick [data-ui-set]').forEach(b=>{ const on = b.dataset.uiSet===cur; b.setAttribute('aria-pressed', on); b.setAttribute('aria-checked', on); });
+  document.getElementById('ui-note').textContent = {
+    calm: L('«هادية»: كروت ناعمة وصافي ثروتك في كارت أخضر. لو ماعجبتكش، دوس «الأصلية» وترجع زي ما كانت بالظبط.', '"Calm": soft cards, net worth on green. Tap "Original" to go back exactly as it was.'),
+    flat: L('«بسيطة»: أبيض وأسود من غير كروت ولا ظلال، والأرقام هي اللي باينة. ترجع للأصلية بدوسة.', '"Flat": black and white, no cards or shadows, just the figures. The original is one tap away.'),
+    classic: L('جرّب شكل من الأشكال التجريبية. بياناتك مش بتتأثر، وترجع للأصلية بدوسة.', 'Try one of the trial looks. Your data isn\'t touched, and the original is one tap away.'),
+  }[cur];
+  document.getElementById('styles-field').classList.toggle('dim', cur!=='classic');
 }
 document.getElementById('ui-pick').addEventListener('click', e=>{
-  const ui = e.target.closest('[data-ui-set]')?.dataset.uiSet; if(!ui || (ui==='calm')===isCalm()) return;
+  const ui = e.target.closest('[data-ui-set]')?.dataset.uiSet; if(!ui || ui===(trialLook() || 'classic')) return;
   applyUi(ui); buzz(8);
-  toast(ui==='calm' ? L('✨ ده الشكل الجديد. ترجع للأصلي من نفس المكان.', '✨ This is the new look. Go back from the same place.') : L('رجع الشكل الأصلي.', 'The original look is back.'));
+  toast(ui==='classic' ? L('رجع الشكل الأصلي.', 'The original look is back.') : L('✨ ده شكل تجريبي. ترجع للأصلي من نفس المكان.', '✨ A trial look. Go back from the same place.'));
 });
 renderUiPick();
 // the four quick actions under the net worth (new look)
