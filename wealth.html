@@ -9,8 +9,8 @@
 <link rel="icon" href="icons/logo.svg" type="image/svg+xml">
 <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#141716" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2F6F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#091113" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Namaa">
@@ -1915,7 +1915,7 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 38, APP_VERSION = '2.1', APP_DATE = '2026-10-30';
+const APP_BUILD = 39, APP_VERSION = '2.1.1', APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
@@ -1928,7 +1928,7 @@ const WHATS_NEW = {
   fix: [
     ['🎨 لون جديد: أخضر مزرق (تيل) أنضف وأريح للعين، في الفاتح والداكن.', '🎨 A new colour: a cleaner, easier teal, in light and dark.'],
     ['الوضع الداكن بقى أوضح: الكروت بارزة عن الخلفية، والأشرطة والأيقونات والزرار + بقوا باينين.', 'Dark mode is clearer: cards stand off the background, and the bars, icons and + button are easy to see.'],
-    ['اتشال الخط الرفيع اللي كان بيظهر تحت شريط الساعة والبطارية.', 'The thin line under the clock and battery bar is gone.'],
+    ['شريط الساعة والبطارية بقى بنفس لون التطبيق بالظبط على أندرويد، فالخط اللي كان بيظهر تحته اتشال.', 'On Android the clock and battery bar now takes the app\'s exact colour, so the line under it is gone.'],
   ],
 };
 const ASSETS = ['gold','silver','cash','stocks','other'];
@@ -7254,10 +7254,16 @@ document.querySelector('.qacts').addEventListener('click', e=>{
   buzz(6);
   if(a==='sms') openPaste(); else { txDraft = null; openTx(a); }
 });
-// the phone's status bar follows the page background
+/* the phone's status bar takes exactly the page background, so no edge shows between them. Once the page runs, the two
+   light/dark tags in the head become one tag with no media query: some Android builds ignore a changed tag that has one,
+   and keep the status bar a shade off the page (a visible line under the clock) */
 function paintThemeColor(){
-  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#141716';
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute('content', bg));
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#091113';
+  const tags = [...document.querySelectorAll('meta[name="theme-color"]')];
+  let one = tags.find(m=>!m.hasAttribute('media'));
+  if(!one){ one = document.createElement('meta'); one.name = 'theme-color'; document.head.appendChild(one); }
+  tags.forEach(m=>{ if(m!==one) m.remove(); });
+  one.setAttribute('content', bg);
 }
 document.getElementById('styles').addEventListener('click', e=>{ const id = e.target.closest('[data-style-set]')?.dataset.styleSet; if(id){ applyStyle(id); buzz(6); } });
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{ renderStyles(); paintThemeColor(); });
