@@ -24,9 +24,11 @@
     const saved = JSON.parse(localStorage.getItem('wealth-v1')) || {};
     if(saved.lang==='en'){ document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr'; }
     if(+saved.fontScale > 0) document.documentElement.style.fontSize = (+saved.fontScale * 100) + '%';
-    // the logo animation plays once each time the app is opened (not on reloads), and never for reduced motion
-    if(!sessionStorage.getItem('wealth-splashed') && !matchMedia('(prefers-reduced-motion: reduce)').matches){
-      document.documentElement.classList.add('splashing'); sessionStorage.setItem('wealth-splashed', '1');
+    // the logo animation plays on the first opening of the day only (it takes two seconds), and never for reduced motion;
+    // every other opening goes straight to the app
+    const splashDay = new Date().toDateString();
+    if(localStorage.getItem('wealth-splash-day') !== splashDay && !sessionStorage.getItem('wealth-splashed') && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+      document.documentElement.classList.add('splashing'); sessionStorage.setItem('wealth-splashed', '1'); localStorage.setItem('wealth-splash-day', splashDay);
     }
     // hide amounts until the PIN is entered, unless this tab was already unlocked and not left in the background too long
     const unlocked = sessionStorage.getItem('wealth-unlocked'), hidAt = +sessionStorage.getItem('wealth-hidden-at') || 0;
@@ -248,6 +250,20 @@ tr.grp:first-child td{border-top:0}
 .grp-n{color:var(--muted);font-size:.8rem}
 .grp-sum{margin-inline-start:auto;font-weight:600;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .grp-add{font-size:1.1rem;line-height:1;padding:3px 10px}
+.grp-today{font-size:.78rem;color:var(--muted);flex-basis:100%;text-align:end}
+.st-today{margin:-4px 0 4px}
+/* today at a glance on Home: one tappable line per thing that needs you */
+.tday{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;display:grid;gap:2px}
+.tday-h{font:600 .78rem var(--display);color:var(--muted);padding:6px 10px 2px}
+.tday-r{display:flex;align-items:center;gap:10px;border:0;background:none;text-align:start;padding:9px 10px;border-radius:11px;color:inherit;font-size:.9rem}
+.tday-r:hover,.tday-r:focus-visible{background:var(--bg)}
+.tday-r .ic{flex:none;width:26px;text-align:center}
+.tday-r .tday-t{flex:1;min-width:0}
+.tday-r .go{color:var(--muted);font-size:1.1rem}
+.tday-r.warn{background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.stale{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:12px;font-size:.84rem;
+  background:color-mix(in srgb,var(--warn) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 40%,transparent)}
+.stale[hidden]{display:none}
 .grp-h[data-brfold]{cursor:pointer;user-select:none}
 .grp-chev{display:inline-block;color:var(--muted);transition:transform .2s;transform:rotate(-90deg)}
 :root[dir="rtl"] .grp-chev,[dir="rtl"] .grp-chev{transform:rotate(90deg)}
@@ -309,6 +325,13 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .app-ver b{color:var(--fg)}
 .dlg-sec:last-child{border-bottom:0}
 .dlg-sec h3{margin:0;font:500 1.02rem/1.3 var(--display);display:flex;align-items:center;gap:8px}
+.fsec>h3{cursor:pointer;user-select:none;margin:-16px -18px;padding:16px 18px}
+.fsec:not(.open)>:not(h3){display:none!important}
+.fsec.open>h3{margin-bottom:-4px}
+.set-ic{width:24px;text-align:center;flex:none}
+.set-chev{margin-inline-start:auto;color:var(--muted);transition:transform .2s;transform:rotate(90deg)}
+[dir="ltr"] .set-chev{transform:rotate(-90deg)}
+.fsec.open .set-chev{transform:none}
 .field{display:grid;gap:4px;font-size:.84rem;color:var(--muted)}
 .field input,.field select{font-size:.95rem}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -358,7 +381,14 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .tx-fold .dl{font-weight:600}
 .tx-fold .dn{color:var(--muted);font-size:.8rem}
 .tx-fold .ds{margin-inline-start:auto;font-weight:600;font-size:.85rem;white-space:nowrap}
-.tx-in{padding:0 14px 6px}
+.tx-in{padding:0 14px 6px;overflow:hidden}
+/* while swiped: the row carries a strip on the side it uncovers, saying edit or delete */
+.tx.sw{position:relative;background:var(--surface);touch-action:pan-y}
+.tx.sw::after{content:var(--sw-label);position:absolute;top:0;bottom:0;width:100vw;display:flex;align-items:center;padding:0 16px;
+  font-size:.82rem;font-weight:600;color:#fff;opacity:.55;transition:opacity .15s}
+.tx.sw[data-sw=del]::after{left:100%;background:var(--down);justify-content:flex-start}
+.tx.sw[data-sw=edit]::after{right:100%;background:var(--accent);color:var(--on-accent);justify-content:flex-end}
+.tx.sw.sw-go::after{opacity:1}
 .tx{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .tx:last-child{border-bottom:0}
 .tx i{width:10px;height:10px;border-radius:3px}
@@ -496,6 +526,11 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .acct-chips button.none{border-style:dashed}
 .acct-chips .logo{flex:none}
 .tr-arrow{text-align:center;color:var(--muted);margin:-6px 0}
+.qpicks{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:-4px;align-items:center;padding-bottom:2px}
+.qpicks::-webkit-scrollbar{display:none}
+.qp-l{font-size:.75rem;color:var(--muted);flex:none}
+.qpicks button{flex:none;display:flex;align-items:center;gap:5px;border-radius:999px;padding:5px 11px;font-size:.8rem;background:var(--bg);white-space:nowrap}
+.qpicks button i{width:8px;height:8px;border-radius:50%}
 .tr-list{display:grid;gap:4px;font-size:.84rem}
 .tr-list>div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:4px 0}
 .amt-in{font-size:1.8rem!important;font-weight:600;text-align:center!important;padding:10px!important}
@@ -761,6 +796,20 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
   .bnav .badge{position:static;margin-inline-start:2px}
   body{padding-top:60px}
 }
+/* the pill behind the current tab slides to the one tapped; its icon gives a small hop; the area slides in from that side */
+.bnav-ind{position:absolute;left:0;top:0;width:0;height:0;border-radius:12px;pointer-events:none;
+  background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.bnav.ready .bnav-ind{transition:transform .42s cubic-bezier(.3,1.4,.5,1),width .42s cubic-bezier(.3,1.4,.5,1),height .3s}
+.bnav button{z-index:1}
+.bnav button[aria-current=page] svg{animation:nav-hop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes nav-hop{0%{transform:translateY(0) scale(1)}35%{transform:translateY(-4px) scale(1.14)}100%{transform:none}}
+.wrap>.tab-in{animation:tab-in .32s cubic-bezier(.2,.8,.3,1)}
+@keyframes tab-in{from{opacity:0;transform:translateX(var(--tab-dx,0))}}
+@media (min-width:641px){ .bnav button[aria-current=page]{background:none!important} }
+@media (prefers-reduced-motion:reduce){
+  .bnav.ready .bnav-ind{transition:none}
+  .bnav button[aria-current=page] svg,.wrap>.tab-in{animation:none}
+}
 @media (min-width:1100px){
   .bnav{flex-direction:column;top:0;bottom:0;inset-inline-start:0;width:220px;padding:28px 12px;gap:4px;border-inline-end:1px solid var(--line)}
   .bnav button{display:flex;align-items:center;gap:12px;padding:11px 14px;font-size:.95rem;text-align:start}
@@ -1005,6 +1054,8 @@ section.card.collapsed{gap:0}
     <button type="button" class="x" id="btn-install-close" aria-label="إغلاق" data-en-label="Close">×</button>
   </div>
 
+  <!-- prices older than half an hour (no connection, or the sources failed): said plainly, on every tab -->
+  <div class="stale" id="stale" hidden></div>
   <div class="ticker" id="ticker" data-tab="home"></div>
   <div class="note" id="market-note" hidden data-tab="home"></div>
 
@@ -1031,6 +1082,9 @@ section.card.collapsed{gap:0}
       <div class="goal-plan m" id="goal-plan" hidden></div>
     </div>
   </div>
+
+  <!-- today at a glance: only what needs you (bank messages, instalments) and how the day is going -->
+  <div class="tday" id="tday" data-tab="home" hidden></div>
 
   <!-- what can be spent today, from the month's budget -->
   <div class="allow" id="allow" data-tab="money"></div>
@@ -1181,6 +1235,7 @@ section.card.collapsed{gap:0}
 
   <section class="card" id="sec-stocks" data-tab="assets">
     <div class="sec-head"><h2><span class="dot" style="background:var(--stocks)"></span><span data-en="Egyptian stocks (EGX)">أسهم البورصة المصرية</span> <span class="pill due" id="egx-status"></span></h2><span class="sec-sum m" id="sum-stocks"></span></div>
+    <div class="note st-today" id="stocks-today" hidden></div>
     <div class="tbl-wrap"><table class="stocks-tbl"><thead><tr><th data-en="Ticker">الرمز</th><th data-en="Broker">شركة السمسرة</th><th data-en="Shares">عدد الأسهم</th><th data-en="Price">السعر</th><th data-en="Average buy price">متوسط سعر الشراء</th><th data-en="Value">القيمة</th><th data-en="Profit / loss">الربح / الخسارة</th><th></th></tr></thead><tbody id="stocks-rows"></tbody></table></div>
     <datalist id="egx-list"></datalist>
     <button class="add" type="button" data-add="stocks" data-en="+ Add stock">+ إضافة سهم</button>
@@ -1387,6 +1442,7 @@ section.card.collapsed{gap:0}
 
 <!-- phone navigation -->
 <nav class="bnav" id="bnav" aria-label="التنقل" data-en-label="Navigation">
+  <span class="bnav-ind" id="bnav-ind" aria-hidden="true"></span>
   <button type="button" data-goto="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg><span data-en="Home">الرئيسية</span></button>
   <button type="button" data-goto="assets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18l2.5-6h9L19 18zM9 9h6M10 6h4"/></svg><span data-en="Assets">الأصول</span></button>
   <button type="button" data-goto="reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M7 16v-4M12 16V8M17 16v-7"/></svg><span data-en="Reports">التقارير</span></button>
@@ -1499,7 +1555,7 @@ const BROKERS = [
   {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
 ];
 // shown at the bottom of Settings; raised together with CACHE in sw.js on every release
-const APP_VERSION = 27;
+const APP_VERSION = 28;
 const ASSETS = ['gold','silver','cash','stocks','other'];
 const COLORS = {gold:'var(--gold)', silver:'var(--silver)', cash:'var(--cash)', certs:'var(--certs)', stocks:'var(--stocks)', other:'var(--other)', debts:'var(--down)'};
 const NAMES_AR = {gold:'الذهب', silver:'الفضة', cash:'الكاش', certs:'الشهادات والودائع', stocks:'الأسهم', other:'أصول أخرى', debts:'الديون'};
@@ -1632,6 +1688,7 @@ function applyLang(){
   resetClearButton();
   renderHello(); renderAvatar(); renderNotify(); renderPin(); applyPrivate(isPrivate());
   if(dlg.open){ renderSync(); renderInbox(); renderAi(); }
+  if(typeof placeNavInd==='function'){ document.getElementById('bnav').classList.remove('ready'); requestAnimationFrame(placeNavInd); }   // the bar flips side with the language
 }
 // the person's photo: shown at the top next to Settings, and in Settings with choose / remove
 let shownAvatar = null;
@@ -1807,7 +1864,18 @@ function ago(t){
   if(h < 24) return L(`من ${fmt(h,0)} ساعة`, `${fmt(h,0)} h ago`);
   return L(`من ${fmt(Math.round(h/24),0)} يوم`, `${fmt(Math.round(h/24),0)} days ago`);
 }
+function renderStale(){
+  const el = document.getElementById('stale'), old = priceStatus!=='ok' && lastUpdate > 0 && Date.now() - lastUpdate > 30 * 60e3;
+  el.hidden = !old; if(!old) return;
+  el.innerHTML = `<span>⚠️ ${navigator.onLine===false ? L('مفيش نت · ','Offline · ') : ''}${L(`الأسعار ${ago(lastUpdate)}، فالأرقام ممكن تكون اتغيّرت.`, `Prices are ${ago(lastUpdate)}, so the figures may have moved.`)}</span>
+    <button type="button" class="x" data-stale-refresh>${L('حدّث','Refresh')}</button>`;
+}
+document.getElementById('stale').addEventListener('click', e=>{ if(e.target.closest('[data-stale-refresh]')) refresh(); });
+window.addEventListener('online', ()=>{ renderStale(); refresh(); });
+window.addEventListener('offline', renderStale);
+setInterval(renderStale, 60e3);
 function renderStamp(){
+  renderStale();
   const offline = navigator.onLine === false, stamp = document.getElementById('stamp');
   document.getElementById('live').className = 'live' + (priceStatus==='ok' ? ' on' : priceStatus==='err' ? ' err' : '');
   stamp.classList.toggle('cached', priceStatus!=='ok' && lastUpdate > 0);
@@ -1957,6 +2025,7 @@ function stockGroupsHtml(){
     return `<tr class="grp${open ? ' open' : ''}"><td colspan="${COLS.stocks}"><div class="grp-h" role="button" tabindex="0" data-brfold="${b}" aria-expanded="${open}">
         <span class="grp-chev" aria-hidden="true">▾</span><b>💼 ${esc(name)}</b><span class="grp-n">${L(`${fmt(idx.length,0)} سهم`, `${idx.length} stock${idx.length>1?'s':''}`)}</span>
         <span class="grp-sum"><span class="m">${egp(val)}</span>${cost > 0 ? ` <span class="m">${plHtml(pv, cost)}</span>` : ''}</span>
+        ${(()=>{ const d = stocksToday(idx.map(i=>state.stocks[i])); return d !== null && Math.abs(d) >= 1 ? `<span class="grp-today">${L('النهارده','today')} <span class="m">${signedEgp(d)}</span></span>` : ''; })()}
         <button class="x grp-add" type="button" data-add="stocks" data-br="${b}" aria-label="${L(`إضافة سهم في ${name}`, `Add a stock to ${name}`)}">+</button></div></td></tr>`
       + idx.map(i=>rowHtml('stocks', state.stocks[i], i).replace('<tr>', `<tr class="${open ? '' : 'brf-off'}">`)).join('');
   }).join('');
@@ -2078,6 +2147,9 @@ document.getElementById('sheet-body').addEventListener('click', e=>{ const k = s
 function renderTotals(){
   const t = totals();
   for(const s of [...ASSETS,'debts']) document.getElementById('sum-'+s).textContent = egp(t[s]);
+  const st = stocksToday(), stEl = document.getElementById('stocks-today');
+  stEl.hidden = st === null;
+  if(st !== null) stEl.innerHTML = `${L('محفظتك النهارده:','Your portfolio today:')} <b class="m">${signedEgp(st)}</b> <span class="m">(${st>=0?'+':'−'}${fmt(Math.abs(st / (t.stocks - st) * 100), 2)}${PCT()})</span>`;
   // the currency sits smaller beside the headline figure so the number leads
   document.getElementById('grand').innerHTML = isFinite(t.net) ? `${fmt(t.net)}<span class="cur">${L('ج.م','EGP')}</span>` : '—';
   const u = usdEgp();
@@ -2265,7 +2337,7 @@ const ROW_SECS = ['gold','silver','cash','stocks','other','debts','alerts'];
 function render(){
   if((state.avatar||'') !== shownAvatar) renderAvatar();   // a photo set on another device arrives with sync
   renderBell();
-  renderAllow(); renderEfund(); renderPeople(); renderCal(); renderBadges(); renderGoldAvg();
+  renderAllow(); renderEfund(); renderPeople(); renderCal(); renderBadges(); renderGoldAvg(); renderTodayCard();
   setTimeout(checkBadges, 0);   // after this render, so a new achievement's message doesn't land mid-render
   renderStamp();
   renderMarket();
@@ -2572,8 +2644,29 @@ const dlg = document.getElementById('settings');
 function openSettings(part){
   syncStatic(); renderBackupNote(); renderNotify(); renderSync(); renderInbox(); renderAi();
   if(!dlg.open) dlg.showModal();
-  if(part==='notify') document.getElementById('notify-box').scrollIntoView({block:'start'});
-  if(part==='sync') document.getElementById('sync-box').scrollIntoView({block:'center'});
+  const want = part && document.getElementById(part + '-box');
+  if(want){ openSetSec(want.closest('.fsec')); want.scrollIntoView({block: part==='sync' ? 'center' : 'start'}); }
+}
+/* Settings as a list of sections, each opening on a tap of its heading (one at a time, so the list stays short) */
+const SET_ICONS = ['👤','🎨','☁️','','📩','🔒','🔔','💾'];
+document.querySelectorAll('#settings > .dlg-sec').forEach((sec, i)=>{
+  const h = sec.querySelector(':scope > h3'); if(!h) return;
+  sec.classList.add('fsec');
+  // a heading translated as a whole would lose its icon on a language switch: its words move into their own span
+  if(h.dataset.en!==undefined){
+    const sp = document.createElement('span'); sp.dataset.en = h.dataset.en; if(h.dataset.ar!==undefined) sp.dataset.ar = h.dataset.ar;
+    sp.textContent = h.textContent; h.textContent = ''; h.append(sp); delete h.dataset.en; delete h.dataset.ar;
+  }
+  if(SET_ICONS[i]) h.insertAdjacentHTML('afterbegin', `<span class="set-ic" aria-hidden="true">${SET_ICONS[i]}</span>`);
+  h.insertAdjacentHTML('beforeend', '<span class="set-chev" aria-hidden="true">▾</span>');
+  h.setAttribute('role', 'button'); h.tabIndex = 0; h.setAttribute('aria-expanded', 'false');
+  h.addEventListener('click', e=>{ if(!e.target.closest('button,a,input')) openSetSec(sec.classList.contains('open') ? null : sec, true); });
+  h.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); h.click(); } });
+});
+function openSetSec(sec, scroll){
+  document.querySelectorAll('#settings > .fsec').forEach(s=>{ const on = s===sec; s.classList.toggle('open', on); s.querySelector(':scope > h3').setAttribute('aria-expanded', on); });
+  if(sec && scroll) requestAnimationFrame(()=>sec.scrollIntoView({block:'nearest', behavior:'smooth'}));
+  buzz(6);
 }
 document.getElementById('btn-settings').addEventListener('click', ()=>openSettings());
 document.getElementById('settings-close').addEventListener('click', ()=>dlg.close());
@@ -3263,13 +3356,33 @@ let tab = 'home';
 // every visit starts on Home; the last tab isn't remembered
 function setTab(t, scroll=true){
   if(!TABS.includes(t)) t = 'home';
-  tab = t;
+  const prev = tab; tab = t;
   document.documentElement.dataset.tab = t;
-  document.querySelectorAll('.wrap > [data-tab]').forEach(el=>el.classList.toggle('tab-off', el.dataset.tab!==t));
+  // the new area slides in from the side of the tab tapped (bar order; mirrored in Arabic)
+  const order = [...document.querySelectorAll('#bnav [data-goto]')].map(b=>b.dataset.goto);
+  const step = Math.sign(order.indexOf(t) - order.indexOf(prev)) * (document.documentElement.dir==='rtl' ? -1 : 1);
+  document.querySelectorAll('.wrap > [data-tab]').forEach(el=>{
+    const on = el.dataset.tab===t;
+    el.classList.toggle('tab-off', !on);
+    if(on && step && prev!==t){ el.classList.remove('tab-in'); void el.offsetWidth; el.style.setProperty('--tab-dx', step * 28 + 'px'); el.classList.add('tab-in'); }
+  });
   document.querySelectorAll('#bnav button').forEach(b=>b.setAttribute('aria-current', b.dataset.goto===t ? 'page' : 'false'));
+  placeNavInd();
   if(scroll) window.scrollTo({top:0});
   if(t==='reports'){ drawChart(); goSlide(slideIdx, false); }   // the chart measures its width, which is 0 while hidden
 }
+// the sliding pill: on phones a pill behind the icon, on wider screens the whole button
+function placeNavInd(){
+  const nav = document.getElementById('bnav'), ind = document.getElementById('bnav-ind');
+  const b = nav.querySelector('[aria-current=page]'); if(!b) return;
+  const n = nav.getBoundingClientRect(), r = b.getBoundingClientRect(), phone = matchMedia('(max-width:640px)').matches;
+  const w = phone ? Math.min(60, r.width - 8) : r.width, h = phone ? 30 : r.height;
+  const x = r.left - n.left + (r.width - w) / 2, y = r.top - n.top + (phone ? 2 : 0);
+  ind.style.width = w + 'px'; ind.style.height = h + 'px'; ind.style.transform = `translate(${x}px, ${y}px)`;
+  if(!nav.classList.contains('ready')) requestAnimationFrame(()=>nav.classList.add('ready'));   // no slide on the first placing
+}
+window.addEventListener('resize', ()=>{ document.getElementById('bnav').classList.remove('ready'); placeNavInd(); });
+document.querySelectorAll('.wrap > [data-tab]').forEach(el=>el.addEventListener('animationend', e=>{ if(e.target===el) el.classList.remove('tab-in'); }));
 document.getElementById('bnav').addEventListener('click', e=>{ const t = e.target.closest('button')?.dataset.goto; if(t){ setTab(t); buzz(6); } });
 // keys 1–6 switch tabs (not while typing, or with a dialog or the year story open)
 document.addEventListener('keydown', e=>{
@@ -3898,6 +4011,54 @@ function allowance(){
   const daysLeft = dim - +t.slice(8) + 1, perDay = Math.max(0, (b - (spentMonth - spentToday)) / daysLeft);
   return {b, spentMonth, spentToday, perDay, leftToday: perDay - spentToday, daysLeft, leftMonth: b - spentMonth};
 }
+// what the stocks gained or lost today: each one's value × its day change (close vs the day before)
+function stocksToday(rows = state.stocks){
+  let d = 0, any = false;
+  for(const r of rows){
+    const sp = stockPx[(r.s||'').trim().toUpperCase()], ch = num(sp?.change), v = rowValue('stocks', r);
+    if(!sp || !isFinite(ch) || !(v > 0)) continue;
+    d += v * ch / (100 + ch); any = true;
+  }
+  return any ? d : null;
+}
+function signedEgp(v){ return `<bdi class="${v>=0?'up-t':'down-t'}">${v>=0?'+':'−'}${egp(Math.abs(v))}</bdi>`; }
+// the next few days' instalments
+function debtsDueSoon(days = 3){
+  const day0 = new Date(); day0.setHours(0,0,0,0);
+  return state.debts.map(r=>{
+    const day = Math.round(num(r.day)), inst = num(r.inst);
+    if(!(day >= 1 && day <= 31) || !(inst > 0) || !(num(r.a) > 0)) return null;
+    const dueIn = (y, m) => new Date(y, m, Math.min(day, new Date(y, m+1, 0).getDate()));
+    let due = dueIn(day0.getFullYear(), day0.getMonth()); if(due < day0) due = dueIn(day0.getFullYear(), day0.getMonth() + 1);
+    const left = Math.round((due - day0) / DAY);
+    return left <= days ? {name: (r.name||'').trim() || L('قسط','Instalment'), inst, left} : null;
+  }).filter(Boolean);
+}
+function renderTodayCard(){
+  const el = document.getElementById('tday'); if(!el) return;
+  const rows = [];
+  const pend = state.pending.length;
+  if(pend) rows.push({go:'pend', icon:'✉️', warn:true, text: L(pend===1 ? 'رسالة بنك مستنية تصنيف' : pend===2 ? 'رسالتين بنك مستنيين تصنيف' : `${fmt(pend,0)} رسايل بنك مستنية تصنيف`, `${pend} bank message${pend>1?'s':''} to file`)});
+  for(const d of debtsDueSoon()) rows.push({go:'debts', icon:'📅', warn: d.left <= 1,
+    text: L(`${/^قسط/.test(d.name) ? d.name : 'قسط ' + d.name} <b class="m">${egp(d.inst)}</b> ${d.left===0?'النهارده':d.left===1?'بكرة':`بعد ${fmt(d.left,0)} أيام`}`,
+            `${esc(d.name)} <b class="m">${egp(d.inst)}</b> due ${d.left===0?'today':d.left===1?'tomorrow':`in ${d.left} days`}`)});
+  const a = allowance(), spent = monthTx(today().slice(0,7)).filter(x=>x.type==='exp' && x.date===today()).reduce((s,x)=>s+txEgp(x),0);
+  if(a) rows.push({go:'money', icon: a.leftToday < 0 ? '🔴' : '💸', warn: a.leftToday < 0,
+    text: L(`صرفت النهارده <b class="m">${egp(spent)}</b> من <b class="m">${egp(a.perDay)}</b> المسموحين`, `Spent <b class="m">${egp(spent)}</b> of <b class="m">${egp(a.perDay)}</b> allowed today`)});
+  else if(spent > 0) rows.push({go:'money', icon:'💸', text: L(`صرفت النهارده <b class="m">${egp(spent)}</b>`, `Spent <b class="m">${egp(spent)}</b> today`)});
+  const st = stocksToday();
+  if(st !== null && Math.abs(st) >= 1) rows.push({go:'stocks', icon:'📈', text: L(`أسهمك النهارده <span class="m">${signedEgp(st)}</span>`, `Your stocks today <span class="m">${signedEgp(st)}</span>`)});
+  el.hidden = !rows.length;
+  el.innerHTML = rows.length ? `<div class="tday-h">${L('النهارده','Today')}</div>` + rows.map(r=>
+    `<button type="button" class="tday-r${r.warn?' warn':''}" data-tday="${r.go}"><span class="ic" aria-hidden="true">${r.icon}</span><span class="tday-t">${r.text}</span><span class="go" aria-hidden="true">${L('‹','›')}</span></button>`).join('') : '';
+}
+document.getElementById('tday').addEventListener('click', e=>{
+  const go = e.target.closest('[data-tday]')?.dataset.tday; if(!go) return;
+  buzz(6);
+  const to = {pend:['money','.pend'], money:['money','#sec-money'], debts:['assets','#sec-debts'], stocks:['assets','#sec-stocks']}[go];
+  setTab(to[0]);
+  requestAnimationFrame(()=>document.querySelector(to[1])?.scrollIntoView({block:'start', behavior:'smooth'}));
+});
 function renderAllow(){
   const el = document.getElementById('allow'); if(!el) return;
   const a = allowance();
@@ -4776,6 +4937,40 @@ sheetBody.addEventListener('click', e=>{
 document.getElementById('money-body').addEventListener('click', e=>{ const n = e.target.closest('[data-txrecat]'); if(n) openRecat(n.dataset.txrecat); });
 document.getElementById('money-body').addEventListener('keydown', e=>{ const n = e.target.closest('[data-txrecat]'); if(n && (e.key==='Enter' || e.key===' ')){ e.preventDefault(); openRecat(n.dataset.txrecat); } });
 document.getElementById('money-body').addEventListener('toggle', e=>{ const d = e.target.dataset?.day; if(d) openDays[d] = e.target.open; }, true);
+/* swipe a transaction on a phone: to the right edits it, to the left deletes it (with undo).
+   The row follows the finger over a coloured strip that says which; under 90px it springs back */
+(()=>{
+  const box = document.getElementById('money-body'), SW = 90;
+  let s = null;
+  box.addEventListener('touchstart', e=>{
+    const row = e.target.closest('.tx'); if(!row || e.touches.length > 1) return;
+    s = {row, x: e.touches[0].clientX, y: e.touches[0].clientY, dx: 0, lock: null};
+  }, {passive: true});
+  box.addEventListener('touchmove', e=>{
+    if(!s) return;
+    const dx = e.touches[0].clientX - s.x, dy = e.touches[0].clientY - s.y;
+    if(s.lock===null){ if(Math.abs(dx) < 10 && Math.abs(dy) < 10) return; s.lock = Math.abs(dx) > Math.abs(dy) * 1.3 ? 'x' : 'y'; }
+    if(s.lock!=='x') return;
+    e.preventDefault();
+    s.dx = dx;
+    const r = s.row, del = dx < 0, far = Math.abs(dx) >= SW;
+    r.classList.add('sw'); r.style.transform = `translateX(${dx}px)`;
+    r.dataset.sw = del ? 'del' : 'edit'; r.classList.toggle('sw-go', far);
+    r.style.setProperty('--sw-label', `"${del ? L('🗑 مسح','🗑 Delete') : L('✎ تعديل','✎ Edit')}"`);
+    if(far && !s.buzzed){ buzz(8); s.buzzed = true; } else if(!far) s.buzzed = false;
+  }, {passive: false});
+  const end = ()=>{
+    if(!s) return;
+    const {row, dx, lock} = s; s = null;
+    if(lock!=='x') return;
+    row.classList.remove('sw-go'); row.style.transition = 'transform .22s'; row.style.transform = '';
+    setTimeout(()=>{ row.classList.remove('sw'); row.style.transition = ''; delete row.dataset.sw; }, 230);
+    if(Math.abs(dx) < SW) return;
+    const id = row.querySelector('[data-txrecat]')?.dataset.txrecat; if(!id) return;
+    if(dx < 0) delTx(id); else openRecat(id);
+  };
+  box.addEventListener('touchend', end); box.addEventListener('touchcancel', end);
+})();
 document.getElementById('money-nav').addEventListener('click', e=>{
   const d = +e.target.closest('[data-mnav]')?.dataset.mnav; if(!d) return;
   moneyMonth = monthKey(new Date(+moneyMonth.slice(0,4), +moneyMonth.slice(5,7)-1+d, 15).getTime()); renderMoney(); buzz(6);
@@ -4883,6 +5078,24 @@ function trSave(){
   if(num(from.a) < 0) toast(L(`رصيد ${acctName(from)} بقى بالسالب.`, `${acctName(from)} balance is now negative.`));
   offerUndo(L(`اتحوّل ${fmt(amount)} من ${lbl(bankById(from.b||'home'))} لـ ${lbl(bankById(to.b||'home'))}.`, `Moved ${fmt(amount)} from ${lbl(bankById(from.b||'home'))} to ${lbl(bankById(to.b||'home'))}.`), snap);
 }
+/* quick picks: the last few different things you spent on (shop or note + category), newest first.
+   A tap fills amount, category, account and note; the first one doubles as "repeat the last one" */
+function recentPicks(type){
+  const seen = new Set(), out = [];
+  for(let i = state.tx.length - 1; i >= 0 && out.length < 4; i--){
+    const t = state.tx[i]; if(t.type!==type) continue;
+    const key = (t.note||'').trim().toLowerCase() + '|' + t.cat;
+    if(seen.has(key)) continue; seen.add(key); out.push(t);
+  }
+  return out;
+}
+function quickPicks(type){
+  const list = recentPicks(type); if(!list.length) return '';
+  return `<div class="qpicks"><span class="qp-l">${L('بسرعة:','Quick:')}</span>${list.map((t,i)=>{
+    const c = catById(t.cat);
+    return `<button type="button" data-qpick="${t.id}"><i style="background:${c.color}"></i>${i===0 ? '↻ ' : ''}${esc(t.note || catName(c))} · <b class="m">${fmt(t.amount, 0)}</b></button>`;
+  }).join('')}</div>`;
+}
 function renderTxSheet(fresh){
   const d = txDraft, keep = id => fresh ? undefined : document.getElementById(id)?.value;
   const amt = keep('t-amt') ?? '', note = keep('t-note') ?? '', date = keep('t-date') || today(), rep = !fresh && document.getElementById('t-rep')?.checked || false;
@@ -4901,6 +5114,7 @@ function renderTxSheet(fresh){
       <input type="file" id="t-scan" accept="image/*" capture="environment" hidden>` : ''}</div>` : ''}
     ${typeSeg(d)}
     ${fld(L(`المبلغ (${curLbl})`, `Amount (${curLbl})`), `<input id="t-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${esc(amt)}">`)}
+    ${quickPicks(d.type)}
     <div class="field"><span>${L('الفئة','Category')}</span><div class="chips">${cats(d.type).map(c=>{
       const pick = `<button type="button" data-txcat="${c.id}" aria-pressed="${c.id===d.cat}"><i style="background:${c.color}"></i>${esc(catName(c))}</button>`;
       // every category can be removed except "Other", which takes the removed ones' transactions
@@ -4985,6 +5199,13 @@ sheetBody.addEventListener('click', e=>{
   }
   else if(b.dataset.txsave!==undefined) txSave();
   else if(b.dataset.trsave!==undefined) trSave();
+  else if(b.dataset.qpick){
+    const t = state.tx.find(x=>x.id===b.dataset.qpick); if(!t) return;
+    txDraft.cat = t.cat; if(t.acct && acctById(t.acct)) txDraft.acct = t.acct;
+    document.getElementById('t-amt').value = t.amount; document.getElementById('t-note').value = t.note || '';
+    buzz(6); renderTxSheet();
+    document.querySelector('[data-txsave]')?.focus();   // one more tap on Save and it's in
+  }
   else if(b.dataset.acctpick){
     const f = b.dataset.acctpick, id = b.dataset.id;
     // picking the account already on the other side swaps them, so from and to never match
@@ -5161,18 +5382,29 @@ function foldPendingTwins(){
   if(changed) save();
   return changed;
 }
-function filePending(id){
+function filePending(id, quiet){
   const i = state.pending.findIndex(p=>p.id===id); if(i < 0) return;
   const p = state.pending[i];
   const tx = addTx({type:p.type, amount:p.amount, cat:p.cat, acct:p.acct, date:p.date, note:p.merchant || lbl(bankById(p.bank||'OTHER'))});
   tx.sig = p.raw.replace(/\s+/g,' ');
   if(p.merchant) state.merchantCats[merchantKey(p.merchant)] = p.cat;   // learn the shop for next time
-  state.pending.splice(i, 1); state.deletedPending.push(p.id); save(); render(); buzz();
+  state.pending.splice(i, 1); state.deletedPending.push(p.id);
+  if(!quiet){ save(); render(); buzz(); }
+}
+// every waiting message filed at once, each with the category and account shown on its card; one undo takes them all back
+function fileAllPending(){
+  const n = state.pending.length; if(!n) return;
+  const snap = JSON.stringify(state);
+  for(const id of state.pending.map(p=>p.id)) filePending(id, true);
+  save(); render(); buzz([10,40,10]);
+  offerUndo(L(`اتسجّلت ${fmt(n,0)} عملية.`, `${n} transactions filed.`), snap);
 }
 function pendingHtml(){
   if(!state.pending.length) return '';
   return `<div class="pend">
-    <div class="m-sub"><h3>${L('رسايل البنك — مستنية تصنيف','Bank messages to file')} <span class="pill warn">${fmt(state.pending.length,0)}</span></h3></div>
+    <div class="m-sub"><h3>${L('رسايل البنك — مستنية تصنيف','Bank messages to file')} <span class="pill warn">${fmt(state.pending.length,0)}</span></h3>
+      ${state.pending.length > 1 ? `<button type="button" class="go-btn sm" data-pall>✓ ${L(`سجّل الكل (${fmt(state.pending.length,0)})`, `File all (${state.pending.length})`)}</button>` : ''}</div>
+    ${state.pending.length > 1 ? `<div class="note">${L('«سجّل الكل» بيسجّل كل رسالة بالفئة والحساب اللي ظاهرين عليها، فراجعهم الأول.', '"File all" files each message with the category and account shown on it, so check them first.')}</div>` : ''}
     ${state.pending.map(p=>{
       const c = catById(p.cat), row = acctById(p.acct);
       return `<div class="pend-item">
@@ -5198,6 +5430,7 @@ document.getElementById('money-body').addEventListener('change', e=>{
 document.getElementById('money-body').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.pok) filePending(b.dataset.pok);
+  else if(b.dataset.pall!==undefined) fileAllPending();
   else if(b.dataset.pdrop){ const snap = JSON.stringify(state); state.pending = state.pending.filter(p=>p.id!==b.dataset.pdrop); state.deletedPending.push(b.dataset.pdrop); save(); render(); offerUndo(L('اتجاهلت الرسالة.', 'Message ignored.'), snap); }
   else if(b.dataset.paste!==undefined) openPaste();
 });
