@@ -507,6 +507,7 @@ tr.grp:first-child td{border-top:0}
 /* four quick actions under the net worth (only in the trial looks) */
 .qacts{display:none}
 #styles-field.dim{opacity:.55}
+.push-box{display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:12px}
 .ui-main{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 14px;border-radius:14px;text-align:start}
 .ui-main small{color:var(--muted);font-size:.78rem}
 .ui-main[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
@@ -1719,6 +1720,10 @@ section.card.collapsed{gap:0}
       <label><input type="checkbox" data-set="nDebt" id="nDebt"> <span data-en="Two days before an instalment is due">قبل ميعاد القسط بيومين</span></label>
     </div>
     <div class="note" id="notify-note"></div>
+    <div class="push-box">
+      <div class="row"><button type="button" id="btn-push"></button><button type="button" id="btn-push-test" data-en="Test while closed">تجربة والتطبيق مقفول</button></div>
+      <div class="note" id="push-note"></div>
+    </div>
   </div>
 
   <div class="dlg-sec">
@@ -1917,11 +1922,12 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 40, APP_VERSION = '2.2', APP_DATE = '2026-10-30';
+const APP_BUILD = 41, APP_VERSION = '2.3', APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
   feat: [
+    ['📲 إشعارات حتى والتطبيق مقفول: رسايل البنك الجديدة، وتنبيهات الأسعار، ومواعيد الأقساط. فعّلها من الإعدادات ← الإشعارات.', '📲 Notifications even with the app closed: new bank messages, price alerts and instalments. Turn them on in Settings → Notifications.'],
     ['🏠 ميزانيتين منفصلتين: ميزانية للبيت وميزانية ليك. البيت بيتحسب من فئة «مصاريف البيت» (وأي فئة تختارها)، والباقي على ميزانيتك. والمسموح بيه كل يوم من ميزانيتك بس. حطهم من المصاريف ← تعديل الميزانيات.', '🏠 Two separate budgets: one for home and one for you. Home counts the "Home & family" category (and any you choose); the rest is yours, and the daily allowance comes from yours alone. Set them in Spending → Edit budgets.'],
     ['🎨 ٧ ألوان للتطبيق تختار منهم: تيل، زمردي، أزرق، ملكي، مرجاني، صحراوي، وجرافيت. من الإعدادات ← المظهر ← لون التطبيق، وكل لون معمول للفاتح والداكن.', '🎨 Seven app colours to choose from: teal, emerald, ocean, royal, coral, desert and graphite. Settings → Appearance → App colour; each is made for light and dark.'],
     ['🎉 نماء 2.0: شكل جديد بالكامل، هادي وواضح. الرئيسية بتبدأ بتحيتك وصافي ثروتك في كارت أخضر وخط آخر ٣٠ يوم، وبعدها ٤ أزرار سريعة، «النهارده»، و«أصولك».', '🎉 Namaa 2.0: an all-new look, calm and clear. Home opens with your greeting, net worth on green with a 30-day line, then four quick actions, Today and your assets.'],
@@ -2025,6 +2031,7 @@ function save(){
   trackChanges(true);
   try{ localStorage.setItem('wealth-v1', JSON.stringify(state)); }catch(e){}
   try{ scheduleSync(); }catch(e){}   // the cloud copy follows a few seconds later
+  try{ schedulePushSync(); }catch(e){}   // and so do alerts and instalments, for notifications while the app is closed
 }
 
 /* ---------- language ---------- */
@@ -3181,8 +3188,9 @@ function renderNotify(){
     : perm==='denied'
       ? L('الإشعارات مقفولة من إعدادات المتصفح. افتح إعدادات الموقع (علامة القفل جنب العنوان) واسمح بالإشعارات، وبعدين ارجع هنا.',
           'Notifications are blocked in your browser settings. Open the site settings (the lock next to the address), allow notifications, then come back here.')
-    : L('الإشعارات بتوصلك طول ما التطبيق أو الصفحة مفتوحة، حتى لو في الخلفية. لو قفلته خالص مش هتوصل لحد ما تفتحه تاني.',
-        "Notifications arrive while the app or page is open, even in the background. If you close it completely, they'll wait until you open it again.");
+    : L('الإشعارات دي بتوصلك طول ما التطبيق مفتوح أو في الخلفية. عشان توصلك والتطبيق مقفول خالص، فعّل الزرار اللي تحت.',
+        "These arrive while the app is open or in the background. To get them with the app fully closed, turn on the button below.");
+  renderPush();
 }
 document.getElementById('btn-notify').addEventListener('click', async ()=>{
   if(notifyOn()){ state.notifyOn = false; save(); renderNotify(); return; }
@@ -3196,6 +3204,91 @@ document.getElementById('btn-notify').addEventListener('click', async ()=>{
     toast(L('المتصفح رفض الإشعارات. تقدر تسمح بيها من إعدادات الموقع.', 'The browser blocked notifications. You can allow them in the site settings.'));
   }
 });
+/* ---------- notifications while the app is closed (Web Push through the Cloudflare Worker) ----------
+   The phone gives a push address; the Worker keeps it with what it needs to watch, and nothing else: open price
+   alerts, instalments (name, amount, day) and the bank inbox link. Every 5 minutes it checks them and pushes. */
+const VAPID_PUBLIC = 'BBjsGFxjXPjmAOap-eeyqRFHZd6K6KuoyOpZ1_QQ3ohj-Yo6-WaKhLd5e-HJ_AWRClIcR1SCrmfJ6KeGJZH49pI';
+const canPush = () => 'PushManager' in window && 'serviceWorker' in navigator && !!AI_URL && canNotify;
+const pushOn = () => { try{ return localStorage.getItem('wealth-push')==='1'; }catch(e){ return false; } };
+const setPushOn = on => { try{ localStorage.setItem('wealth-push', on ? '1' : '0'); }catch(e){} };
+const alertSig = a => `${a.what}|${(a.sym||'').toUpperCase()}|${a.op}|${num(a.val)}`;
+function b64uBytes(s){ s = s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length % 4) s += '='; return Uint8Array.from(atob(s), c=>c.charCodeAt(0)); }
+async function pushCall(path, body){
+  const f = await fbInit(), token = await f.auth.currentUser.getIdToken();
+  const r = await fetch(`${AI_URL.replace(/\/$/, '')}/${path}`, {method:'POST', headers:{'Content-Type':'application/json', 'Authorization':'Bearer ' + token}, body: JSON.stringify(body)});
+  const j = await r.json().catch(()=>({ok:false, error:'net'}));
+  if(!j.ok) throw new Error(j.error || 'push');
+  return j;
+}
+// only what the Worker watches; the notification switches in Settings decide what's included
+function pushWatch(){
+  return {
+    lang: LANG, src: state.goldSource==='local' ? 'local' : 'global', side: state.priceSide, gp: num(state.goldPremium), sp: num(state.silverPremium),
+    alerts: state.nPrice ? state.alerts.filter(a=>!a.done && num(a.val) > 0).map(a=>({what:a.what, sym:(a.sym||'').toUpperCase(), op:a.op, val:num(a.val)})) : [],
+    debts: state.nDebt ? state.debts.filter(r=>num(r.a) > 0 && num(r.inst) > 0 && num(r.day) > 0).map(r=>({name:(r.name||'').trim(), inst:num(r.inst), day:Math.round(num(r.day))})) : [],
+    inbox: inbox.url ? {url: inbox.url, key: inboxKey()} : null,
+  };
+}
+let watchSent = '', watchTimer = null;
+function schedulePushSync(){ if(!pushOn()) return; clearTimeout(watchTimer); watchTimer = setTimeout(()=>pushSync().catch(()=>{}), 3000); }
+async function pushSync(force){
+  if(!pushOn() || !canPush()) return;
+  const watch = pushWatch(), sig = JSON.stringify(watch);
+  if(!force && sig===watchSent) return;   // nothing it watches has changed
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey: b64uBytes(VAPID_PUBLIC)});
+  const j = await pushCall('push/save', {sub: sub.toJSON(), ...watch});
+  watchSent = sig;
+  // price alerts that already went off while the app was closed: done here too, so the app doesn't tell again
+  const fired = new Set(j.fired || []); let marked = false;
+  for(const a of state.alerts) if(!a.done && fired.has(alertSig(a))){ a.done = true; marked = true; }
+  if(marked){ save(); render(); }
+}
+function renderPush(){
+  const btn = document.getElementById('btn-push'), test = document.getElementById('btn-push-test'), note = document.getElementById('push-note');
+  if(!btn) return;
+  const on = pushOn();
+  btn.textContent = on ? L('إيقاف الإشعارات والتطبيق مقفول','Stop notifications while closed') : L('📲 إشعارات حتى والتطبيق مقفول','📲 Notifications even when closed');
+  btn.disabled = !canPush(); test.hidden = !on;
+  note.textContent = !canPush()
+    ? L('الجهاز دا مش بيدعم الإشعارات والتطبيق مقفول. على الآيفون لازم التطبيق يبقى متثبّت على الشاشة الرئيسية (iOS 16.4 أو أحدث).', "This device can't get notifications while the app is closed. On iPhone the app must be on the home screen (iOS 16.4 or later).")
+    : on ? L('شغالة: رسايل البنك الجديدة (لو صندوق الرسايل شغال)، وتنبيهات الأسعار، والأقساط، بتوصلك حتى والتطبيق مقفول. السيرفر بيشيّك كل ٥ دقايق، وبيعرف أهداف التنبيه ومواعيد الأقساط بس، مش ثروتك.',
+           'On: new bank messages (if the inbox is set up), price alerts and instalments reach you even with the app closed. The server checks every 5 minutes and only knows your alert targets and instalment days, not your wealth.')
+    : L('عشان رسايل البنك وتنبيهات الأسعار والأقساط توصلك والتطبيق مقفول خالص.', 'So bank messages, price alerts and instalments reach you with the app fully closed.');
+}
+document.getElementById('btn-push').addEventListener('click', async e=>{
+  const b = e.currentTarget; b.disabled = true;
+  try{
+    if(pushOn()){
+      setPushOn(false); watchSent = '';
+      await pushCall('push/off', {}).catch(()=>{});
+      const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription(); await sub?.unsubscribe();
+      toast(L('اتقفلت الإشعارات والتطبيق مقفول.', 'Notifications while closed are off.'));
+    } else {
+      let perm = Notification.permission;
+      if(perm!=='granted'){ try{ perm = await Notification.requestPermission(); }catch(err){} }
+      if(perm!=='granted'){ toast(L('لازم تسمح بالإشعارات الأول من إعدادات الموقع.', 'Allow notifications for the site first.')); return; }
+      if(!state.notifyOn){ state.notifyOn = true; save(); renderNotify(); }
+      setPushOn(true);
+      await pushSync(true);
+      await pushCall('push/test', {}).catch(()=>{});
+      toast(L('اتفعّلت ✓ هيوصلك إشعار تجريبي دلوقتي.', 'On ✓ A test notification is on its way.'));
+    }
+  }catch(err){
+    setPushOn(false);
+    toast(err.message==='path' ? L('لازم تحدّث كود الـ Worker في Cloudflare الأول (الخطوات في الشات).', 'Update the Worker code in Cloudflare first.')
+      : L('مقدرتش أفعّلها دلوقتي. اتأكد من النت وجرّب تاني.', "Couldn't turn it on right now. Check your connection and try again."));
+  }finally{ b.disabled = false; renderPush(); }
+});
+document.getElementById('btn-push-test').addEventListener('click', async ()=>{
+  try{ await pushCall('push/test', {}); toast(L('اتبعت. اقفل التطبيق واستنى ثواني.', 'Sent. Close the app and wait a few seconds.')); }
+  catch(e){ toast(L('مقدرتش أبعت التجربة.', "Couldn't send the test.")); }
+});
+// on each opening (and return to the app): refresh what the Worker watches and hear which alerts it already sent
+setTimeout(()=>{ if(pushOn()) pushSync(true).catch(()=>{}); }, 4000);
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && pushOn()) pushSync(true).catch(()=>{}); });
+// a tap on a notification while the app is open (the service worker passes which part it's about)
+navigator.serviceWorker?.addEventListener('message', e=>{ if(e.data?.go==='money'){ setTab('money'); pullInbox(true); } });
 document.getElementById('btn-notify-test').addEventListener('click', ()=>{
   notify(L(`جرام عيار 21 دلوقتي ${egp(goldPrice('21'))} — دا إشعار تجريبي.`, `21k gold is now ${egp(goldPrice('21'))} a gram — this is a test notification.`), 'test');
 });
@@ -6288,6 +6381,7 @@ function takeShortcut(){
   try{ window.history.replaceState(null, '', location.pathname); }catch(e){}
   if(go==='exp' || go==='inc') openTx(go);
   else if(go==='paste'){ setTab('money'); openPaste(); }
+  else if(go==='money'){ setTab('money'); pullInbox(true); }
   else if(go==='zakat'){ setTab('zakat'); const s = document.getElementById('sec-zakat'); if(s.classList.contains('collapsed')) setCollapsed(s, false); s.scrollIntoView({block:'start'}); }
 }
 
@@ -6298,7 +6392,7 @@ function takeShortcut(){
 const INBOX = 'wealth-inbox';
 let inbox = (()=>{ try{ return JSON.parse(localStorage.getItem(INBOX)) || {}; }catch(e){ return {}; } })();
 let inboxBusy = false, inboxLast = 0, inboxErr = '', showScript = false;
-const saveInbox = () => { try{ localStorage.setItem(INBOX, JSON.stringify(inbox)); }catch(e){} };
+const saveInbox = () => { try{ localStorage.setItem(INBOX, JSON.stringify(inbox)); }catch(e){} try{ schedulePushSync(); }catch(e){} };
 function inboxKey(){
   if(!inbox.key){ inbox.key = [...crypto.getRandomValues(new Uint8Array(18))].map(b=>CODE_ABC[b % 32]).join(''); saveInbox(); }
   return inbox.key;
