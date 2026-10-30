@@ -20,7 +20,9 @@
   try{
     const t = localStorage.getItem('wealth-theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme = t;
     // the new look (trial) has its own colours, so the style is only applied with the original look
-    const ui = localStorage.getItem('wealth-ui');
+    // 2.0: its look is the default; everyone moves to it once, and the older looks stay in Settings → Archive
+    if(!localStorage.getItem('wealth-2')){ localStorage.setItem('wealth-ui', 'calm'); localStorage.setItem('wealth-2', '1'); }
+    const ui = localStorage.getItem('wealth-ui') || 'calm';
     if(ui==='calm' || ui==='flat') document.documentElement.dataset.ui = ui;
     else{ const st = localStorage.getItem('wealth-style'); if(st && st!=='namaa') document.documentElement.dataset.style = st; }
     if(localStorage.getItem('wealth-private')==='1') document.documentElement.dataset.private = '';
@@ -100,7 +102,9 @@ html,body{overflow-x:hidden;overscroll-behavior-x:none;-webkit-text-size-adjust:
 @supports (overflow-x:clip){html,body{overflow-x:clip}}
 /* installed on iPhone the page draws up under the status bar and the Dynamic Island (viewport-fit=cover), so the content
    starts below it, and a solid strip there keeps scrolled content from showing through the clock */
-body::before{content:"";position:fixed;inset-inline:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:13;pointer-events:none}
+html{background:var(--bg)}
+/* the strip behind the status bar (iPhone): a touch taller than the inset so no seam of the page shows between them; nothing where there is no inset */
+body::before{content:"";position:fixed;inset-inline:0;top:0;height:calc(env(safe-area-inset-top,0px) * 1.04);background:var(--bg);z-index:13;pointer-events:none}
 .wrap{max-width:1040px;margin:0 auto;padding-block:calc(24px + env(safe-area-inset-top,0px)) 48px;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));display:grid;gap:20px}
 header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 h1{font:700 2rem/1.2 var(--display);margin:0;color:var(--accent)}
@@ -271,19 +275,25 @@ tr.grp:first-child td{border-top:0}
 /* ===== the new look (trial), Settings → Appearance → "New": calm and clear =====
    Everything here is scoped to :root[data-ui="calm"], so the original look is untouched and comes back with one tap.
    Its own colours (the style picker is for the original look), light and dark */
+/* --fill: bars, rings and the + (strong on both grounds); --amber-*, --blue-*, --hl: the Today icons and highlight */
 :root[data-ui="calm"]{
-  --bg:#F3F6F4; --surface:#FFFFFF; --fg:#13201B; --muted:#5B6B64; --line:#E3E9E6;
+  --bg:#F3F6F4; --surface:#FFFFFF; --fg:#13201B; --muted:#56655F; --line:#E3E9E6;
   --accent:#0F3D2E; --on-accent:#FFFFFF; --hero:#0F3D2E; --hero-soft:#CFE3D9; --pill:#DCE7E1; --gold-hi:#E7B84A;
+  --fill:#0F3D2E; --fab:#0F3D2E; --amber-bg:#FDE7B8; --amber-fg:#7A4F00; --blue-bg:#E3EBFA; --blue-fg:#1D4ED8; --hl:#FFF4DE;
   --up:#15803D; --down:#B42318; color-scheme:light;
 }
+/* dark: lifted surfaces so cards stand off the ground, a brighter green for the hero, and every fill and icon
+   picked to read on dark (4.5:1 for text, 3:1 for shapes) */
 @media (prefers-color-scheme:dark){:root[data-ui="calm"]:not([data-theme="light"]){
-  --bg:#0E1513; --surface:#17201C; --fg:#ECF1EE; --muted:#9AA8A2; --line:#25302B;
-  --accent:#7FD1A8; --on-accent:#0B1F17; --hero:#123C2D; --hero-soft:#A9CDBC; --pill:#1F3A2F; --gold-hi:#E7B84A;
-  --up:#4ADE80; --down:#F87171; color-scheme:dark;}}
+  --bg:#0B110F; --surface:#18221E; --fg:#EEF3F0; --muted:#A9B7B0; --line:#2B3833;
+  --accent:#86DBB0; --on-accent:#0B1F17; --hero:#18573F; --hero-soft:#BFDCCD; --pill:#22433A; --gold-hi:#F0C35A;
+  --fill:#5CCB98; --fab:#2E8A63; --amber-bg:#3D3013; --amber-fg:#F5C25B; --blue-bg:#1C2942; --blue-fg:#9BB8FF; --hl:#2A2414;
+  --up:#5BE08F; --down:#FF8A80; color-scheme:dark;}}
 :root[data-ui="calm"][data-theme="dark"]{
-  --bg:#0E1513; --surface:#17201C; --fg:#ECF1EE; --muted:#9AA8A2; --line:#25302B;
-  --accent:#7FD1A8; --on-accent:#0B1F17; --hero:#123C2D; --hero-soft:#A9CDBC; --pill:#1F3A2F; --gold-hi:#E7B84A;
-  --up:#4ADE80; --down:#F87171; color-scheme:dark;}
+  --bg:#0B110F; --surface:#18221E; --fg:#EEF3F0; --muted:#A9B7B0; --line:#2B3833;
+  --accent:#86DBB0; --on-accent:#0B1F17; --hero:#18573F; --hero-soft:#BFDCCD; --pill:#22433A; --gold-hi:#F0C35A;
+  --fill:#5CCB98; --fab:#2E8A63; --amber-bg:#3D3013; --amber-fg:#F5C25B; --blue-bg:#1C2942; --blue-fg:#9BB8FF; --hl:#2A2414;
+  --up:#5BE08F; --down:#FF8A80; color-scheme:dark;}
 /* big soft cards instead of boxed ones */
 :root[data-ui="calm"] section.card,:root[data-ui="calm"] .total,:root[data-ui="calm"] .tday,:root[data-ui="calm"] .allow,
 :root[data-ui="calm"] .ticker{border:0;border-radius:24px;box-shadow:0 1px 2px rgba(15,61,46,.04),0 6px 20px rgba(15,61,46,.05)}
@@ -400,18 +410,18 @@ tr.grp:first-child td{border-top:0}
 .ch-today{background:var(--surface);border-radius:24px;padding:6px;flex-direction:column}
 .ch-today h2{margin:0;padding:10px 14px 4px;font:600 .88rem var(--display);color:var(--muted)}
 .ch-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:0;border-radius:16px!important;background:none;color:var(--fg);text-align:start;font-size:.9rem;width:100%}
-.ch-row.ch-hl{background:color-mix(in srgb,#F5B544 16%,var(--surface))}
+.ch-row.ch-hl{background:var(--hl)}
 .ch-row.col{flex-direction:column;align-items:stretch;gap:8px}
 .ch-ri{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;flex:none}
 .ch-ri svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.ch-ri.amber{background:color-mix(in srgb,#F5B544 32%,var(--surface));color:#8A5A00}
-.ch-ri.blue{background:color-mix(in srgb,#3B6FE0 14%,var(--surface));color:#1D4ED8}
+.ch-ri.amber{background:var(--amber-bg);color:var(--amber-fg)}
+.ch-ri.blue{background:var(--blue-bg);color:var(--blue-fg)}
 .ch-rt{flex:1;min-width:0}
 .ch-go{color:var(--muted)}
 .ch-sp{display:flex;justify-content:space-between}
 .mu{color:var(--muted)}
 .ch-bar{display:block;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
-.ch-bar span{display:block;height:100%;border-radius:4px;background:var(--hero)}
+.ch-bar span{display:block;height:100%;border-radius:4px;background:var(--fill)}
 .ch-bar span.over{background:var(--down)}
 .ch-assets{gap:10px}
 .ch-ah{display:flex;justify-content:space-between;align-items:baseline}
@@ -428,7 +438,7 @@ tr.grp:first-child td{border-top:0}
 .cs{display:flex;align-items:center;gap:18px;background:var(--bg);border-radius:24px;padding:16px}
 .cs-ring{width:112px;height:112px;flex:none}
 .cs-ring .trk{fill:none;stroke:var(--line);stroke-width:14}
-.cs-ring .val{fill:none;stroke:var(--hero);stroke-width:14;stroke-linecap:round}
+.cs-ring .val{fill:none;stroke:var(--fill);stroke-width:14;stroke-linecap:round}
 .cs-ring .val.over{stroke:var(--down)}
 .cs-ring .pc{font:700 22px var(--display);fill:var(--fg)}
 .cs-ring .lb{font-size:11px;fill:var(--muted)}
@@ -473,6 +483,11 @@ tr.grp:first-child td{border-top:0}
 /* four quick actions under the net worth (only in the trial looks) */
 .qacts{display:none}
 #styles-field.dim{opacity:.55}
+.ui-main{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 14px;border-radius:14px;text-align:start}
+.ui-main small{color:var(--muted);font-size:.78rem}
+.ui-main[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.ui-arch summary{cursor:pointer;font-size:.86rem;color:var(--muted);padding:6px 0}
+.ui-arch .theme{margin-top:6px}
 :root[data-ui="calm"] .qacts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .qacts button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.78rem;color:var(--fg);padding:0}
 .qacts .qi{width:56px;height:56px;border-radius:18px;background:var(--surface);display:grid;place-items:center;box-shadow:0 1px 2px rgba(15,61,46,.05),0 4px 14px rgba(15,61,46,.06)}
@@ -486,7 +501,7 @@ tr.grp:first-child td{border-top:0}
   /* the AI bubble sits low at the side, clear of the quick actions */
   :root[data-ui="calm"] .fab-ai{bottom:calc(84px + env(safe-area-inset-bottom,0px));width:42px;height:42px}
   :root[data-ui="calm"] .fab{inset-inline-end:auto;left:50%;translate:-50% 0;bottom:calc(30px + env(safe-area-inset-bottom,0px));
-    width:58px;height:58px;border-radius:20px;background:var(--hero);color:#FFFFFF;box-shadow:0 8px 20px rgba(15,61,46,.32)}
+    width:58px;height:58px;border-radius:20px;background:var(--fab);color:#FFFFFF;box-shadow:0 8px 20px rgba(15,61,46,.32)}
 }
 .grp-h[data-brfold]{cursor:pointer;user-select:none}
 .grp-chev{display:inline-block;color:var(--muted);transition:transform .2s;transform:rotate(-90deg)}
@@ -1624,12 +1639,13 @@ section.card.collapsed{gap:0}
       <button type="button" data-theme-set="system" data-en="Auto">تلقائي</button>
       <button type="button" data-theme-set="dark" data-en="☾ Dark">☾ داكن</button>
     </div>
-    <div class="field"><span data-en="Look">شكل الواجهة</span>
-      <div class="theme" id="ui-pick" role="radiogroup" aria-label="شكل الواجهة" data-en-label="Look">
-        <button type="button" role="radio" data-ui-set="classic" data-en="Original">الأصلية</button>
-        <button type="button" role="radio" data-ui-set="calm" data-en="Calm (trial)">هادية (تجريبي)</button>
-        <button type="button" role="radio" data-ui-set="flat" data-en="Flat (trial)">بسيطة (تجريبي)</button>
-      </div>
+    <div class="field" id="ui-pick"><span data-en="Look">شكل الواجهة</span>
+      <button type="button" role="radio" class="ui-main" data-ui-set="calm"><b data-en="Namaa 2.0">نماء 2.0</b><small data-en="The current look">الشكل الحالي</small></button>
+      <details class="ui-arch"><summary data-en="Archive: older looks">الأرشيف: الأشكال القديمة</summary>
+        <div class="theme" role="radiogroup" aria-label="الأرشيف" data-en-label="Archive">
+          <button type="button" role="radio" data-ui-set="classic" data-en="Classic (1.x)">الكلاسيكية (1.x)</button>
+          <button type="button" role="radio" data-ui-set="flat" data-en="Flat">البسيطة</button>
+        </div></details>
       <span class="note" id="ui-note"></span></div>
     <div class="field" id="styles-field"><span data-en="Style">الستايل</span>
       <div class="styles" id="styles" role="radiogroup" aria-label="الستايل" data-en-label="Style"></div></div>
@@ -1871,23 +1887,22 @@ const BROKERS = [
   {id:'ARABEYA',  label:'العربية أون لاين', en:'Arabeya Online'},
   {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
 ];
-// the version people see is 1.<build>, like store apps; APP_BUILD goes up with CACHE in sw.js on every release
-const APP_BUILD = 35, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
+/* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
+   APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
+   a whole new look the major (2.0) */
+const APP_BUILD = 36, APP_VERSION = '2.0', APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
   feat: [
-    ['🎨 الشكل «الهادي» بقى زي التصميم بالظبط: الرئيسية فيها تحيتك وصورتك، كارت أخضر بصافي ثروتك وخط آخر ٣٠ يوم، «النهارده»، و«أصولك» في ٣ كروت. البار تحت: الرئيسية، الأصول، +، المصاريف، التقارير. والمصاريف فيها دايرة الميزانية وأشرطة الفئات.', '🎨 The "Calm" look now matches its design: a greeting with your photo, net worth on green with a 30-day line, Today, and your assets in three cards. The bar: Home, Assets, +, Spending, Reports. Spending has the budget ring and category bars.'],
-    ['✨ شكلين جداد تجرّبهم من الإعدادات ← المظهر ← شكل الواجهة: «هادية» (كروت ناعمة وصافي ثروتك في كارت أخضر) و«بسيطة» (أبيض وأسود، من غير كروت ولا ظلال). الاتنين فيهم ٤ أزرار سريعة وزرار + في نص البار، وترجع للأصلية بدوسة.', '✨ Two new looks to try in Settings → Appearance → Look: "Calm" (soft cards, net worth on green) and "Flat" (black and white, no cards or shadows). Both have four quick actions and + in the middle of the bar; the original is one tap away.'],
-    ['📊 «نظرة عامة» في التقارير: صافي ثروتك اتغيّر قد إيه، وفّرت كام، نسبة التوفير، وأكبر بند صرف، لآخر ٣ أو ٦ شهور أو سنة.', '📊 Overview in Reports: how your net worth moved, what you saved, your savings rate and biggest spending, over 3, 6 or 12 months.'],
-    ['📈 الدخل والمصاريف شهر بشهر في رسم واحد. دوس على أي شهر يفتحلك مصاريفه.', '📈 Income and spending month by month in one chart. Tap a month to open its spending.'],
-    ['🏷️ فئات مصاريفك رايحة على فين: الشهر دا قدام متوسطك، بخط صغير للفترة كلها.', '🏷️ Where your categories are heading: this month against your average, with a small line for the period.'],
-    ['🥧 ثروتك متوزعة إزاي دلوقتي، وكل جزء زاد أو قلّ قد إيه.', '🥧 How your wealth is split now, and how much each part moved.'],
-    ['📉 رسم «صافي الثروة» بقى بمقياسه الخاص، فطلوعه ونزوله باينين بوضوح.', '📉 The net worth chart now uses its own scale, so its ups and downs show clearly.'],
+    ['🎉 نماء 2.0: شكل جديد بالكامل، هادي وواضح. الرئيسية بتبدأ بتحيتك وصافي ثروتك في كارت أخضر وخط آخر ٣٠ يوم، وبعدها ٤ أزرار سريعة، «النهارده»، و«أصولك».', '🎉 Namaa 2.0: an all-new look, calm and clear. Home opens with your greeting, net worth on green with a 30-day line, then four quick actions, Today and your assets.'],
+    ['➕ البار اللي تحت أبسط: الرئيسية، الأصول، + في النص، المصاريف، التقارير. الزكاة والتنبيهات تحت «أصولك» في الرئيسية.', '➕ A simpler bar: Home, Assets, + in the middle, Spending, Reports. Zakat and alerts are under "Your assets" on Home.'],
+    ['💰 المصاريف بدايرة الميزانية وأشرطة الفئات، والتقارير بكارت أخضر لزيادة ثروتك.', '💰 Spending has the budget ring and category bars; Reports open with your net worth change on green.'],
+    ['🗄️ الشكل القديم محفوظ: الإعدادات ← المظهر ← الأرشيف، لو حبيت ترجعله.', '🗄️ The old look is kept: Settings → Appearance → Archive, if you want it back.'],
   ],
   fix: [
-    ['الرسايل اللي بتظهر تحت مبقتش بتتراكم وتغطي الشاشة: أقصى حاجة ٣ في نفس الوقت.', 'Messages at the bottom no longer pile up over the screen: three at most at once.'],
-    ['زرار «دوّر على تحديث» بقى بيلاقي الإصدار الجديد حتى لو اتنزّل في الخلفية.', '"Check for an update" now finds a new version even when it downloaded in the background.'],
+    ['الوضع الداكن بقى أوضح: الكروت بارزة عن الخلفية، والأشرطة والأيقونات والزرار + بقوا باينين.', 'Dark mode is clearer: cards stand off the background, and the bars, icons and + button are easy to see.'],
+    ['اتشال الخط الرفيع اللي كان بيظهر تحت شريط الساعة والبطارية.', 'The thin line under the clock and battery bar is gone.'],
   ],
 };
 const ASSETS = ['gold','silver','cash','stocks','other'];
@@ -5228,7 +5243,7 @@ document.getElementById('btn-update').addEventListener('click', async e=>{
     const b2 = await downloadedBuild();
     if(b2 > APP_BUILD){
       window.__selfUpdate?.();
-      toast(L(`فيه إصدار أحدث (1.${b2})، بيفتح دلوقتي…`, `A newer version (1.${b2}) is ready, opening it…`));
+      toast(L('فيه إصدار أحدث، بيفتح دلوقتي…', 'A newer version is ready, opening it…'));
       setTimeout(()=>location.reload(), 900);
       return;
     }
@@ -7165,17 +7180,17 @@ function applyUi(ui){
 function renderUiPick(){
   const cur = trialLook() || 'classic';
   document.querySelectorAll('#ui-pick [data-ui-set]').forEach(b=>{ const on = b.dataset.uiSet===cur; b.setAttribute('aria-pressed', on); b.setAttribute('aria-checked', on); });
-  document.getElementById('ui-note').textContent = {
-    calm: L('«هادية»: كروت ناعمة وصافي ثروتك في كارت أخضر. لو ماعجبتكش، دوس «الأصلية» وترجع زي ما كانت بالظبط.', '"Calm": soft cards, net worth on green. Tap "Original" to go back exactly as it was.'),
-    flat: L('«بسيطة»: أبيض وأسود من غير كروت ولا ظلال، والأرقام هي اللي باينة. ترجع للأصلية بدوسة.', '"Flat": black and white, no cards or shadows, just the figures. The original is one tap away.'),
-    classic: L('جرّب شكل من الأشكال التجريبية. بياناتك مش بتتأثر، وترجع للأصلية بدوسة.', 'Try one of the trial looks. Your data isn\'t touched, and the original is one tap away.'),
-  }[cur];
-  document.getElementById('styles-field').classList.toggle('dim', cur!=='classic');
+  document.getElementById('ui-note').textContent = cur==='calm'
+    ? L('الأشكال القديمة محفوظة في الأرشيف لو حبيت ترجعلها. بياناتك مش بتتأثر بأي شكل.', 'The older looks are kept in the archive if you want them back. Your data isn\'t touched either way.')
+    : L('انت على شكل من الأرشيف. «نماء 2.0» فوق بيرجّعك للشكل الحالي.', 'You\'re on an archived look. "Namaa 2.0" above brings back the current one.');
+  if(cur!=='calm') document.querySelector('.ui-arch').open = true;
+  // the styles belong to the classic look, so they only show with it
+  document.getElementById('styles-field').style.display = cur==='classic' ? '' : 'none';
 }
 document.getElementById('ui-pick').addEventListener('click', e=>{
   const ui = e.target.closest('[data-ui-set]')?.dataset.uiSet; if(!ui || ui===(trialLook() || 'classic')) return;
   applyUi(ui); buzz(8);
-  toast(ui==='classic' ? L('رجع الشكل الأصلي.', 'The original look is back.') : L('✨ ده شكل تجريبي. ترجع للأصلي من نفس المكان.', '✨ A trial look. Go back from the same place.'));
+  toast(ui==='calm' ? L('رجعت لـ نماء 2.0.', 'Back to Namaa 2.0.') : L('ده شكل من الأرشيف. ترجع لـ نماء 2.0 من نفس المكان.', 'An archived look. Go back to Namaa 2.0 from the same place.'));
 });
 // the calm look's Home has no price strip (as in its design), so the strip moves to the top of Assets
 function placeTicker(){ document.getElementById('ticker').dataset.tab = trialLook()==='calm' ? 'assets' : 'home'; }
