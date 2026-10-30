@@ -323,8 +323,12 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .dlg-sec{padding:16px 18px;display:grid;gap:12px;border-bottom:1px solid var(--line)}
 .app-ver{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 18px 16px;font-size:.82rem;color:var(--muted)}
 .app-ver b{color:var(--fg)}
-.wn-list{display:grid;gap:10px}
-.wn-list>div{padding:10px 12px;border-radius:12px;background:var(--bg);line-height:1.6}
+.wn-top{text-align:center;color:var(--muted);font-size:.88rem}
+.wn-top b{color:var(--accent);font-size:1.05rem}
+.wn-h{font:600 .95rem var(--display);margin-bottom:-4px}
+.wn-list{display:grid;gap:8px}
+.wn-list>div{padding:10px 12px;border-radius:12px;background:var(--bg);line-height:1.6;border-inline-start:3px solid var(--accent)}
+.wn-list.fix>div{border-inline-start-color:var(--up);font-size:.9rem}
 .dlg-sec:last-child{border-bottom:0}
 .dlg-sec h3{margin:0;font:500 1.02rem/1.3 var(--display);display:flex;align-items:center;gap:8px}
 .fsec>h3{cursor:pointer;user-select:none;margin:-16px -18px;padding:16px 18px}
@@ -820,14 +824,12 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
   background:color-mix(in srgb,var(--accent) 16%,transparent)}
 .bnav.ready .bnav-ind{transition:transform .42s cubic-bezier(.3,1.4,.5,1),width .42s cubic-bezier(.3,1.4,.5,1),height .3s}
 .bnav button{z-index:1}
-.bnav button[aria-current=page] svg{animation:nav-hop .5s cubic-bezier(.3,1.6,.5,1)}
-@keyframes nav-hop{0%{transform:translateY(0) scale(1)}35%{transform:translateY(-4px) scale(1.14)}100%{transform:none}}
 .wrap>.tab-in{animation:tab-in .32s cubic-bezier(.2,.8,.3,1)}
 @keyframes tab-in{from{opacity:0;transform:translateX(var(--tab-dx,0))}}
 @media (min-width:641px){ .bnav button[aria-current=page]{background:none!important} }
 @media (prefers-reduced-motion:reduce){
   .bnav.ready .bnav-ind{transition:none}
-  .bnav button[aria-current=page] svg,.wrap>.tab-in{animation:none}
+  .wrap>.tab-in{animation:none}
 }
 @media (min-width:1100px){
   .bnav{flex-direction:column;top:0;bottom:0;inset-inline-start:0;width:220px;padding:28px 12px;gap:4px;border-inline-end:1px solid var(--line)}
@@ -1575,12 +1577,19 @@ const BROKERS = [
   {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
 ];
 // the version people see is 1.<build>, like store apps; APP_BUILD goes up with CACHE in sw.js on every release
-const APP_BUILD = 29, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
-// what this release brought, shown once after the update arrives (and from Settings → What's new)
-const WHATS_NEW = [
-  ['📂 أقسام للمصاريف: افصل مصاريفك الشخصية عن البيت أو أي حاجة تانية، وشوف كل قسم لوحده بميزانيته.', '📂 Spending sections: keep your own spending apart from home or anything else, each with its own budget.'],
-  ['🏷️ رقم الإصدار بقى زي التطبيقات (1.29)، ومعاه ملخص الجديد بعد كل تحديث.', '🏷️ Version numbers like store apps (1.29), with a note of what\'s new after each update.'],
-];
+const APP_BUILD = 30, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
+// what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
+// after the update, kept in the bell, and from Settings → What's new
+const WHATS_NEW = {
+  feat: [
+    ['📂 أقسام للمصاريف: افصل مصاريفك الشخصية عن البيت أو أي حاجة تانية، وشوف كل قسم لوحده بميزانيته.', '📂 Spending sections: keep your own spending apart from home or anything else, each with its own budget.'],
+    ['✨ بعد كل تحديث هيظهرلك الجديد والإصلاحات زي دلوقتي، ورسالة في الإشعارات.', '✨ After every update you\'ll see what\'s new and fixed, like now, plus a note in notifications.'],
+    ['🔄 لو نزل إصدار جديد وانت فاتح التطبيق، هيقولك على طول وتحدّث بدوسة.', '🔄 If a new version lands while the app is open, it tells you and updates in one tap.'],
+  ],
+  fix: [
+    ['أيقونات البار اللي تحت مبقتش بتتحرك وانت بتنقل بين الأقسام.', 'Bottom bar icons no longer bounce when switching areas.'],
+  ],
+};
 const ASSETS = ['gold','silver','cash','stocks','other'];
 const COLORS = {gold:'var(--gold)', silver:'var(--silver)', cash:'var(--cash)', certs:'var(--certs)', stocks:'var(--stocks)', other:'var(--other)', debts:'var(--down)'};
 const NAMES_AR = {gold:'الذهب', silver:'الفضة', cash:'الكاش', certs:'الشهادات والودائع', stocks:'الأسهم', other:'أصول أخرى', debts:'الديون'};
@@ -2723,6 +2732,7 @@ const NOTE_KINDS = [   // tag prefix, icon, where tapping it goes
   ['price','📈','alerts'], ['budget','📊','money'], ['zakat','🕌','zakat'], ['backup','💾','settings'],
   ['monthly','📅','reports'], ['sms','💳','money'], ['recur','🔁','money'], ['sync','☁','settings'],
   ['debt','🗓','assets'], ['goal','🎯','goals'], ['loan','🤝','people'], ['gam','🫂','people'], ['ach','🏆','badges'], ['wrap','🎁','badges'], ['sub','🔁','money'],
+  ['update','✨','whatsnew'],
 ];
 const noteKind = tag => NOTE_KINDS.find(k=>(tag||'').startsWith(k[0]));
 function logNote(tag, body){
@@ -2780,6 +2790,7 @@ function openNotes(){
 }
 function goTo(go){
   if(go==='settings'){ openSettings(); return; }
+  if(go==='whatsnew'){ openWhatsNew(); return; }
   const [tab, sec] = NOTE_GO[go] || [go, null];
   setTab(tab);
   if(sec){ const s = document.getElementById(sec); if(s){ if(s.classList.contains('collapsed')) setCollapsed(s, false); s.scrollIntoView({block:'start'}); } }
@@ -4657,22 +4668,53 @@ document.getElementById('btn-reset-money').addEventListener('click', ()=>{ dlg.c
 document.getElementById('app-ver').textContent = APP_VERSION;
 function renderAppDate(){ document.getElementById('app-date').textContent = L('· اتحدّث ', '· updated ') + dateFmt(new Date(APP_DATE + 'T12:00')); }
 renderAppDate();
+// the release notes window: new features, then fixes
 function openWhatsNew(){
   sheetSec = 'new';
-  document.getElementById('sheet-title').textContent = L(`الجديد في ${APP_VERSION}`, `What's new in ${APP_VERSION}`);
-  sheetBody.innerHTML = `<div class="wn-list">${WHATS_NEW.map(([a, e])=>`<div>${L(a, e)}</div>`).join('')}</div>
-    <div class="note">${L(`نماء ${APP_VERSION} · ${dateFmt(new Date(APP_DATE + 'T12:00'))}`, `Namaa ${APP_VERSION} · ${dateFmt(new Date(APP_DATE + 'T12:00'))}`)}</div>
-    <button type="button" class="go-btn" data-wnok>${L('تمام','Got it')}</button>`;
+  document.getElementById('sheet-title').textContent = L(`الجديد في ${APP_VERSION} 🎉`, `What's new in ${APP_VERSION} 🎉`);
+  const group = (title, list, cls) => list?.length ? `<div class="wn-h">${title}</div><div class="wn-list ${cls}">${list.map(([a, e])=>`<div>${L(a, e)}</div>`).join('')}</div>` : '';
+  sheetBody.innerHTML = `<div class="wn-top">${L(`نماء اتحدّث لإصدار <b dir="ltr">${APP_VERSION}</b> · ${dateFmt(new Date(APP_DATE + 'T12:00'))}`, `Namaa is now on version <b>${APP_VERSION}</b> · ${dateFmt(new Date(APP_DATE + 'T12:00'))}`)}</div>
+    ${group(L('✨ مميزات جديدة','✨ New features'), WHATS_NEW.feat, 'feat')}
+    ${group(L('🛠️ إصلاحات وتحسينات','🛠️ Fixes and improvements'), WHATS_NEW.fix, 'fix')}
+    <button type="button" class="go-btn" data-wnok>${L('تمام، يلا بينا','Great, let\'s go')}</button>`;
   if(!sheet.open) sheet.showModal();
 }
-sheetBody.addEventListener('click', e=>{ if(sheetSec==='new' && e.target.closest('[data-wnok]')) sheet.close(); });
+sheetBody.addEventListener('click', e=>{ if(sheetSec==='new' && e.target.closest('[data-wnok]')){ sheet.close(); buzz(6); } });
 document.getElementById('btn-whatsnew').addEventListener('click', ()=>{ dlg.close(); openWhatsNew(); });
-// the first opening after an update says so once, with the notes a tap away (not on a first install)
+/* the first opening after an update: the notes pop up once (after the logo animation, and only when nothing else is
+   on screen: the lock, the tour, another window), and a note goes in the bell. Not on a first install */
 (()=>{
   let seen = null; try{ seen = localStorage.getItem('wealth-seen-build'); localStorage.setItem('wealth-seen-build', APP_BUILD); }catch(e){ return; }
-  // no build saved yet but data already there = updated from before this note existed
-  if(seen ? +seen < APP_BUILD : state._savedAt > 0) setTimeout(()=>toast(L(`اتحدّث نماء لـ ${APP_VERSION} ✨`, `Namaa updated to ${APP_VERSION} ✨`), {label: L('إيه الجديد','What\'s new'), fn: openWhatsNew}), 2600);
+  // no build saved yet but data already there = updated from a version before these notes existed
+  if(!(seen ? +seen < APP_BUILD : state._savedAt > 0)) return;
+  const n = (WHATS_NEW.feat?.length || 0) + (WHATS_NEW.fix?.length || 0);
+  logNote('update', L(`نماء اتحدّث لـ ${APP_VERSION}: ${n} ${n===1?'حاجة جديدة':'حاجات جديدة'}. دوس تشوفها.`, `Namaa updated to ${APP_VERSION}: ${n} new thing${n===1?'':'s'}. Tap to see.`));
+  let tries = 0;
+  const show = () => {
+    const busy = document.documentElement.classList.contains('splashing') || document.querySelector('dialog[open]')
+      || !document.getElementById('lock').hidden || !document.getElementById('story').hidden;
+    if(busy && ++tries < 60) return setTimeout(show, 1000);
+    if(!busy) openWhatsNew();
+  };
+  setTimeout(show, 900);
 })();
+/* a new version landing while the app is open: the browser checks on its own when the app opens; here it's also asked
+   every 30 minutes and on coming back to the app. The new copy takes over by itself, and the person is told,
+   with a button that reloads onto it (where the notes above then pop up) */
+if('serviceWorker' in navigator){
+  let hadCtl = !!navigator.serviceWorker.controller, selfUpdate = false;
+  const check = () => navigator.serviceWorker.getRegistration().then(r=>r?.update()).catch(()=>{});
+  setInterval(check, 30 * 60e3);
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') check(); });
+  window.__selfUpdate = () => { selfUpdate = true; };
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(!hadCtl){ hadCtl = true; return; }   // the first install taking control isn't an update
+    if(selfUpdate) return;   // "Check for an update" reloads by itself
+    toast(L('🎉 نزل إصدار جديد من نماء', '🎉 A new version of Namaa is out'), {label: L('حدّث دلوقتي','Update now'), fn: ()=>location.reload()});
+    if(notifyOn()) navigator.serviceWorker.getRegistration().then(r=>r?.showNotification(L('نماء','Namaa'),
+      {body: L('نزل إصدار جديد. افتح التطبيق وحدّثه تشوف الجديد.', 'A new version is out. Open the app to update and see what\'s new.'), tag:'update', icon:'icons/icon-192.png', badge:'icons/badge-96.png'})).catch(()=>{});
+  });
+}
 // asks the server for a newer sw.js (the browser does this past the cache); a new one installs itself, and the page reloads onto it
 document.getElementById('btn-update').addEventListener('click', async e=>{
   const b = e.currentTarget, label = b.textContent;
@@ -4683,6 +4725,7 @@ document.getElementById('btn-update').addEventListener('click', async e=>{
     await reg.update();
     const nw = reg.installing || reg.waiting;
     if(nw){
+      window.__selfUpdate?.();
       toast(L('فيه إصدار جديد، بيتحمّل وهيفتح لوحده…', 'A new version is downloading and will open by itself…'));
       navigator.serviceWorker.addEventListener('controllerchange', ()=>location.reload(), {once: true});
       setTimeout(()=>location.reload(), 8000);   // in case the switch-over event never comes
