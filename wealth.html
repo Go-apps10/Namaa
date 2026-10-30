@@ -323,6 +323,43 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .dlg-sec{padding:16px 18px;display:grid;gap:12px;border-bottom:1px solid var(--line)}
 .app-ver{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 18px 16px;font-size:.82rem;color:var(--muted)}
 .app-ver b{color:var(--fg)}
+/* reports overview */
+.ov{display:grid;gap:18px}
+.ov-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.ov-k{background:var(--bg);border-radius:14px;padding:12px 14px;display:grid;gap:2px;min-width:0}
+.ov-k .l{font-size:.76rem;color:var(--muted)}
+.ov-k .v{font-size:1.12rem;font-weight:700;overflow-wrap:anywhere}
+.ov-k .s{font-size:.74rem;color:var(--muted)}
+.ov-sec{display:grid;gap:10px}
+.ov-sec h3{margin:0;font:600 .95rem var(--display)}
+.ov-flow{width:100%;height:auto;display:block;direction:ltr;overflow:visible}
+.ov-flow .axis{font-size:11px}
+.ov-m{cursor:pointer;outline:none}
+.ov-m:hover rect:first-child,.ov-m:focus-visible rect:first-child{fill:var(--bg)}
+.ov-m.cur .axis{font-weight:700;fill:var(--fg)}
+.ov-leg{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;font-size:.8rem}
+.ov-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px}
+.ov-leg .note{flex-basis:100%}
+.ov-cats{display:grid;gap:2px}
+.ov-cat{display:grid;grid-template-columns:10px minmax(0,1fr) 80px 74px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.ov-cat:last-child{border-bottom:0}
+.ov-cat>i{width:10px;height:10px;border-radius:50%}
+.ov-cat .n{display:grid;font-weight:600;font-size:.9rem;min-width:0}
+.ov-cat .n small{font-weight:400;color:var(--muted);font-size:.74rem}
+.ov-cat .spark{width:80px;height:24px}
+.ov-cat .vs{font-size:.78rem;text-align:end;color:var(--muted)}
+.ov-stack{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px}
+.ov-alloc{display:grid;gap:2px}
+.ov-alloc>div{display:grid;grid-template-columns:10px minmax(0,1fr) 44px auto 64px;gap:10px;align-items:center;padding:6px 0;font-size:.88rem}
+.ov-alloc i{width:10px;height:10px;border-radius:3px}
+.ov-alloc .p{color:var(--muted);text-align:end}
+.ov-alloc>div>span:last-child{text-align:end;font-size:.8rem}
+@media (max-width:640px){
+  .ov-kpis{grid-template-columns:1fr 1fr}
+  .ov-cat{grid-template-columns:10px minmax(0,1fr) 60px 64px;gap:8px}
+  .ov-cat .spark{width:60px}
+  .ov-alloc>div{grid-template-columns:10px minmax(0,1fr) 38px auto 56px;gap:8px;font-size:.84rem}
+}
 .wn-top{text-align:center;color:var(--muted);font-size:.88rem}
 .wn-top b{color:var(--accent);font-size:1.05rem}
 .wn-h{font:600 .95rem var(--display);margin-bottom:-4px}
@@ -1113,6 +1150,19 @@ section.card.collapsed{gap:0}
   <div class="allow" id="efund" data-tab="money" hidden></div>
 
   <!-- three swipeable cards: history chart, monthly reports, yearly reports -->
+  <!-- the overview: how the last few months went, at a glance -->
+  <section class="card" id="sec-overview" data-tab="reports">
+    <div class="sec-head">
+      <h2><span class="dot" style="background:var(--accent)"></span><span data-en="Overview">نظرة عامة</span></h2>
+      <div class="ranges" id="ov-ranges" role="group" aria-label="الفترة" data-en-label="Period">
+        <button type="button" data-ov="3" data-en="3 months">٣ شهور</button>
+        <button type="button" data-ov="6" data-en="6 months">٦ شهور</button>
+        <button type="button" data-ov="12" data-en="Year">سنة</button>
+      </div>
+    </div>
+    <div id="ov-body" class="ov"></div>
+  </section>
+
   <section class="card" id="sec-insights" data-tab="reports">
     <div class="sec-head">
       <h2><span data-en="Your wealth">ثروتك</span></h2>
@@ -1135,7 +1185,8 @@ section.card.collapsed{gap:0}
       </div>
     </div>
     <div class="ranges" id="series" role="group" aria-label="المؤشر" data-en-label="Measure">
-      <button type="button" data-series="wealth" data-en="Your wealth">ثروتك</button>
+      <button type="button" data-series="net" data-en="Net worth">صافي الثروة</button>
+      <button type="button" data-series="wealth" data-en="Breakdown">التوزيع</button>
       <button type="button" data-series="gold" data-en="21k gold gram">جرام ذهب 21</button>
       <button type="button" data-series="usd" data-en="US dollar">الدولار</button>
     </div>
@@ -1577,18 +1628,20 @@ const BROKERS = [
   {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
 ];
 // the version people see is 1.<build>, like store apps; APP_BUILD goes up with CACHE in sw.js on every release
-const APP_BUILD = 31, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
+const APP_BUILD = 32, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
   feat: [
-    ['📂 أقسام للمصاريف: افصل مصاريفك الشخصية عن البيت أو أي حاجة تانية، وشوف كل قسم لوحده بميزانيته.', '📂 Spending sections: keep your own spending apart from home or anything else, each with its own budget.'],
-    ['✨ بعد كل تحديث هيظهرلك الجديد والإصلاحات زي دلوقتي، ورسالة في الإشعارات.', '✨ After every update you\'ll see what\'s new and fixed, like now, plus a note in notifications.'],
-    ['🔄 لو نزل إصدار جديد وانت فاتح التطبيق، هيقولك على طول وتحدّث بدوسة.', '🔄 If a new version lands while the app is open, it tells you and updates in one tap.'],
+    ['📊 «نظرة عامة» في التقارير: صافي ثروتك اتغيّر قد إيه، وفّرت كام، نسبة التوفير، وأكبر بند صرف، لآخر ٣ أو ٦ شهور أو سنة.', '📊 Overview in Reports: how your net worth moved, what you saved, your savings rate and biggest spending, over 3, 6 or 12 months.'],
+    ['📈 الدخل والمصاريف شهر بشهر في رسم واحد. دوس على أي شهر يفتحلك مصاريفه.', '📈 Income and spending month by month in one chart. Tap a month to open its spending.'],
+    ['🏷️ فئات مصاريفك رايحة على فين: الشهر دا قدام متوسطك، بخط صغير للفترة كلها.', '🏷️ Where your categories are heading: this month against your average, with a small line for the period.'],
+    ['🥧 ثروتك متوزعة إزاي دلوقتي، وكل جزء زاد أو قلّ قد إيه.', '🥧 How your wealth is split now, and how much each part moved.'],
+    ['📉 رسم «صافي الثروة» بقى بمقياسه الخاص، فطلوعه ونزوله باينين بوضوح.', '📉 The net worth chart now uses its own scale, so its ups and downs show clearly.'],
   ],
   fix: [
-    ['زرار «دوّر على تحديث» كان بيقول «انت على آخر إصدار» لو الإصدار الجديد اتنزّل في الخلفية ولسه مافتحش. دلوقتي بيفتحه على طول.', '"Check for an update" said you were up to date when the new version had downloaded in the background but not opened yet. Now it opens it.'],
-    ['أيقونات البار اللي تحت مبقتش بتتحرك وانت بتنقل بين الأقسام.', 'Bottom bar icons no longer bounce when switching areas.'],
+    ['الرسايل اللي بتظهر تحت مبقتش بتتراكم وتغطي الشاشة: أقصى حاجة ٣ في نفس الوقت.', 'Messages at the bottom no longer pile up over the screen: three at most at once.'],
+    ['زرار «دوّر على تحديث» بقى بيلاقي الإصدار الجديد حتى لو اتنزّل في الخلفية.', '"Check for an update" now finds a new version even when it downloaded in the background.'],
   ],
 };
 const ASSETS = ['gold','silver','cash','stocks','other'];
@@ -1619,7 +1672,7 @@ const DEFAULT_STATE = {
   nDebt:true, goals:[], deletedGoals:[], aiOn:false,
   loans:[], gamaeyas:[], deletedLoans:[], deletedGam:[], badges:{}, badgesInit:false,
   rules:[], deletedRules:[], subIgnore:[], subNotified:{}, smsSeen:[], _mod:{},
-  userName:'', avatar:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'wealth'
+  userName:'', avatar:'', lang:'ar', digits:'auto', zMode:'majority', zBrokenOn:'', zBrokenWhy:'', fontScale:'1', chartSeries:'net'
 };
 
 // first visit on this device: nothing saved yet and the welcome hasn't been shown
@@ -2117,7 +2170,10 @@ function toast(text, action){
   t.firstChild.textContent = text;
   t.querySelector('.cls').onclick = () => t.remove();
   if(action) t.querySelector('.act').onclick = () => { t.remove(); action.fn(); };
-  document.getElementById('toasts').appendChild(t);
+  const box = document.getElementById('toasts');
+  box.appendChild(t);
+  // at most three on screen: a burst of messages drops the oldest instead of covering the page
+  while(box.children.length > 3) box.firstElementChild.remove();
   setTimeout(()=>t.remove(), action ? 6000 : 10000);
 }
 // short vibration on phones that support it (Android); silently does nothing elsewhere
@@ -2383,6 +2439,7 @@ function render(){
   renderBackupNote();
   renderReportsList();
   renderYearsList();
+  renderOverview();
   renderMoney();
   drawChart();
   if(typeof fitSlide==='function') fitSlide();
@@ -2453,7 +2510,7 @@ function drawChart(){
   document.querySelectorAll('#ranges button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.range===range));
   document.querySelectorAll('#series button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.series===state.chartSeries));
   const pts = visiblePoints();
-  if(state.chartSeries==='gold' || state.chartSeries==='usd'){ renderHistTable(); return drawPriceChart(box, pts, state.chartSeries); }
+  if(['gold','usd','net'].includes(state.chartSeries)){ renderHistTable(); return drawPriceChart(box, pts, state.chartSeries); }
   const hasDebts = pts.some(p=>p.debts>0);
   document.getElementById('hist-legend').innerHTML = [...STACK].reverse().filter(s=>pts.some(p=>p[s]>0)).map(s=>`<span><i style="background:${COLORS[s]}"></i>${NAMES[s]}</span>`).join('')
     + (hasDebts ? `<span><i style="background:var(--fg)"></i>${L('صافي الثروة (بعد الديون)','Net worth (after debts)')}</span>` : '');
@@ -2530,42 +2587,46 @@ function drawChart(){
 }
 
 // a single line of the 21k gram or the dollar rate, from the prices kept with each day's record
+// one line on its own scale (fitted to the period's low and high, so moves show): gold, dollar, or net worth
 function drawPriceChart(box, all, key){
-  const k = key==='gold' ? 'g21' : 'usd';
-  const pts = all.filter(p => p.px && p.px[k] > 0);
-  const label = key==='gold' ? L('سعر جرام الذهب عيار 21','21k gold price per gram') : L('سعر الدولار بالجنيه','US dollar in EGP');
+  const k = key==='gold' ? 'g21' : key==='usd' ? 'usd' : 'net';
+  const val = k==='net' ? netOf : p => p.px?.[k];
+  const pts = all.filter(p => k==='net' || val(p) > 0);
+  const label = k==='g21' ? L('سعر جرام الذهب عيار 21','21k gold price per gram') : k==='usd' ? L('سعر الدولار بالجنيه','US dollar in EGP') : L('صافي ثروتك','Your net worth');
+  const vf = v => k==='net' ? compact(v) : fmt(v, k==='usd'?2:0), tf = v => k==='net' ? egp(v) : fmt(v, k==='usd'?2:0);
   document.getElementById('hist-legend').innerHTML = `<span><i style="background:var(--accent)"></i>${label}</span>`;
   if(pts.length < 2){
-    box.innerHTML = `<div class="empty">${L('الرسم دا بيبدأ من النهارده: الصفحة بقت تحفظ سعر الذهب والدولار مع كل يوم.<br>هيظهر بعد يومين من التسجيل.', "This chart starts today: the page now saves the gold and dollar price with each day.<br>It appears after two recorded days.")}</div>`;
+    box.innerHTML = `<div class="empty">${k==='net' ? L('الرسم هيظهر بعد ما الصفحة تسجّل يومين على الأقل.', 'The chart appears once at least two days are recorded.')
+      : L('الرسم دا بيبدأ من النهارده: الصفحة بقت تحفظ سعر الذهب والدولار مع كل يوم.<br>هيظهر بعد يومين من التسجيل.', "This chart starts today: the page now saves the gold and dollar price with each day.<br>It appears after two recorded days.")}</div>`;
     document.getElementById('hist-delta').textContent = '';
     return;
   }
   const W = box.clientWidth || 600, H = 260, m = {t:12, r:12, b:26, l:56}, iw = W-m.l-m.r, ih = H-m.t-m.b;
-  const vals = pts.map(p=>p.px[k]), lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi-lo)*.15 || hi*.01 || 1;
+  const vals = pts.map(val), lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi-lo)*.15 || Math.abs(hi)*.01 || 1;
   const y0 = lo-pad, y1 = hi+pad, t0 = pts[0].t, t1 = pts[pts.length-1].t;
   const x = t => m.l + (t-t0)/(t1-t0||1)*iw, y = v => m.t + ih - (v-y0)/(y1-y0)*ih;
-  const line = pts.map(p=>`${x(p.t).toFixed(1)},${y(p.px[k]).toFixed(1)}`).join('L');
-  const grid = [lo, (lo+hi)/2, hi].map(v=>`<line class="grid" x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${m.l-8}" y="${y(v)+4}" text-anchor="end">${fmt(v, k==='usd'?2:0)}</text>`).join('');
+  const line = pts.map(p=>`${x(p.t).toFixed(1)},${y(val(p)).toFixed(1)}`).join('L');
+  const grid = [lo, (lo+hi)/2, hi].map(v=>`<line class="grid" x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${m.l-8}" y="${y(v)+4}" text-anchor="end">${vf(v)}</text>`).join('');
   const dl = t => new Date(t).toLocaleDateString(LOC(), {day:'numeric', month:'short'});
   const last = pts[pts.length-1];
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}">${grid}
     <path d="M${x(t0)},${m.t+ih}L${line}L${x(t1)},${m.t+ih}Z" style="fill:var(--accent);fill-opacity:.12"/>
     <path d="M${line}" style="fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round"/>
-    <circle cx="${x(last.t)}" cy="${y(last.px[k])}" r="4.5" style="fill:var(--accent);stroke:var(--surface);stroke-width:2"/>
+    <circle cx="${x(last.t)}" cy="${y(val(last))}" r="4.5" style="fill:var(--accent);stroke:var(--surface);stroke-width:2"/>
     <text class="axis" x="${m.l}" y="${H-6}">${dl(t0)}</text><text class="axis" x="${W-m.r}" y="${H-6}" text-anchor="end">${dl(t1)}</text>
     <g id="hover" style="display:none"><line id="hv" y1="${m.t}" y2="${m.t+ih}" style="stroke:var(--muted);stroke-dasharray:3 3"/><circle id="hd" r="5" style="fill:var(--accent);stroke:var(--surface);stroke-width:2"/></g>
     <rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent" id="hit"/></svg><div class="tip" id="tip" hidden></div>`;
-  const first = pts[0].px[k], d = last.px[k] - first, pct = d/first*100, s = d>=0 ? '+' : '−';
-  document.getElementById('hist-delta').innerHTML = `${L('التغير خلال الفترة:','Change over this period:')} <span class="delta" style="color:${d>=0?'var(--up)':'var(--down)'}"><bdi>${s}${fmt(Math.abs(d), k==='usd'?2:0)}</bdi> <bdi>(${s}${fmt(Math.abs(pct),1)}${PCT()})</bdi></span>`;
+  const first = val(pts[0]), d = val(last) - first, pct = first ? d/Math.abs(first)*100 : 0, s = d>=0 ? '+' : '−';
+  document.getElementById('hist-delta').innerHTML = `${L('التغير خلال الفترة:','Change over this period:')} <span class="delta" style="color:${d>=0?'var(--up)':'var(--down)'}"><bdi>${s}${tf(Math.abs(d))}</bdi> <bdi>(${s}${fmt(Math.abs(pct),1)}${PCT()})</bdi></span>`;
   const hit = box.querySelector('#hit'), tip = box.querySelector('#tip'), g = box.querySelector('#hover');
   const move = ev => {
     const px = (ev.touches?ev.touches[0].clientX:ev.clientX) - box.querySelector('svg').getBoundingClientRect().left;
     const tt = t0 + (px-m.l)/iw*(t1-t0);
     let best = pts[0]; for(const p of pts) if(Math.abs(p.t-tt) < Math.abs(best.t-tt)) best = p;
-    const cx = x(best.t), cy = y(best.px[k]);
+    const cx = x(best.t), cy = y(val(best));
     g.style.display = ''; g.querySelector('#hv').setAttribute('x1',cx); g.querySelector('#hv').setAttribute('x2',cx);
     g.querySelector('#hd').setAttribute('cx',cx); g.querySelector('#hd').setAttribute('cy',cy);
-    tip.innerHTML = `<div class="t">${new Date(best.t).toLocaleDateString(LOC(),{weekday:'short', day:'numeric', month:'short'})}</div><div class="r tot"><span>${label}</span><span>${fmt(best.px[k], k==='usd'?2:0)}</span></div>`;
+    tip.innerHTML = `<div class="t">${new Date(best.t).toLocaleDateString(LOC(),{weekday:'short', day:'numeric', month:'short'})}</div><div class="r tot"><span>${label}</span><span>${tf(val(best))}</span></div>`;
     tip.hidden = false;
     const tw = tip.offsetWidth; tip.style.left = Math.max(0, Math.min(W-tw, cx + (cx > W/2 ? -tw-12 : 12))) + 'px'; tip.style.top = Math.max(0, cy-40) + 'px';
   };
@@ -3010,6 +3071,99 @@ function renderReportsList(){
   }
   box.innerHTML = keys.map(mk => repCard(state.reports[mk], monthLabel(mk), mk)).join('');
 }
+/* ---------- reports overview: the chosen months at a glance ----------
+   Net worth change (from the daily history), money saved and the savings rate (from transactions), the biggest
+   spending, income vs spending month by month, how each category is moving, and how the wealth is split now */
+let ovMonths = 6;
+try{ ovMonths = +localStorage.getItem('wealth-ov') || 6; }catch(e){}
+function renderOverview(){
+  const body = document.getElementById('ov-body'); if(!body) return;
+  document.querySelectorAll('#ov-ranges button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.ov===ovMonths));
+  const cur = monthKey(Date.now()), months = Array.from({length: ovMonths}, (_, i)=>addMonths(cur, i - ovMonths + 1));
+  const short = mk => new Date(+mk.slice(0,4), +mk.slice(5,7)-1, 15).toLocaleDateString(LOC(), {month:'short'});
+  const flow = months.map(mk=>{ const ts = monthTx(mk);
+    return {mk, inc: ts.filter(t=>t.type==='inc').reduce((a,t)=>a+txEgp(t),0), exp: ts.filter(t=>t.type==='exp').reduce((a,t)=>a+txEgp(t),0), ts}; });
+  const inc = flow.reduce((a,f)=>a+f.inc,0), exp = flow.reduce((a,f)=>a+f.exp,0), saved = inc - exp;
+  // net worth: first recorded day in the period against the latest
+  const from = new Date(+months[0].slice(0,4), +months[0].slice(5,7)-1, 1).getTime(), hp = history.filter(p=>p.t >= from);
+  const nw = hp.length >= 2 ? {a: netOf(hp[0]), b: netOf(hp[hp.length-1]), since: hp[0].t} : null;
+  const byCat = {}; flow.forEach(f=>f.ts.filter(t=>t.type==='exp').forEach(t=>{ byCat[t.cat] = (byCat[t.cat]||0) + txEgp(t); }));
+  const top = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  const sgn = v => v>=0 ? '+' : '−', cls = v => v>=0 ? 'up-t' : 'down-t';
+  if(!nw && !inc && !exp){
+    body.innerHTML = `<div class="rep-empty">${L('لسه مفيش بيانات كفاية. سجّل مصاريفك ودخلك، وافتح التطبيق كل كام يوم، والنظرة العامة هتتملى لوحدها.', 'Not enough data yet. Record your spending and income and open the app every few days; the overview fills itself.')}</div>`;
+    return;
+  }
+  const kpi = (l, v, s, c='') => `<div class="ov-k"><span class="l">${l}</span><span class="v m ${c}">${v}</span>${s ? `<span class="s m">${s}</span>` : ''}</div>`;
+  const kpis = [
+    nw ? kpi(L('صافي ثروتك اتغيّر','Net worth change'), `<bdi>${sgn(nw.b-nw.a)}${egp(Math.abs(nw.b-nw.a))}</bdi>`,
+      nw.a ? `<bdi>${sgn(nw.b-nw.a)}${fmt(Math.abs((nw.b-nw.a)/nw.a*100),1)}${PCT()}</bdi> ${L('من','since')} ${new Date(nw.since).toLocaleDateString(LOC(),{day:'numeric', month:'short'})}` : '', cls(nw.b-nw.a)) : '',
+    inc || exp ? kpi(saved>=0 ? L('وفّرت','You saved') : L('صرفت زيادة عن دخلك','Spent beyond income'), egp(Math.abs(saved)), L(`متوسط ${egp(Math.abs(saved)/ovMonths)} في الشهر`, `${egp(Math.abs(saved)/ovMonths)} a month on average`), cls(saved)) : '',
+    inc ? kpi(L('نسبة التوفير','Savings rate'), `${fmt(saved/inc*100,0)}${PCT()}`, saved/inc >= .2 ? L('ممتاز، فوق ٢٠٪ 👏','Great, over 20% 👏') : saved >= 0 ? L('حاول توصل لـ ٢٠٪','Aim for 20%') : L('المصاريف أكتر من الدخل','Spending exceeds income'), saved/inc >= .2 ? 'up-t' : saved < 0 ? 'down-t' : '') : '',
+    top[0] ? kpi(L('أكبر بند صرف','Biggest spending'), esc(catName(catById(top[0][0]))), L(`${egp(top[0][1])} · ${fmt(top[0][1]/exp*100,0)}٪ من مصاريفك`, `${egp(top[0][1])} · ${fmt(top[0][1]/exp*100,0)}% of spending`)) : '',
+  ].join('');
+  body.innerHTML = `<div class="ov-kpis">${kpis}</div>
+    ${inc || exp ? `<div class="ov-sec"><h3>${L('الدخل والمصاريف شهر بشهر','Income and spending by month')}</h3>${flowChart(flow, short)}
+      <div class="ov-leg"><span><i style="background:var(--up)"></i>${L('الدخل','Income')}</span><span><i style="background:var(--down)"></i>${L('المصاريف','Spending')}</span><span class="note">${L('دوس على أي شهر تشوف مصاريفه','Tap a month to see its spending')}</span></div></div>` : ''}
+    ${top.length ? `<div class="ov-sec"><h3>${L('فئات مصاريفك رايحة على فين','Where your categories are heading')}</h3>${catTrends(top.slice(0,6), months)}</div>` : ''}
+    ${allocHtml(hp)}`;
+}
+// income (green) and spending (red) side by side for each month; the month's net under it
+function flowChart(flow, short){
+  // drawn at the card's real width so the labels stay readable on a phone (the Reports tab redraws it when opened)
+  const W = Math.max(280, document.getElementById('ov-body').clientWidth || 640), H = (W - 12) / flow.length >= 40 ? 190 : 172, m = {t:10, b:40, l:6, r:6}, ih = H - m.t - m.b, n = flow.length, slot = (W - m.l - m.r) / n;
+  const max = Math.max(1, ...flow.flatMap(f=>[f.inc, f.exp]));
+  const bw = Math.min(26, slot * .32), h = v => v / max * ih;
+  const cur = monthKey(Date.now());
+  // the month's net in a few characters (27,600 → 28k), so six or twelve months fit a phone
+  const kShort = v => v >= 1e6 ? L(`${fmt(v/1e6,1)}م`, `${fmt(v/1e6,1)}M`) : v >= 1e3 ? L(`${fmt(v/1e3,0)}ك`, `${fmt(v/1e3,0)}k`) : fmt(v,0);
+  const bars = flow.map((f, i)=>{
+    // the bars run in reading order: right to left in Arabic
+    const cx = LANG==='en' ? m.l + slot * (i + .5) : W - m.r - slot * (i + .5), net = f.inc - f.exp;
+    return `<g class="ov-m${f.mk===cur?' cur':''}" data-ovm="${f.mk}" tabindex="0" role="button" aria-label="${monthLabel(f.mk)}">
+      <rect x="${cx - slot/2}" y="0" width="${slot}" height="${H}" fill="transparent"/>
+      <rect x="${cx - bw - 1}" y="${m.t + ih - h(f.inc)}" width="${bw}" height="${Math.max(h(f.inc), f.inc ? 2 : 0)}" rx="3" style="fill:var(--up)"/>
+      <rect x="${cx + 1}" y="${m.t + ih - h(f.exp)}" width="${bw}" height="${Math.max(h(f.exp), f.exp ? 2 : 0)}" rx="3" style="fill:var(--down)"/>
+      ${slot >= 40 || (n - 1 - i) % 2===0 ? `<text class="axis" x="${cx}" y="${m.t + ih + 15}" text-anchor="middle">${short(f.mk)}</text>` : ''}
+      ${(f.inc || f.exp) && slot >= 40 ? `<text x="${cx}" y="${m.t + ih + 31}" text-anchor="middle" class="m" style="font-size:11px;font-weight:600;fill:${net>=0?'var(--up)':'var(--down)'}">${net>=0?'+':'−'}${kShort(Math.abs(net))}</text>` : ''}</g>`;
+  }).join('');
+  return `<svg class="ov-flow" viewBox="0 0 ${W} ${H}" role="img" aria-label="${L('الدخل والمصاريف شهر بشهر','Income and spending by month')}">
+    <line class="grid" x1="0" x2="${W}" y1="${m.t + ih}" y2="${m.t + ih}"/>${bars}</svg>`;
+}
+// each top category: this month, the average of the months before it, and a little line of the whole period
+function catTrends(top, months){
+  const cur = months[months.length - 1], prev = months.slice(0, -1);
+  return `<div class="ov-cats">${top.map(([id])=>{
+    const c = catById(id), per = months.map(mk=>monthTx(mk).filter(t=>t.type==='exp' && t.cat===id).reduce((a,t)=>a+txEgp(t),0));
+    const now = per[per.length - 1], avg = prev.length ? per.slice(0, -1).reduce((a,v)=>a+v,0) / prev.length : 0;
+    const max = Math.max(1, ...per), pts = per.map((v,i)=>`${(i/(per.length-1||1)*76+2).toFixed(1)},${(22 - v/max*18).toFixed(1)}`).join(' ');
+    const ch = avg > 0 ? (now - avg) / avg * 100 : null;
+    const trend = ch===null ? `<span class="vs">${L('جديدة','new')}</span>`
+      : Math.abs(ch) < 5 ? `<span class="vs">${L('زي المعتاد','as usual')}</span>`
+      : `<span class="vs ${ch>0?'down-t':'up-t'}">${ch>0?'▲':'▼'} ${fmt(Math.abs(ch),0)}${PCT()}</span>`;
+    return `<div class="ov-cat"><i style="background:${c.color}"></i><span class="n">${esc(catName(c))}<small class="m">${L('الشهر دا','this month')} ${egp(now)} · ${L('المتوسط','avg')} ${egp(avg)}</small></span>
+      <svg viewBox="0 0 80 24" class="spark" aria-hidden="true" style="direction:ltr;${LANG==='en'?'':'transform:scaleX(-1)'}"><polyline points="${pts}" style="fill:none;stroke:${c.color};stroke-width:2;stroke-linejoin:round;stroke-linecap:round"/></svg>${trend}</div>`;
+  }).join('')}</div>`;
+}
+// how the wealth is split today, and how much each part moved since the start of the period
+function allocHtml(hp){
+  const t = totals(), parts = STACK.filter(s=>t[s] > 0); if(!parts.length || !(t.assets > 0)) return '';
+  const p0 = hp.length >= 2 ? hp[0] : null;
+  return `<div class="ov-sec"><h3>${L('ثروتك متوزعة إزاي','How your wealth is split')}</h3>
+    <div class="ov-stack">${parts.map(s=>`<span style="width:${t[s]/t.assets*100}%;background:${COLORS[s]}"></span>`).join('')}</div>
+    <div class="ov-alloc">${parts.sort((a,b)=>t[b]-t[a]).map(s=>{ const d = p0 ? t[s] - (p0[s]||0) : null;
+      return `<div><i style="background:${COLORS[s]}"></i><span class="n">${NAMES[s]}</span><span class="p">${fmt(t[s]/t.assets*100,0)}${PCT()}</span>
+        <span class="m">${egp(t[s])}</span>${d!==null && Math.abs(d) >= 1 ? `<span class="m ${d>=0?'up-t':'down-t'}"><bdi>${d>=0?'+':'−'}${compact(Math.abs(d))}</bdi></span>` : '<span></span>'}</div>`; }).join('')}</div></div>`;
+}
+document.getElementById('ov-ranges').addEventListener('click', e=>{
+  const n = +e.target.closest('[data-ov]')?.dataset.ov; if(!n) return;
+  ovMonths = n; try{ localStorage.setItem('wealth-ov', n); }catch(err){} renderOverview(); buzz(6);
+});
+document.getElementById('ov-body').addEventListener('click', e=>{
+  const mk = e.target.closest('[data-ovm]')?.dataset.ovm; if(!mk) return;
+  moneyMonth = mk; setTab('money'); renderMoney(); buzz(6);
+});
+document.getElementById('ov-body').addEventListener('keydown', e=>{ if((e.key==='Enter' || e.key===' ') && e.target.dataset?.ovm){ e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', {bubbles:true})); } });
 function repCard(r, title, key){
   const d = netOf(r.end) - netOf(r.start), pct = netOf(r.start) ? d/netOf(r.start)*100 : 0, s = d>=0 ? '+' : '−';
   return `<button type="button" class="rep-card" data-report="${key}">
@@ -3407,7 +3561,7 @@ function setTab(t, scroll=true){
   document.querySelectorAll('#bnav button').forEach(b=>b.setAttribute('aria-current', b.dataset.goto===t ? 'page' : 'false'));
   placeNavInd();
   if(scroll) window.scrollTo({top:0});
-  if(t==='reports'){ drawChart(); goSlide(slideIdx, false); }   // the chart measures its width, which is 0 while hidden
+  if(t==='reports'){ drawChart(); goSlide(slideIdx, false); renderOverview(); }   // the charts measure their width, which is 0 while hidden
 }
 // the sliding pill: on phones a pill behind the icon, on wider screens the whole button
 function placeNavInd(){
