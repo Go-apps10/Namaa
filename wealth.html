@@ -460,6 +460,23 @@ tr.grp:first-child td{border-top:0}
 :root[data-ui="calm"] .qacts .qi{border-radius:18px}
 /* Spending: the summary card with the ring, and the category bars */
 .cs{display:flex;align-items:center;gap:18px;background:var(--bg);border-radius:24px;padding:16px}
+/* the single budget card: the ring and your figures, the pace line, the home bar, then income and net */
+.cs.cb{display:grid;gap:14px;align-items:stretch}
+.cs-top{display:flex;align-items:center;gap:16px}
+.cb-left{font-size:.84rem;color:var(--muted);line-height:1.5}
+.cb-left b{color:var(--fg);font-weight:600}
+.cb-pace{font-size:.84rem;line-height:1.55;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--up) 10%,transparent)}
+.cb-pace.bad{background:color-mix(in srgb,var(--down) 12%,transparent)}
+.cb-home{display:grid;gap:6px;padding-top:12px;border-top:1px solid var(--line)}
+.cb-ht{display:flex;justify-content:space-between;align-items:baseline;font-size:.92rem;font-weight:600}
+.cb-ht .mu{font-weight:400;font-size:.82rem}
+.cb-hs{font-size:.78rem}
+.cb-flow{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between;padding-top:12px;border-top:1px solid var(--line);font-size:.82rem;color:var(--muted)}
+.cb-flow b{font-size:.95rem;color:var(--fg);font-weight:600;margin-inline-start:4px}
+.cb-flow b.up-t{color:var(--up)}.cb-flow b.down-t{color:var(--down)}
+.cs-ring .val.warn{stroke:#D97706}
+/* in the 2.0 look the budget card says what's left a day, so the separate allowance card isn't repeated under Spending */
+:root[data-ui="calm"] .wrap>#allow{display:none!important}
 .cs-ring{width:112px;height:112px;flex:none}
 .cs-ring .trk{fill:none;stroke:var(--line);stroke-width:14}
 .cs-ring .val{fill:none;stroke:var(--fill);stroke-width:14;stroke-linecap:round}
@@ -1922,7 +1939,7 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 41, APP_VERSION = '2.3', APP_DATE = '2026-10-30';
+const APP_BUILD = 42, APP_VERSION = '2.3.1', APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
@@ -1935,6 +1952,7 @@ const WHATS_NEW = {
     ['💰 المصاريف بدايرة الميزانية وأشرطة الفئات، والتقارير بكارت أخضر لزيادة ثروتك.', '💰 Spending has the budget ring and category bars; Reports open with your net worth change on green.'],
   ],
   fix: [
+    ['💰 المصاريف بقت أوضح: كارت واحد لميزانيتك فيه صرفت كام، فاضلك كام في اليوم، وهتقفل الشهر على كام قدام الميزانية، وتحته ميزانية البيت والدخل والصافي. والحاجات المكررة اتشالت.', '💰 Spending is clearer: one card for your budget with what you spent, what\'s left a day and where the month will end against the budget, then the home budget, income and net. The repeats are gone.'],
     ['📈 رجع سطر «النهارده» على الكارت الأخضر: ثروتك زادت أو قلّت كام النهارده، وأغلب المكسب أو الخسارة من فين.', '📈 Today\'s line is back on the green card: how much your wealth moved today and where most of it came from.'],
     ['🧹 اتشالت أقسام المصاريف (مصاريفي / البيت): كل الصرف بقى في مكان واحد زي الأول.', '🧹 Spending sections (Me / Home) are gone: all spending is in one place again.'],
     ['🎨 لون جديد: أخضر مزرق (تيل) أنضف وأريح للعين، في الفاتح والداكن.', '🎨 A new colour: a cleaner, easier teal, in light and dark.'],
@@ -4476,14 +4494,14 @@ function renderMoney(){
         : bSplit < bTotal && bSplit > 0 ? ' · ' + L(`${egp(bTotal-bSplit)} مش موزّعة على فئات`, `${egp(bTotal-bSplit)} not split into categories`) : ''}</span></div>`; })() : '';
   const homeBar = homeBudgetHtml(expH, bHome);
   // (the 2.0 look shows the home bar at the top, under the personal ring, so not again here)
-  const buds = totalBar + (document.documentElement.dataset.ui==='calm' ? '' : homeBar) + budIds.map(id=>{ const b = num(state.budgets[id]), s = byCat[id]||0, p = s/b;
+  const buds = (document.documentElement.dataset.ui==='calm' ? '' : totalBar + homeBar) + budIds.map(id=>{ const b = num(state.budgets[id]), s = byCat[id]||0, p = s/b;
     return `<div class="bud ${p>=1?'over':p>=.8?'warn':''}"><div class="top"><span>${catName(catById(id))}</span><span class="m">${egp(s)} / ${egp(b)}</span></div>
       <div class="bar2"><span style="width:${Math.min(100,p*100)}%"></span></div></div>`; }).join('');
   const recs = state.recurring.map(r=>{ const c = catById(r.cat);
     return `<div class="rec-row"><span>${esc(r.note || catName(c))} · ${L(`يوم ${fmt(r.day,0)} كل شهر`, `day ${r.day} monthly`)}</span>
       <span class="m ${r.type==='exp'?'down-t':'up-t'}"><bdi>${r.type==='exp'?'−':'+'}${fmt(r.amount)}</bdi> <button type="button" class="x" data-recdel="${r.id}" aria-label="${L('إيقاف','Stop')}">×</button></span></div>`; }).join('');
   const calmUi = document.documentElement.dataset.ui==='calm';
-  body.innerHTML = pendingHtml() + spacesBarHtml() + (calmUi ? calmSummaryHtml(inc, expP, saved, bTotal) + (bHome > 0 || expH > 0 ? `<div class="budgets">${homeBar}</div>` : '') : '') + `
+  body.innerHTML = pendingHtml() + spacesBarHtml() + (calmUi ? calmBudgetCard({inc, exp, expP, expH, bTotal, bHome}) : '') + `
     <div class="mk"${calmUi ? ' hidden' : ''}>
       <div><span class="l">${L('الدخل','Income')}</span><span class="v m up-t">${egp(inc)}</span></div>
       <div><span class="l">${L('المصاريف','Spending')}</span><span class="v m down-t">${egp(exp)}</span></div>
@@ -4493,7 +4511,7 @@ function renderMoney(){
     ${txs.length ? '' : `<div class="rep-empty">${L('مفيش عمليات في الشهر دا. سجّل مصروف أو دخل من زرار الإضافة (+) أو من هنا.', 'No transactions this month. Add spending or income with the add (+) button or here.')}</div>`}
     <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button><button type="button" data-rules>🏷️ ${L('قواعد التصنيف','Category rules')}</button></div>
     ${moneySpace===null ? spaceSplitHtml(txs) : ''}
-    ${moneyMonth===monthKey(Date.now()) && moneySpace===null ? forecastHtml() : ''}
+    ${moneyMonth===monthKey(Date.now()) && moneySpace===null && !calmUi ? forecastHtml() : ''}
     ${parts.length && calmUi ? calmCatsHtml(parts, exp) : ''}
     ${parts.length && !calmUi ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}${vsPrev(p.v, prevBy[p.id])}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
     ${notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : ''}
@@ -4517,6 +4535,49 @@ function renderMoney(){
 }
 /* the calm look's Spending, as in its design: a ring of the budget used beside what was spent, earned and left;
    then each category as a bar against its own budget (green, amber from 80%, red past it), or its share when it has none */
+/* the 2.0 look's Spending opens with one budget card, each figure once:
+   your budget as a ring (spent of budget), what's left and how much that is a day for the rest of the month,
+   where the month is heading at this pace against the budget, the home budget's bar, and the month's income and net */
+function calmBudgetCard({inc, exp, expP, expH, bTotal, bHome}){
+  const cur = moneyMonth===monthKey(Date.now()), C = 2 * Math.PI * 50;
+  const p = bTotal > 0 ? expP / bTotal : 0, left = bTotal - expP;
+  const ring = bTotal > 0 ? `<svg class="cs-ring" viewBox="0 0 120 120" role="img" aria-label="${L(`صرفت ${fmt(p*100,0)}٪ من ميزانيتك`, `Spent ${fmt(p*100,0)}% of your budget`)}">
+      <circle cx="60" cy="60" r="50" class="trk"/><circle cx="60" cy="60" r="50" class="val${p>=1?' over':p>=.8?' warn':''}" stroke-dasharray="${(Math.min(1,p)*C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"/>
+      <text x="60" y="58" text-anchor="middle" class="pc">${fmt(p*100,0)}${PCT()}</text><text x="60" y="78" text-anchor="middle" class="lb">${L('من ميزانيتك','of your budget')}</text></svg>` : '';
+  // the rest of the month: what's left a day, and where this pace ends up (once there are a few days to go on)
+  let perDay = '', pace = '';
+  if(cur && bTotal > 0){
+    const t = today(), dim = new Date(+t.slice(0,4), +t.slice(5,7), 0).getDate(), day = +t.slice(8), daysLeft = dim - day + 1;
+    perDay = left > 0
+      ? L(`فاضل <b class="m">${fmt(left,0)}</b> · يعني <b class="m">${fmt(left/daysLeft,0)}</b> في اليوم لـ ${fmt(daysLeft,0)} ${daysLeft===1?'يوم':'أيام'}`, `<b class="m">${fmt(left,0)}</b> left · <b class="m">${fmt(left/daysLeft,0)}</b> a day for ${daysLeft} day${daysLeft===1?'':'s'}`)
+      : L(`عدّيت ميزانيتك بـ <b class="m down-t">${fmt(-left,0)}</b>`, `Over your budget by <b class="m down-t">${fmt(-left,0)}</b>`);
+    if(day >= 5 && day < dim && expP > 0){
+      // fixed costs (rent, instalments, savings circles, monthly repeats) are paid once, so only day-to-day spending is
+      // stretched over the month
+      const fixed = monthTx(moneyMonth).filter(x=>x.type==='exp' && !isHomeCat(x.cat) && (x.recId || ['rent','install','gamaeya'].includes(x.cat))).reduce((a,x)=>a+txEgp(x),0);
+      const end = fixed + (expP - fixed) / day * dim, diff = bTotal - end;
+      pace = `<div class="cb-pace ${diff < 0 ? 'bad' : ''}">${diff >= 0
+        ? L(`على المعدل دا هتقفل الشهر على حوالي <b class="m">${fmt(end,0)}</b>، أقل من ميزانيتك بـ <b class="m">${fmt(diff,0)}</b> 👍`, `At this pace you'll end the month around <b class="m">${fmt(end,0)}</b>, <b class="m">${fmt(diff,0)}</b> under budget 👍`)
+        : L(`على المعدل دا هتقفل الشهر على حوالي <b class="m">${fmt(end,0)}</b>، يعني هتعدّي ميزانيتك بـ <b class="m">${fmt(-diff,0)}</b>. خفّف شوية.`, `At this pace you'll end the month around <b class="m">${fmt(end,0)}</b>, <b class="m">${fmt(-diff,0)}</b> over budget. Ease off a little.`)}</div>`;
+    }
+  }
+  const main = bTotal > 0
+    ? `<div class="cs-top">${ring}<div class="cs-n">
+        <div><span class="mu">${L('👤 مصاريفك','👤 Your spending')}</span><b class="m">${fmt(expP,0)} <small>${L(`من ${fmt(bTotal,0)}`, `of ${fmt(bTotal,0)}`)}</small></b></div>
+        ${perDay ? `<span class="cb-left">${perDay}</span>` : ''}</div></div>${pace}`
+    : `<div class="cs-n"><div><span class="mu">${L('👤 مصاريفك الشهر دا','👤 Your spending this month')}</span><b class="m">${fmt(expP,0)} <small>${L('ج.م','EGP')}</small></b></div>
+        <span class="note">${L('حط ميزانية لنفسك من «تعديل الميزانيات» تحت، وهنقولك فاضلك كام في اليوم.', 'Set yourself a budget in "Edit budgets" below and you\'ll see what\'s left a day.')}</span></div>`;
+  // the home: its own bar against its own budget
+  const ph = bHome > 0 ? expH / bHome : 0;
+  const home = bHome > 0 || expH > 0 ? `<div class="cb-home ${ph>=1?'over':ph>=.8?'warn':''}"><div class="cb-ht"><span>${L('🏠 البيت','🏠 Home')}</span><span class="m"><b>${fmt(expH,0)}</b>${bHome > 0 ? ` <span class="mu">${L(`من ${fmt(bHome,0)}`, `of ${fmt(bHome,0)}`)}</span>` : ''}</span></div>
+      ${bHome > 0 ? `<span class="cc-b"><span style="width:${Math.min(100, ph*100)}%;background:${ph>=1?'var(--down)':ph>=.8?'#D97706':'var(--fill)'}"></span></span>
+      <span class="mu cb-hs">${ph>=1 ? L(`عدّيت ميزانية البيت بـ ${fmt(expH-bHome,0)}`, `${fmt(expH-bHome,0)} over the home budget`) : L(`فاضل ${fmt(bHome-expH,0)} للبيت`, `${fmt(bHome-expH,0)} left for home`)}</span>` : ''}</div>` : '';
+  // the month's money in and the net, all spending included
+  const net = inc - exp;
+  const flow = `<div class="cb-flow"><span>${L('الدخل','Income')} <b class="m up-t">${fmt(inc,0)}</b></span><span>${L('كل المصاريف','All spending')} <b class="m">${fmt(exp,0)}</b></span>
+      <span>${L('الصافي','Net')} <b class="m ${net>=0?'up-t':'down-t'}"><bdi>${net>=0?'+':'−'}${fmt(Math.abs(net),0)}</bdi></b></span></div>`;
+  return `<div class="cs cb">${main}${home}${flow}</div>`;
+}
 // the home budget's bar: what went to the home this month against its budget (or just the total when it has none)
 function homeBudgetHtml(expH, b){
   if(!(b > 0) && !(expH > 0)) return '';
