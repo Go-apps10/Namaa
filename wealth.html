@@ -19,12 +19,10 @@
   // apply the saved theme, privacy mode and language before first paint to avoid a flash
   try{
     const t = localStorage.getItem('wealth-theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme = t;
-    // the new look (trial) has its own colours, so the style is only applied with the original look
-    // 2.0: its look is the default; everyone moves to it once, and the older looks stay in Settings → Archive
-    if(!localStorage.getItem('wealth-2')){ localStorage.setItem('wealth-ui', 'calm'); localStorage.setItem('wealth-2', '1'); }
-    const ui = localStorage.getItem('wealth-ui') || 'calm';
-    if(ui==='calm' || ui==='flat') document.documentElement.dataset.ui = ui;
-    else{ const st = localStorage.getItem('wealth-style'); if(st && st!=='namaa') document.documentElement.dataset.style = st; }
+    // 2.0's look is the only one offered (it has its own colours, so no style applies); the older looks stay in the
+    // code and the v1-classic tag, but not in Settings
+    localStorage.setItem('wealth-ui', 'calm');
+    document.documentElement.dataset.ui = 'calm';
     if(localStorage.getItem('wealth-private')==='1') document.documentElement.dataset.private = '';
     const saved = JSON.parse(localStorage.getItem('wealth-v1')) || {};
     if(saved.lang==='en'){ document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr'; }
@@ -277,26 +275,26 @@ tr.grp:first-child td{border-top:0}
    Its own colours (the style picker is for the original look), light and dark */
 /* --fill: bars, rings and the + (strong on both grounds); --amber-*, --blue-*, --hl: the Today icons and highlight */
 :root[data-ui="calm"]{
-  --bg:#F3F6F4; --surface:#FFFFFF; --fg:#13201B; --muted:#56655F; --line:#E3E9E6;
-  --accent:#0F3D2E; --on-accent:#FFFFFF; --hero:#0F3D2E; --hero-soft:#CFE3D9; --pill:#DCE7E1; --gold-hi:#E7B84A;
-  --fill:#0F3D2E; --fab:#0F3D2E; --amber-bg:#FDE7B8; --amber-fg:#7A4F00; --blue-bg:#E3EBFA; --blue-fg:#1D4ED8; --hl:#FFF4DE;
+  --bg:#F2F6F6; --surface:#FFFFFF; --fg:#122224; --muted:#53666A; --line:#E1EAEA;
+  --accent:#0E6E6A; --on-accent:#FFFFFF; --hero:#0E6E6A; --hero-soft:#CBE8E5; --pill:#D3ECE9; --gold-hi:#E7B84A;
+  --fill:#0E6E6A; --fab:#0E6E6A; --amber-bg:#FDE7B8; --amber-fg:#7A4F00; --blue-bg:#E3EBFA; --blue-fg:#1D4ED8; --hl:#FFF4DE;
   --up:#15803D; --down:#B42318; color-scheme:light;
 }
 /* dark: lifted surfaces so cards stand off the ground, a brighter green for the hero, and every fill and icon
    picked to read on dark (4.5:1 for text, 3:1 for shapes) */
 @media (prefers-color-scheme:dark){:root[data-ui="calm"]:not([data-theme="light"]){
-  --bg:#0B110F; --surface:#18221E; --fg:#EEF3F0; --muted:#A9B7B0; --line:#2B3833;
-  --accent:#86DBB0; --on-accent:#0B1F17; --hero:#18573F; --hero-soft:#BFDCCD; --pill:#22433A; --gold-hi:#F0C35A;
-  --fill:#5CCB98; --fab:#2E8A63; --amber-bg:#3D3013; --amber-fg:#F5C25B; --blue-bg:#1C2942; --blue-fg:#9BB8FF; --hl:#2A2414;
+  --bg:#091113; --surface:#162123; --fg:#EDF4F4; --muted:#A8BBBC; --line:#29383A;
+  --accent:#72D6CE; --on-accent:#062A28; --hero:#13736E; --hero-soft:#E0F4F2; --pill:#1C4543; --gold-hi:#F0C35A;
+  --fill:#4FC7BD; --fab:#178C86; --amber-bg:#3D3013; --amber-fg:#F5C25B; --blue-bg:#1C2942; --blue-fg:#9BB8FF; --hl:#2A2414;
   --up:#5BE08F; --down:#FF8A80; color-scheme:dark;}}
 :root[data-ui="calm"][data-theme="dark"]{
-  --bg:#0B110F; --surface:#18221E; --fg:#EEF3F0; --muted:#A9B7B0; --line:#2B3833;
-  --accent:#86DBB0; --on-accent:#0B1F17; --hero:#18573F; --hero-soft:#BFDCCD; --pill:#22433A; --gold-hi:#F0C35A;
-  --fill:#5CCB98; --fab:#2E8A63; --amber-bg:#3D3013; --amber-fg:#F5C25B; --blue-bg:#1C2942; --blue-fg:#9BB8FF; --hl:#2A2414;
+  --bg:#091113; --surface:#162123; --fg:#EDF4F4; --muted:#A8BBBC; --line:#29383A;
+  --accent:#72D6CE; --on-accent:#062A28; --hero:#13736E; --hero-soft:#E0F4F2; --pill:#1C4543; --gold-hi:#F0C35A;
+  --fill:#4FC7BD; --fab:#178C86; --amber-bg:#3D3013; --amber-fg:#F5C25B; --blue-bg:#1C2942; --blue-fg:#9BB8FF; --hl:#2A2414;
   --up:#5BE08F; --down:#FF8A80; color-scheme:dark;}
 /* big soft cards instead of boxed ones */
 :root[data-ui="calm"] section.card,:root[data-ui="calm"] .total,:root[data-ui="calm"] .tday,:root[data-ui="calm"] .allow,
-:root[data-ui="calm"] .ticker{border:0;border-radius:24px;box-shadow:0 1px 2px rgba(15,61,46,.04),0 6px 20px rgba(15,61,46,.05)}
+:root[data-ui="calm"] .ticker{border:0;border-radius:24px;box-shadow:0 1px 2px rgba(12,78,75,.04),0 6px 20px rgba(12,78,75,.05)}
 :root[data-ui="calm"] section.card{padding:18px 18px}
 :root[data-ui="calm"] .ticker{gap:0;background:var(--surface)}
 :root[data-ui="calm"] .tk{border-radius:0}
@@ -490,18 +488,18 @@ tr.grp:first-child td{border-top:0}
 .ui-arch .theme{margin-top:6px}
 :root[data-ui="calm"] .qacts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .qacts button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.78rem;color:var(--fg);padding:0}
-.qacts .qi{width:56px;height:56px;border-radius:18px;background:var(--surface);display:grid;place-items:center;box-shadow:0 1px 2px rgba(15,61,46,.05),0 4px 14px rgba(15,61,46,.06)}
+.qacts .qi{width:56px;height:56px;border-radius:18px;background:var(--surface);display:grid;place-items:center;box-shadow:0 1px 2px rgba(12,78,75,.05),0 4px 14px rgba(12,78,75,.06)}
 .qacts svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .qacts .q-exp{color:var(--down)}.qacts .q-inc{color:var(--up)}.qacts .q-tr,.qacts .q-sms{color:var(--accent)}
 /* the bottom bar: rounded, the current tab in a soft pill, the add button in its middle */
 @media (max-width:640px){
-  :root[data-ui="calm"] .bnav{border-top:0;border-radius:26px 26px 0 0;box-shadow:0 -6px 24px rgba(15,61,46,.08)}
+  :root[data-ui="calm"] .bnav{border-top:0;border-radius:26px 26px 0 0;box-shadow:0 -6px 24px rgba(12,78,75,.08)}
   :root[data-ui="calm"] .bnav-ind{background:var(--pill);border-radius:999px}
   :root[data-ui="calm"] .bnav button[aria-current=page]{color:var(--accent)}
   /* the AI bubble sits low at the side, clear of the quick actions */
   :root[data-ui="calm"] .fab-ai{bottom:calc(84px + env(safe-area-inset-bottom,0px));width:42px;height:42px}
   :root[data-ui="calm"] .fab{inset-inline-end:auto;left:50%;translate:-50% 0;bottom:calc(30px + env(safe-area-inset-bottom,0px));
-    width:58px;height:58px;border-radius:20px;background:var(--fab);color:#FFFFFF;box-shadow:0 8px 20px rgba(15,61,46,.32)}
+    width:58px;height:58px;border-radius:20px;background:var(--fab);color:#FFFFFF;box-shadow:0 8px 20px rgba(12,78,75,.32)}
 }
 .grp-h[data-brfold]{cursor:pointer;user-select:none}
 .grp-chev{display:inline-block;color:var(--muted);transition:transform .2s;transform:rotate(-90deg)}
@@ -1639,7 +1637,8 @@ section.card.collapsed{gap:0}
       <button type="button" data-theme-set="system" data-en="Auto">تلقائي</button>
       <button type="button" data-theme-set="dark" data-en="☾ Dark">☾ داكن</button>
     </div>
-    <div class="field" id="ui-pick"><span data-en="Look">شكل الواجهة</span>
+    <!-- the look picker is kept for the archive but not shown: 2.0's look is the only one offered -->
+    <div class="field" id="ui-pick" style="display:none"><span data-en="Look">شكل الواجهة</span>
       <button type="button" role="radio" class="ui-main" data-ui-set="calm"><b data-en="Namaa 2.0">نماء 2.0</b><small data-en="The current look">الشكل الحالي</small></button>
       <details class="ui-arch"><summary data-en="Archive: older looks">الأرشيف: الأشكال القديمة</summary>
         <div class="theme" role="radiogroup" aria-label="الأرشيف" data-en-label="Archive">
@@ -1890,7 +1889,7 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 36, APP_VERSION = '2.0', APP_DATE = '2026-10-30';
+const APP_BUILD = 37, APP_VERSION = '2.0.1', APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
@@ -1898,9 +1897,9 @@ const WHATS_NEW = {
     ['🎉 نماء 2.0: شكل جديد بالكامل، هادي وواضح. الرئيسية بتبدأ بتحيتك وصافي ثروتك في كارت أخضر وخط آخر ٣٠ يوم، وبعدها ٤ أزرار سريعة، «النهارده»، و«أصولك».', '🎉 Namaa 2.0: an all-new look, calm and clear. Home opens with your greeting, net worth on green with a 30-day line, then four quick actions, Today and your assets.'],
     ['➕ البار اللي تحت أبسط: الرئيسية، الأصول، + في النص، المصاريف، التقارير. الزكاة والتنبيهات تحت «أصولك» في الرئيسية.', '➕ A simpler bar: Home, Assets, + in the middle, Spending, Reports. Zakat and alerts are under "Your assets" on Home.'],
     ['💰 المصاريف بدايرة الميزانية وأشرطة الفئات، والتقارير بكارت أخضر لزيادة ثروتك.', '💰 Spending has the budget ring and category bars; Reports open with your net worth change on green.'],
-    ['🗄️ الشكل القديم محفوظ: الإعدادات ← المظهر ← الأرشيف، لو حبيت ترجعله.', '🗄️ The old look is kept: Settings → Appearance → Archive, if you want it back.'],
   ],
   fix: [
+    ['🎨 لون جديد: أخضر مزرق (تيل) أنضف وأريح للعين، في الفاتح والداكن.', '🎨 A new colour: a cleaner, easier teal, in light and dark.'],
     ['الوضع الداكن بقى أوضح: الكروت بارزة عن الخلفية، والأشرطة والأيقونات والزرار + بقوا باينين.', 'Dark mode is clearer: cards stand off the background, and the bars, icons and + button are easy to see.'],
     ['اتشال الخط الرفيع اللي كان بيظهر تحت شريط الساعة والبطارية.', 'The thin line under the clock and battery bar is gone.'],
   ],
