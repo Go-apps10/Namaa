@@ -23,6 +23,7 @@
     // code and the v1-classic tag, but not in Settings
     localStorage.setItem('wealth-ui', 'calm');
     document.documentElement.dataset.ui = 'calm';
+    const tint = localStorage.getItem('wealth-tint'); if(tint && tint!=='teal') document.documentElement.dataset.tint = tint;
     if(localStorage.getItem('wealth-private')==='1') document.documentElement.dataset.private = '';
     const saved = JSON.parse(localStorage.getItem('wealth-v1')) || {};
     if(saved.lang==='en'){ document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr'; }
@@ -292,6 +293,29 @@ tr.grp:first-child td{border-top:0}
   --accent:#72D6CE; --on-accent:#062A28; --hero:#13736E; --hero-soft:#E0F4F2; --pill:#1C4543; --gold-hi:#F0C35A;
   --fill:#4FC7BD; --fab:#178C86; --amber-bg:#3D3013; --amber-fg:#F5C25B; --blue-bg:#1C2942; --blue-fg:#9BB8FF; --hl:#2A2414;
   --up:#5BE08F; --down:#FF8A80; color-scheme:dark;}
+/* colour themes for the 2.0 look (Settings → Appearance → App colour); teal above is the default.
+   Each sets its light colours, then its dark ones (by system setting and when dark is chosen in the app).
+   White on --hero and --hero-soft on --hero are at least 4.5:1 in every theme, light and dark */
+:root[data-ui="calm"][data-tint="emerald"]{--bg:#F2F6F4;--hero:#0B6B4F;--hero-soft:#CDEBDD;--accent:#0B6B4F;--pill:#D4ECE0;--fill:#0B6B4F;--fab:#0B6B4F}
+:root[data-ui="calm"][data-tint="ocean"]{--bg:#F3F5F9;--hero:#1D4E89;--hero-soft:#D3E2F5;--accent:#1D4E89;--pill:#DCE6F4;--fill:#1D4E89;--fab:#1D4E89}
+:root[data-ui="calm"][data-tint="royal"]{--bg:#F6F4FA;--hero:#5B3FA0;--hero-soft:#E2DAF6;--accent:#5B3FA0;--pill:#E6DFF6;--fill:#5B3FA0;--fab:#5B3FA0}
+:root[data-ui="calm"][data-tint="coral"]{--bg:#FAF5F4;--hero:#A23B2E;--hero-soft:#F6D6D0;--accent:#A23B2E;--pill:#F6DDD8;--fill:#A23B2E;--fab:#A23B2E}
+:root[data-ui="calm"][data-tint="desert"]{--bg:#F8F4EC;--hero:#8A5A14;--hero-soft:#F3E3C6;--accent:#8A5A14;--pill:#F1E4CC;--fill:#8A5A14;--fab:#8A5A14;--gold-hi:#F6DFA0}
+:root[data-ui="calm"][data-tint="graphite"]{--bg:#F4F5F6;--hero:#2B2F36;--hero-soft:#D9DCE1;--accent:#2B2F36;--pill:#E3E5E9;--fill:#2B2F36;--fab:#2B2F36}
+@media (prefers-color-scheme:dark){
+  :root[data-ui="calm"][data-tint="emerald"]:not([data-theme="light"]){--bg:#09120E;--surface:#16211C;--line:#29382F;--hero:#0F6E52;--hero-soft:#DDF3E8;--accent:#6FD8A8;--pill:#1C4535;--fill:#4CC98F;--fab:#138A63}
+  :root[data-ui="calm"][data-tint="ocean"]:not([data-theme="light"]){--bg:#0A0F17;--surface:#151C27;--line:#27324A;--hero:#234F86;--hero-soft:#DCE8F8;--accent:#8DB8F2;--pill:#1F3352;--fill:#6AA5F0;--fab:#2E64A8}
+  :root[data-ui="calm"][data-tint="royal"]:not([data-theme="light"]){--bg:#0F0C16;--surface:#1B1726;--line:#2F2842;--hero:#5A3F9C;--hero-soft:#E8E0FA;--accent:#B9A2F5;--pill:#33285A;--fill:#A88BF0;--fab:#6D4FC0}
+  :root[data-ui="calm"][data-tint="coral"]:not([data-theme="light"]){--bg:#140D0C;--surface:#221817;--line:#3A2A28;--hero:#9A3A2E;--hero-soft:#FBE2DC;--accent:#F4A094;--pill:#4A2620;--fill:#F08A7A;--fab:#B5483A}
+  :root[data-ui="calm"][data-tint="desert"]:not([data-theme="light"]){--bg:#12100B;--surface:#1F1B14;--line:#3A3224;--hero:#7E5416;--hero-soft:#F6E8CC;--accent:#E8B566;--pill:#3F3018;--fill:#E2A94E;--fab:#9A6A20;--gold-hi:#F6DFA0}
+  :root[data-ui="calm"][data-tint="graphite"]:not([data-theme="light"]){--bg:#0C0D0F;--surface:#18191C;--line:#2C2E33;--hero:#3A3F48;--hero-soft:#E6E8EC;--accent:#D6DAE1;--pill:#2C3038;--fill:#C9CED6;--fab:#4A505B}
+}
+:root[data-ui="calm"][data-tint="emerald"][data-theme="dark"]{--bg:#09120E;--surface:#16211C;--line:#29382F;--hero:#0F6E52;--hero-soft:#DDF3E8;--accent:#6FD8A8;--pill:#1C4535;--fill:#4CC98F;--fab:#138A63}
+:root[data-ui="calm"][data-tint="ocean"][data-theme="dark"]{--bg:#0A0F17;--surface:#151C27;--line:#27324A;--hero:#234F86;--hero-soft:#DCE8F8;--accent:#8DB8F2;--pill:#1F3352;--fill:#6AA5F0;--fab:#2E64A8}
+:root[data-ui="calm"][data-tint="royal"][data-theme="dark"]{--bg:#0F0C16;--surface:#1B1726;--line:#2F2842;--hero:#5A3F9C;--hero-soft:#E8E0FA;--accent:#B9A2F5;--pill:#33285A;--fill:#A88BF0;--fab:#6D4FC0}
+:root[data-ui="calm"][data-tint="coral"][data-theme="dark"]{--bg:#140D0C;--surface:#221817;--line:#3A2A28;--hero:#9A3A2E;--hero-soft:#FBE2DC;--accent:#F4A094;--pill:#4A2620;--fill:#F08A7A;--fab:#B5483A}
+:root[data-ui="calm"][data-tint="desert"][data-theme="dark"]{--bg:#12100B;--surface:#1F1B14;--line:#3A3224;--hero:#7E5416;--hero-soft:#F6E8CC;--accent:#E8B566;--pill:#3F3018;--fill:#E2A94E;--fab:#9A6A20;--gold-hi:#F6DFA0}
+:root[data-ui="calm"][data-tint="graphite"][data-theme="dark"]{--bg:#0C0D0F;--surface:#18191C;--line:#2C2E33;--hero:#3A3F48;--hero-soft:#E6E8EC;--accent:#D6DAE1;--pill:#2C3038;--fill:#C9CED6;--fab:#4A505B}
 /* big soft cards instead of boxed ones */
 :root[data-ui="calm"] section.card,:root[data-ui="calm"] .total,:root[data-ui="calm"] .tday,:root[data-ui="calm"] .allow,
 :root[data-ui="calm"] .ticker{border:0;border-radius:24px;box-shadow:0 1px 2px rgba(12,78,75,.04),0 6px 20px rgba(12,78,75,.05)}
@@ -1637,6 +1661,8 @@ section.card.collapsed{gap:0}
       <button type="button" data-theme-set="system" data-en="Auto">تلقائي</button>
       <button type="button" data-theme-set="dark" data-en="☾ Dark">☾ داكن</button>
     </div>
+    <div class="field"><span data-en="App colour">لون التطبيق</span>
+      <div class="styles" id="tints" role="radiogroup" aria-label="لون التطبيق" data-en-label="App colour"></div></div>
     <!-- the look picker is kept for the archive but not shown: 2.0's look is the only one offered -->
     <div class="field" id="ui-pick" style="display:none"><span data-en="Look">شكل الواجهة</span>
       <button type="button" role="radio" class="ui-main" data-ui-set="calm"><b data-en="Namaa 2.0">نماء 2.0</b><small data-en="The current look">الشكل الحالي</small></button>
@@ -1889,11 +1915,12 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 37, APP_VERSION = '2.0.1', APP_DATE = '2026-10-30';
+const APP_BUILD = 38, APP_VERSION = '2.1', APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
   feat: [
+    ['🎨 ٧ ألوان للتطبيق تختار منهم: تيل، زمردي، أزرق، ملكي، مرجاني، صحراوي، وجرافيت. من الإعدادات ← المظهر ← لون التطبيق، وكل لون معمول للفاتح والداكن.', '🎨 Seven app colours to choose from: teal, emerald, ocean, royal, coral, desert and graphite. Settings → Appearance → App colour; each is made for light and dark.'],
     ['🎉 نماء 2.0: شكل جديد بالكامل، هادي وواضح. الرئيسية بتبدأ بتحيتك وصافي ثروتك في كارت أخضر وخط آخر ٣٠ يوم، وبعدها ٤ أزرار سريعة، «النهارده»، و«أصولك».', '🎉 Namaa 2.0: an all-new look, calm and clear. Home opens with your greeting, net worth on green with a 30-day line, then four quick actions, Today and your assets.'],
     ['➕ البار اللي تحت أبسط: الرئيسية، الأصول، + في النص، المصاريف، التقارير. الزكاة والتنبيهات تحت «أصولك» في الرئيسية.', '➕ A simpler bar: Home, Assets, + in the middle, Spending, Reports. Zakat and alerts are under "Your assets" on Home.'],
     ['💰 المصاريف بدايرة الميزانية وأشرطة الفئات، والتقارير بكارت أخضر لزيادة ثروتك.', '💰 Spending has the budget ring and category bars; Reports open with your net worth change on green.'],
@@ -7129,7 +7156,7 @@ function applyTheme(t){
   document.querySelectorAll('#theme button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.themeSet===t));
 }
 document.getElementById('theme').addEventListener('click', e=>{
-  const t = e.target.closest('button')?.dataset.themeSet; if(t){ applyTheme(t); renderStyles(); }
+  const t = e.target.closest('button')?.dataset.themeSet; if(t){ applyTheme(t); renderStyles(); renderTints(); }
 });
 
 /* ---------- interface styles: colour sets on top of light/dark (CSS in :root[data-style]); kept per device like the theme ---------- */
@@ -7194,6 +7221,33 @@ document.getElementById('ui-pick').addEventListener('click', e=>{
 // the calm look's Home has no price strip (as in its design), so the strip moves to the top of Assets
 function placeTicker(){ document.getElementById('ticker').dataset.tab = trialLook()==='calm' ? 'assets' : 'home'; }
 placeTicker(); renderUiPick();
+/* app colour themes for the 2.0 look: [id, Arabic, English, light ground, light colour, dark ground, dark colour].
+   The colours themselves are in the CSS (:root[data-tint=…]); these only draw the swatches */
+const TINTS = [
+  ['teal',     'تيل',      'Teal',     '#F2F6F6', '#0E6E6A', '#091113', '#13736E'],
+  ['emerald',  'زمردي',    'Emerald',  '#F2F6F4', '#0B6B4F', '#09120E', '#0F6E52'],
+  ['ocean',    'أزرق',     'Ocean',    '#F3F5F9', '#1D4E89', '#0A0F17', '#234F86'],
+  ['royal',    'ملكي',     'Royal',    '#F6F4FA', '#5B3FA0', '#0F0C16', '#5A3F9C'],
+  ['coral',    'مرجاني',   'Coral',    '#FAF5F4', '#A23B2E', '#140D0C', '#9A3A2E'],
+  ['desert',   'صحراوي',   'Desert',   '#F8F4EC', '#8A5A14', '#12100B', '#7E5416'],
+  ['graphite', 'جرافيت',   'Graphite', '#F4F5F6', '#2B2F36', '#0C0D0F', '#3A3F48'],
+];
+const curTint = () => document.documentElement.dataset.tint || 'teal';
+function renderTints(){
+  const box = document.getElementById('tints'); if(!box) return;
+  const dark = isDarkNow(), cur = curTint();
+  box.innerHTML = TINTS.map(([id, ar, en, lb, lc, db, dc])=>`<button type="button" role="radio" aria-checked="${id===cur}" data-tint-set="${id}" class="style-card">
+    <span class="sw" style="background:${dark ? db : lb}"><i style="background:${dark ? dc : lc}"></i><b style="background:${dark ? dc : lc}"></b></span><span>${L(ar, en)}</span></button>`).join('');
+}
+function applyTint(id){
+  if(!id || id==='teal') delete document.documentElement.dataset.tint; else document.documentElement.dataset.tint = id;
+  try{ localStorage.setItem('wealth-tint', id || 'teal'); }catch(e){}
+  renderTints(); paintThemeColor();
+  try{ render(); }catch(e){}   // charts are drawn with the colours
+}
+document.getElementById('tints').addEventListener('click', e=>{ const id = e.target.closest('[data-tint-set]')?.dataset.tintSet; if(id){ applyTint(id); buzz(6); } });
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', renderTints);
+renderTints();
 // the four quick actions under the net worth (new look)
 document.querySelector('.qacts').addEventListener('click', e=>{
   const a = e.target.closest('[data-qact]')?.dataset.qact; if(!a) return;
