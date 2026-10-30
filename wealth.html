@@ -323,6 +323,8 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .dlg-sec{padding:16px 18px;display:grid;gap:12px;border-bottom:1px solid var(--line)}
 .app-ver{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 18px 16px;font-size:.82rem;color:var(--muted)}
 .app-ver b{color:var(--fg)}
+.wn-list{display:grid;gap:10px}
+.wn-list>div{padding:10px 12px;border-radius:12px;background:var(--bg);line-height:1.6}
 .dlg-sec:last-child{border-bottom:0}
 .dlg-sec h3{margin:0;font:500 1.02rem/1.3 var(--display);display:flex;align-items:center;gap:8px}
 .fsec>h3{cursor:pointer;user-select:none;margin:-16px -18px;padding:16px 18px}
@@ -538,6 +540,23 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .chips button{display:flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:.85rem;background:var(--bg)}
 .chips button i{width:9px;height:9px;border-radius:50%}
 .chips button[aria-pressed=true]{border-color:var(--fg);background:var(--fg);color:var(--bg)}
+/* spending sections: the switcher at the top of Spending, the split in the All view, and the manage sheet */
+.spaces-bar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.spaces-bar::-webkit-scrollbar{display:none}
+.spaces-bar button{flex:none;border-radius:999px;padding:7px 14px;font-size:.86rem;background:var(--bg);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.spaces-bar button small{color:var(--muted);font-size:.74rem}
+.spaces-bar button[aria-selected=true]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.spaces-bar button[aria-selected=true] small{color:inherit;opacity:.8}
+.spaces-bar .sp-new{border-style:dashed;color:var(--muted)}
+.sp-split{display:grid;gap:6px}
+.sp-row{display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;align-items:center;text-align:start;padding:10px 12px;border-radius:12px;background:var(--bg);color:inherit}
+.sp-row .sp-n{font-weight:600}
+.sp-row .p{color:var(--muted);font-size:.8rem;min-width:36px;text-align:end}
+.sp-row .bar2{grid-column:1/-1;display:block;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.sp-row .bar2 span{display:block;height:100%;border-radius:3px;background:var(--up)}
+.sp-row.warn .bar2 span{background:var(--warn)}.sp-row.over .bar2 span{background:var(--down)}
+.sp-edit{display:grid;grid-template-columns:auto 1fr 110px auto;gap:8px;align-items:center}
+.sp-ic{font-size:1.3rem;width:44px;height:44px;border-radius:12px;padding:0;display:grid;place-items:center}
 .chip-own{display:flex}
 .chip-own>button:first-child{border-start-end-radius:0;border-end-end-radius:0;border-inline-end:0}
 .chip-own .cdel{border-radius:0 999px 999px 0;padding:6px 10px;color:var(--muted);font-size:.85rem}
@@ -1374,8 +1393,9 @@ section.card.collapsed{gap:0}
     <div class="note" data-en="Your data lives only in this browser on this device. A backup file lets you move it to your phone or keep it safe.">بياناتك محفوظة في المتصفح دا على الجهاز دا بس. ملف النسخة الاحتياطية بيخليك تنقلها لموبايلك أو تحتفظ بيها في أمان.</div>
     <button type="button" class="x" id="btn-reset-money" style="justify-self:start;color:var(--down)" data-en="🗑 Reset spending and income">🗑 تصفير المصروفات والدخل</button>
   </div>
-  <div class="app-ver"><span><span data-en="Namaa · version">نماء · الإصدار</span> <b id="app-ver"></b></span>
-    <button type="button" class="x" id="btn-update" data-en="↻ Check for an update">↻ دوّر على تحديث</button></div>
+  <div class="app-ver"><span><span data-en="Namaa · version">نماء · الإصدار</span> <b id="app-ver" dir="ltr"></b> <small id="app-date"></small></span>
+    <span class="row" style="gap:6px"><button type="button" class="x" id="btn-whatsnew" data-en="✨ What's new">✨ الجديد</button>
+    <button type="button" class="x" id="btn-update" data-en="↻ Check for an update">↻ دوّر على تحديث</button></span></div>
 </dialog>
 
 <dialog id="report" aria-labelledby="rep-title">
@@ -1554,8 +1574,13 @@ const BROKERS = [
   {id:'ARABEYA',  label:'العربية أون لاين', en:'Arabeya Online'},
   {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
 ];
-// shown at the bottom of Settings; raised together with CACHE in sw.js on every release
-const APP_VERSION = 28;
+// the version people see is 1.<build>, like store apps; APP_BUILD goes up with CACHE in sw.js on every release
+const APP_BUILD = 29, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
+// what this release brought, shown once after the update arrives (and from Settings → What's new)
+const WHATS_NEW = [
+  ['📂 أقسام للمصاريف: افصل مصاريفك الشخصية عن البيت أو أي حاجة تانية، وشوف كل قسم لوحده بميزانيته.', '📂 Spending sections: keep your own spending apart from home or anything else, each with its own budget.'],
+  ['🏷️ رقم الإصدار بقى زي التطبيقات (1.29)، ومعاه ملخص الجديد بعد كل تحديث.', '🏷️ Version numbers like store apps (1.29), with a note of what\'s new after each update.'],
+];
 const ASSETS = ['gold','silver','cash','stocks','other'];
 const COLORS = {gold:'var(--gold)', silver:'var(--silver)', cash:'var(--cash)', certs:'var(--certs)', stocks:'var(--stocks)', other:'var(--other)', debts:'var(--down)'};
 const NAMES_AR = {gold:'الذهب', silver:'الفضة', cash:'الكاش', certs:'الشهادات والودائع', stocks:'الأسهم', other:'أصول أخرى', debts:'الديون'};
@@ -1578,7 +1603,7 @@ const DEFAULT_STATE = {
   zExcludeWorn:true, zDeductDebts:true, zDate:'', lastBackup:null,
   notifyOn:false, nPrice:true, nZakat:true, nBackup:true, zNotified:'', backupNotifiedAt:0,
   goalDate:'', nMonthly:true, monthlySent:'', reports:{}, yearReports:{},
-  tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'', transfers:[],
+  tx:[], customCats:[], budgets:{}, recurring:[], nBudget:true, lastAcct:'', transfers:[], spaces:[], spaceMain:'', spaceMainIcon:'', spaceMainBudget:'', lastSpace:'',
   pending:[], merchantCats:{}, autoKnown:true, budgetTotal:'',
   deletedTx:[], deletedPending:[], deletedRec:[], deletedCats:[], hiddenCats:[], notes:[], notesSeenAt:0, notesClearedAt:0, _savedAt:0,
   nDebt:true, goals:[], deletedGoals:[], aiOn:false,
@@ -1688,6 +1713,7 @@ function applyLang(){
   resetClearButton();
   renderHello(); renderAvatar(); renderNotify(); renderPin(); applyPrivate(isPrivate());
   if(dlg.open){ renderSync(); renderInbox(); renderAi(); }
+  renderAppDate();
   if(typeof placeNavInd==='function'){ document.getElementById('bnav').classList.remove('ready'); requestAnimationFrame(placeNavInd); }   // the bar flips side with the language
 }
 // the person's photo: shown at the top next to Settings, and in Settings with choose / remove
@@ -3519,7 +3545,7 @@ function txEgp(tx){ return tx.egp ?? tx.amount; }
 function addTx(t){
   const row = t.acct && acctById(t.acct), cur = row ? row.c : 'EGP', r = rate(cur);
   const tx = {id: newId('t'), type:t.type, amount: num(t.amount), cur, egp: Math.round(num(t.amount) * (isFinite(r) ? r : 1) * 100) / 100,
-              cat:t.cat, note:(t.note||'').trim(), date:t.date || today(), acct: row ? row.id : '', recId: t.recId || ''};
+              cat:t.cat, note:(t.note||'').trim(), date:t.date || today(), acct: row ? row.id : '', recId: t.recId || '', sp: t.sp || ''};
   const spentBefore = tx.type==='exp' ? catSpent(tx.cat, monthOf(tx.date)) : 0;
   const totalBefore = tx.type==='exp' ? monthSpent(monthOf(tx.date)) : 0;
   state.tx.push(tx); applyTx(tx, 1);
@@ -3553,6 +3579,99 @@ function delTx(id){
   offerUndo(L('اتمسحت العملية ورجع المبلغ للحساب.', 'Deleted, and the amount went back to the account.'), snap);
 }
 const monthTx = mk => state.tx.filter(t=>monthOf(t.date)===mk);
+/* spending sections: separate pockets of spending, e.g. your own life abroad and the home you send money to.
+   The main one has id '' (so every transaction from before sections existed is in it); the others live in state.spaces.
+   moneySpace is the one the Spending tab shows (null = all of them), remembered on this device */
+const SPACE_ICONS = ['👤','🏠','👨‍👩‍👧','💼','🚗','✈️','🎓','🐾','🎁','🕌'];
+const spaces = () => [{id:'', name: state.spaceMain || L('مصاريفي','My spending'), icon: state.spaceMainIcon || '👤', budget: state.spaceMainBudget}, ...(state.spaces||[])];
+const spaceById = id => spaces().find(s=>s.id===(id||'')) || spaces()[0];
+const hasSpaces = () => (state.spaces||[]).length > 0;
+let moneySpace = null;
+try{ const v = localStorage.getItem('wealth-space'); if(v!==null && v!=='*') moneySpace = v; }catch(e){}
+const inSpace = t => moneySpace===null || (t.sp||'')===moneySpace;
+function setMoneySpace(id){
+  moneySpace = id; try{ localStorage.setItem('wealth-space', id===null ? '*' : id); }catch(e){}
+  renderMoney(); buzz(6);
+}
+const spaceLabel = sp => `${sp.icon} ${esc(sp.name)}`;
+// the chips at the top of Spending: All, each section with this month's spending, and ⚙ to manage them
+function spacesBarHtml(){
+  if(!hasSpaces()) return `<div class="spaces-bar"><button type="button" class="sp-new" data-spaces>➕ ${L('افصل مصاريف (مثلاً البيت)','Split spending (e.g. home)')}</button></div>`;
+  const spent = id => monthTx(moneyMonth).filter(t=>t.type==='exp' && (t.sp||'')===id).reduce((a,t)=>a+txEgp(t),0);
+  return `<div class="spaces-bar" role="tablist">
+    <button type="button" role="tab" data-space="*" aria-selected="${moneySpace===null}">${L('الكل','All')}</button>
+    ${spaces().map(s=>`<button type="button" role="tab" data-space="${s.id}" aria-selected="${moneySpace===s.id}">${spaceLabel(s)} <small class="m">${compact(spent(s.id))}</small></button>`).join('')}
+    <button type="button" class="sp-gear" data-spaces aria-label="${L('ترتيب الأقسام','Manage sections')}">⚙</button></div>`;
+}
+// in the All view: how the month's spending splits across sections, each against its own budget if it has one
+function spaceSplitHtml(txs){
+  if(!hasSpaces()) return '';
+  const exp = txs.filter(t=>t.type==='exp'), total = exp.reduce((a,t)=>a+txEgp(t),0);
+  return `<div class="sp-split"><div class="m-sub"><h3>${L('حسب القسم','By section')}</h3></div>${spaces().map(s=>{
+    const v = exp.filter(t=>(t.sp||'')===s.id).reduce((a,t)=>a+txEgp(t),0), b = num(s.budget), p = b > 0 ? v / b : 0;
+    return `<button type="button" class="sp-row${b > 0 ? (p>=1 ? ' over' : p>=.8 ? ' warn' : '') : ''}" data-space="${s.id}">
+      <span class="sp-n">${spaceLabel(s)}</span><span class="m">${egp(v)}${b > 0 ? ` / ${egp(b)}` : ''}</span><span class="p">${total ? fmt(v/total*100,0) : 0}${PCT()}</span>
+      ${b > 0 ? `<span class="bar2"><span style="width:${Math.min(100,p*100)}%"></span></span>` : ''}</button>`; }).join('')}</div>`;
+}
+// one section's own budget, shown in its view in place of the category budgets (those are for all spending)
+function spaceBudgetHtml(exp){
+  const s = spaceById(moneySpace), b = num(s.budget);
+  if(!(b > 0)) return `<div class="note">${L(`مفيش ميزانية لـ «${esc(s.name)}». حطّلها مبلغ في الشهر من ⚙ فوق.`, `No budget for "${esc(s.name)}". Set a monthly amount from ⚙ above.`)}</div>`;
+  const p = exp / b;
+  return `<div class="bud total ${p>=1?'over':p>=.8?'warn':''}"><div class="top"><span>${L(`ميزانية ${esc(s.name)}`, `${esc(s.name)} budget`)}</span><span class="m">${egp(exp)} / ${egp(b)}</span></div>
+    <div class="bar2"><span style="width:${Math.min(100,p*100)}%"></span></div>
+    <span class="note m">${p>=1 ? L(`عدّيت بـ ${egp(exp-b)}`, `${egp(exp-b)} over`) : L(`فاضل ${egp(b-exp)} للشهر`, `${egp(b-exp)} left this month`)}</span></div>`;
+}
+// the section picker in the add and edit sheets (only once there's more than one)
+const spaceChips = (sel, attr) => hasSpaces() ? `<div class="field"><span>${L('القسم','Section')}</span><div class="chips">${spaces().map(s=>
+  `<button type="button" ${attr}="${s.id}" aria-pressed="${(sel||'')===s.id}">${spaceLabel(s)}</button>`).join('')}</div></div>` : '';
+
+// managing sections: name, icon (tap to change), optional monthly budget; removing one moves its transactions to the main one
+let spDraft = null;
+function openSpaces(){
+  sheetSec = 'spaces';
+  spDraft = spaces().map(s=>({...s}));
+  if(spDraft.length===1) spDraft.push({id:newId('s'), name: L('البيت','Home'), icon:'🏠', budget:''});   // first time: start with "Home"
+  renderSpacesSheet();
+  if(!sheet.open) sheet.showModal();
+}
+function renderSpacesSheet(){
+  document.getElementById('sheet-title').textContent = L('أقسام المصاريف','Spending sections');
+  sheetBody.innerHTML = `<div class="note">${L('كل قسم مصاريفه لوحدها، وتقدر تشوف كل واحد لوحده أو الكل مع بعض. مثلاً: «مصاريفي» لحياتك و«البيت» للي بتبعته لأهلك.', 'Each section keeps its own spending; view one at a time or all together. For example "Me" for your life and "Home" for what you send your family.')}</div>
+    ${spDraft.map((s,i)=>`<div class="sp-edit" data-i="${i}">
+      <button type="button" class="sp-ic" data-spic="${i}" aria-label="${L('غيّر الأيقونة','Change icon')}">${s.icon}</button>
+      <input type="text" data-spname="${i}" value="${esc(s.name)}" placeholder="${L('اسم القسم','Section name')}">
+      <input type="number" min="0" step="any" inputmode="decimal" data-spbud="${i}" value="${esc(s.budget ?? '')}" placeholder="${L('ميزانية/شهر','Budget/month')}">
+      ${i ? `<button type="button" class="x" data-spdel="${i}" aria-label="${L('شيل القسم','Remove section')}">×</button>` : '<span></span>'}</div>`).join('')}
+    <button type="button" data-spadd>+ ${L('قسم جديد','New section')}</button>
+    <button type="button" class="go-btn" data-spsave>${L('حفظ','Save')}</button>`;
+}
+function readSpacesSheet(){
+  sheetBody.querySelectorAll('[data-spname]').forEach(el=>{ spDraft[+el.dataset.spname].name = el.value.trim(); });
+  sheetBody.querySelectorAll('[data-spbud]').forEach(el=>{ spDraft[+el.dataset.spbud].budget = el.value; });
+}
+function saveSpaces(){
+  readSpacesSheet();
+  const snap = JSON.stringify(state), [main, ...rest] = spDraft;
+  const keep = new Set(rest.map(s=>s.id)), gone = (state.spaces||[]).filter(s=>!keep.has(s.id)).map(s=>s.id);
+  // a removed section's transactions, repeats and waiting messages go back to the main one
+  for(const list of [state.tx, state.recurring, state.pending]) for(const t of list) if(gone.includes(t.sp)){ t.sp = ''; t._m = Date.now(); }
+  state.spaceMain = main.name; state.spaceMainIcon = main.icon; state.spaceMainBudget = main.budget;
+  state.spaces = rest.map((s,i)=>({id:s.id, name: s.name || L(`قسم ${i+2}`, `Section ${i+2}`), icon:s.icon, budget:s.budget}));
+  if(moneySpace!==null && !spaces().some(s=>s.id===moneySpace)) moneySpace = null;
+  save(); render(); sheet.close(); buzz();
+  gone.length ? offerUndo(L('اتحفظت الأقسام، ومصاريف القسم اللي اتشال رجعت للقسم الأساسي.', 'Sections saved; the removed one\'s spending moved to the main section.'), snap)
+              : toast(L('اتحفظت الأقسام.', 'Sections saved.'));
+}
+sheetBody.addEventListener('click', e=>{
+  if(sheetSec!=='spaces') return;
+  const b = e.target.closest('button'); if(!b) return;
+  readSpacesSheet();
+  if(b.dataset.spic!==undefined){ const s = spDraft[+b.dataset.spic]; s.icon = SPACE_ICONS[(SPACE_ICONS.indexOf(s.icon) + 1) % SPACE_ICONS.length]; renderSpacesSheet(); buzz(6); }
+  else if(b.dataset.spdel!==undefined){ spDraft.splice(+b.dataset.spdel, 1); renderSpacesSheet(); }
+  else if(b.dataset.spadd!==undefined){ spDraft.push({id:newId('s'), name:'', icon: SPACE_ICONS[spDraft.length % SPACE_ICONS.length], budget:''}); renderSpacesSheet(); sheetBody.querySelector(`[data-spname="${spDraft.length-1}"]`)?.focus(); }
+  else if(b.dataset.spsave!==undefined) saveSpaces();
+});
 const catSpent = (cat, mk) => monthTx(mk).filter(t=>t.type==='exp' && t.cat===cat).reduce((a,t)=>a+txEgp(t),0);
 
 const monthSpent = mk => monthTx(mk).filter(t=>t.type==='exp').reduce((a,t)=>a+txEgp(t),0);
@@ -3589,7 +3708,7 @@ function processRecurring(){
     for(let n = 0; n < 24 && mk <= cur; n++, mk = nextMonth(mk)){
       const date = `${mk}-${String(Math.min(rec.day, 28)).padStart(2,'0')}`;
       if(date > now) break;
-      addTx({type:rec.type, amount:rec.amount, cat:rec.cat, note:rec.note, acct:rec.acct, date, recId:rec.id});
+      addTx({type:rec.type, amount:rec.amount, cat:rec.cat, note:rec.note, acct:rec.acct, date, recId:rec.id, sp:rec.sp});
       rec.lastMonth = mk; added++;
     }
   }
@@ -3621,7 +3740,7 @@ function txFoldsHtml(list, openAll){
       <span class="ds m">${dOut ? `<bdi class="down-t">−${egp(dOut)}</bdi>` : ''}${dIn && dOut ? ' · ' : ''}${dIn ? `<bdi class="up-t">+${egp(dIn)}</bdi>` : ''}</span></summary>
       <div class="tx-in">`
     + ts.map(t=>{ const c = catById(t.cat), row = acctById(t.acct);
-      return `<div class="tx"><i style="background:${c.color}"></i><div class="nm" role="button" tabindex="0" data-txrecat="${t.id}" title="${L('تعديل','Edit')}"><b>${esc(t.note || catName(c))}</b><small>${t.note ? `<u class="cat-pick">${esc(catName(c))} ▾</u> · ` : `<u class="cat-pick">${L('تعديل','Edit')} ▾</u> · `}${row ? acctName(row) : L('من غير خصم','Not linked')}${t.recId ? ' · ' + L('متكرر','recurring') : ''}</small></div>
+      return `<div class="tx"><i style="background:${c.color}"></i><div class="nm" role="button" tabindex="0" data-txrecat="${t.id}" title="${L('تعديل','Edit')}"><b>${esc(t.note || catName(c))}</b><small>${moneySpace===null && hasSpaces() ? spaceById(t.sp).icon + ' ' : ''}${t.note ? `<u class="cat-pick">${esc(catName(c))} ▾</u> · ` : `<u class="cat-pick">${L('تعديل','Edit')} ▾</u> · `}${row ? acctName(row) : L('من غير خصم','Not linked')}${t.recId ? ' · ' + L('متكرر','recurring') : ''}</small></div>
         <span class="amt m ${t.type==='exp'?'down-t':'up-t'}" data-txrecat="${t.id}" style="cursor:pointer"><bdi>${t.type==='exp'?'−':'+'}${fmt(t.amount)} ${t.cur==='EGP' ? L('ج.م','EGP') : t.cur}</bdi></span>
         <button type="button" class="x" data-txdel="${t.id}" aria-label="${L('حذف','Delete')}">×</button></div>`; }).join('') + `</div></details>`; }).join('');
 }
@@ -3632,6 +3751,7 @@ const latinDigits = s => s.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.index
 function txFiltered(){
   const q = latinDigits(txF.q.trim().toLowerCase()), min = num(latinDigits(String(txF.min)));
   return state.tx.filter(t=>{
+    if(!inSpace(t)) return false;
     if(txF.cat && t.cat!==txF.cat) return false;
     if(min > 0 && txEgp(t) < min) return false;
     if(!q) return true;
@@ -3648,7 +3768,7 @@ function txListInner(monthList){
       <button type="button" class="linkish" data-txclear style="border:0;background:none">${L('مسح البحث','Clear search')}</button></div>` + txFoldsHtml(found, true);
 }
 // what both downloads cover: the search results while searching, otherwise the month shown
-const txExportList = () => (txFiltering() ? txFiltered() : monthTx(moneyMonth)).sort((a,b)=>a.date.localeCompare(b.date));
+const txExportList = () => (txFiltering() ? txFiltered() : monthTx(moneyMonth).filter(inSpace)).sort((a,b)=>a.date.localeCompare(b.date));
 
 /* PDF statement: a print-ready A4 page built in a hidden frame, then the browser's own print dialog,
    where "Save as PDF" keeps Arabic shaping and fonts exact (a PDF library would need its own Arabic font engine) */
@@ -3660,9 +3780,10 @@ function exportPdf(){
   const sOut = exp.reduce((a,t)=>a+txEgp(t),0), sIn = inc.reduce((a,t)=>a+txEgp(t),0), net = sIn - sOut;
   const byCat = {}; exp.forEach(t=>{ byCat[t.cat] = (byCat[t.cat]||0) + txEgp(t); });
   const cats2 = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
-  const title = txFiltering()
+  let title = txFiltering()
     ? L('نتايج البحث', 'Search results') + (txF.q.trim() ? ` · «${esc(txF.q.trim())}»` : '') + (txF.cat ? ` · ${esc(catName(catById(txF.cat)))}` : '') + (num(txF.min) > 0 ? ` · ${L('أكبر من','over')} ${egp(num(txF.min))}` : '')
     : monthLabel(moneyMonth);
+  if(moneySpace!==null) title += ' · ' + spaceLabel(spaceById(moneySpace));
   const range = `${dateFmt(new Date(list[0].date+'T12:00'))} – ${dateFmt(new Date(list[list.length-1].date+'T12:00'))}`;
   const who = (state.userName||'').trim();
   const rows = list.map((t,i)=>{ const c = catById(t.cat), row = acctById(t.acct), out = t.type==='exp';
@@ -3752,13 +3873,14 @@ function renderMoney(){
   if(navBtn){ let bd = navBtn.querySelector('.badge'); if(!bd){ bd = document.createElement('span'); bd.className = 'badge'; navBtn.appendChild(bd); }
     bd.textContent = state.pending.length ? fmt(state.pending.length,0) : ''; bd.hidden = !state.pending.length; }
   document.getElementById('money-month').textContent = monthLabel(moneyMonth);
-  const txs = monthTx(moneyMonth), inc = txs.filter(t=>t.type==='inc').reduce((a,t)=>a+txEgp(t),0), exp = txs.filter(t=>t.type==='exp').reduce((a,t)=>a+txEgp(t),0);
+  if(moneySpace!==null && (!hasSpaces() || !spaces().some(s=>s.id===moneySpace))) moneySpace = null;   // a section removed (here or on another device)
+  const txs = monthTx(moneyMonth).filter(inSpace), inc = txs.filter(t=>t.type==='inc').reduce((a,t)=>a+txEgp(t),0), exp = txs.filter(t=>t.type==='exp').reduce((a,t)=>a+txEgp(t),0);
   const saved = inc - exp, rate2 = inc > 0 ? saved/inc*100 : null, sg = v => v>=0 ? '+' : '−';
   const byCat = {}; txs.filter(t=>t.type==='exp').forEach(t=>{ byCat[t.cat] = (byCat[t.cat]||0) + txEgp(t); });
   const parts = Object.entries(byCat).map(([id,v])=>({id, v, color: catById(id).color})).sort((a,b)=>b.v-a.v);
   // compared with the month before
   const prevMk = monthKey(new Date(+moneyMonth.slice(0,4), +moneyMonth.slice(5,7)-2, 15).getTime());
-  const prevBy = {}; monthTx(prevMk).filter(t=>t.type==='exp').forEach(t=>{ prevBy[t.cat] = (prevBy[t.cat]||0) + txEgp(t); });
+  const prevBy = {}; monthTx(prevMk).filter(t=>t.type==='exp' && inSpace(t)).forEach(t=>{ prevBy[t.cat] = (prevBy[t.cat]||0) + txEgp(t); });
   // under each category: up or down against last month (more spending in red, less in green)
   const hadPrev = Object.keys(prevBy).length > 0;   // nothing to compare in the first month of use
   const vsPrev = (v, pv) => !hadPrev ? '' : !(pv > 0) ? `<small class="vs">${L('جديدة الشهر دا','new this month')}</small>`
@@ -3787,7 +3909,7 @@ function renderMoney(){
   const recs = state.recurring.map(r=>{ const c = catById(r.cat);
     return `<div class="rec-row"><span>${esc(r.note || catName(c))} · ${L(`يوم ${fmt(r.day,0)} كل شهر`, `day ${r.day} monthly`)}</span>
       <span class="m ${r.type==='exp'?'down-t':'up-t'}"><bdi>${r.type==='exp'?'−':'+'}${fmt(r.amount)}</bdi> <button type="button" class="x" data-recdel="${r.id}" aria-label="${L('إيقاف','Stop')}">×</button></span></div>`; }).join('');
-  body.innerHTML = pendingHtml() + `
+  body.innerHTML = pendingHtml() + spacesBarHtml() + `
     <div class="mk">
       <div><span class="l">${L('الدخل','Income')}</span><span class="v m up-t">${egp(inc)}</span></div>
       <div><span class="l">${L('المصاريف','Spending')}</span><span class="v m down-t">${egp(exp)}</span></div>
@@ -3796,12 +3918,14 @@ function renderMoney(){
     </div>
     ${txs.length ? '' : `<div class="rep-empty">${L('مفيش عمليات في الشهر دا. سجّل مصروف أو دخل من زرار الإضافة (+) أو من هنا.', 'No transactions this month. Add spending or income with the add (+) button or here.')}</div>`}
     <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button><button type="button" data-rules>🏷️ ${L('قواعد التصنيف','Category rules')}</button></div>
-    ${moneyMonth===monthKey(Date.now()) ? forecastHtml() : ''}
+    ${moneySpace===null ? spaceSplitHtml(txs) : ''}
+    ${moneyMonth===monthKey(Date.now()) && moneySpace===null ? forecastHtml() : ''}
     ${parts.length ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}${vsPrev(p.v, prevBy[p.id])}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
     ${notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : ''}
     ${placesHtml(txs, monthTx(prevMk))}
+    ${moneySpace!==null ? `<div class="m-sub"><h3>${L('الميزانية','Budget')}</h3><button type="button" data-spaces>${L('تعديل','Edit')}</button></div><div class="budgets">${spaceBudgetHtml(exp)}</div>` : `
     <div class="m-sub"><h3>${L('الميزانيات','Budgets')}</h3><button type="button" data-budedit>${budIds.length || bTotal ? L('تعديل الميزانيات','Edit budgets') : L('حدّد ميزانية','Set budgets')}</button></div>
-    ${budIds.length || bTotal ? `<div class="budgets">${buds}</div>` : `<div class="note">${L('حدّد مبلغ لكل فئة في الشهر، والتطبيق ينبهك لما تقرّب منه.', "Set a monthly amount per category and you'll be warned as you get close.")}</div>`}
+    ${budIds.length || bTotal ? `<div class="budgets">${buds}</div>` : `<div class="note">${L('حدّد مبلغ لكل فئة في الشهر، والتطبيق ينبهك لما تقرّب منه.', "Set a monthly amount per category and you'll be warned as you get close.")}</div>`}`}
     ${subsHtml()}
     ${state.tx.length ? `<div><div class="m-sub"><h3>${L('العمليات','Transactions')}</h3><span class="row" style="gap:6px"><button type="button" data-txexport title="${L('تنزيل العمليات اللي ظاهرة كملف Excel','Download the transactions shown as an Excel file')}">⬇ Excel</button><button type="button" data-txpdf title="${L('كشف PDF بالعمليات اللي ظاهرة','A PDF statement of the transactions shown')}">⬇ PDF</button></span></div>
       <div class="tx-filter">
@@ -3816,7 +3940,11 @@ function renderMoney(){
   // a re-render (a sync, a price refresh) mustn't throw the person out of the search box mid-word
   if(typing){ const el = document.getElementById(typing.id); if(el){ el.focus(); try{ el.setSelectionRange(typing.pos, typing.pos); }catch(e){} } }
 }
-function refreshTxList(){ const el = document.getElementById('tx-list'); if(el) el.innerHTML = txListInner(monthTx(moneyMonth)); }
+function refreshTxList(){ const el = document.getElementById('tx-list'); if(el) el.innerHTML = txListInner(monthTx(moneyMonth).filter(inSpace)); }
+document.getElementById('money-body').addEventListener('click', e=>{
+  const s = e.target.closest('[data-space]'); if(s){ setMoneySpace(s.dataset.space==='*' ? null : s.dataset.space); return; }
+  if(e.target.closest('[data-spaces]')) openSpaces();
+});
 document.getElementById('money-body').addEventListener('input', e=>{
   const id = e.target.id;
   if(id==='tx-q') txF.q = e.target.value; else if(id==='tx-min') txF.min = e.target.value; else return;
@@ -4526,7 +4654,25 @@ sheetBody.addEventListener('click', e=>{
   offerUndo(L(`اتمسحت ${fmt(n,0)} عملية.`, `${n} transactions deleted.`), snap);
 });
 document.getElementById('btn-reset-money').addEventListener('click', ()=>{ dlg.close(); openResetMoney(); });
-document.getElementById('app-ver').textContent = 'v' + APP_VERSION;
+document.getElementById('app-ver').textContent = APP_VERSION;
+function renderAppDate(){ document.getElementById('app-date').textContent = L('· اتحدّث ', '· updated ') + dateFmt(new Date(APP_DATE + 'T12:00')); }
+renderAppDate();
+function openWhatsNew(){
+  sheetSec = 'new';
+  document.getElementById('sheet-title').textContent = L(`الجديد في ${APP_VERSION}`, `What's new in ${APP_VERSION}`);
+  sheetBody.innerHTML = `<div class="wn-list">${WHATS_NEW.map(([a, e])=>`<div>${L(a, e)}</div>`).join('')}</div>
+    <div class="note">${L(`نماء ${APP_VERSION} · ${dateFmt(new Date(APP_DATE + 'T12:00'))}`, `Namaa ${APP_VERSION} · ${dateFmt(new Date(APP_DATE + 'T12:00'))}`)}</div>
+    <button type="button" class="go-btn" data-wnok>${L('تمام','Got it')}</button>`;
+  if(!sheet.open) sheet.showModal();
+}
+sheetBody.addEventListener('click', e=>{ if(sheetSec==='new' && e.target.closest('[data-wnok]')) sheet.close(); });
+document.getElementById('btn-whatsnew').addEventListener('click', ()=>{ dlg.close(); openWhatsNew(); });
+// the first opening after an update says so once, with the notes a tap away (not on a first install)
+(()=>{
+  let seen = null; try{ seen = localStorage.getItem('wealth-seen-build'); localStorage.setItem('wealth-seen-build', APP_BUILD); }catch(e){ return; }
+  // no build saved yet but data already there = updated from before this note existed
+  if(seen ? +seen < APP_BUILD : state._savedAt > 0) setTimeout(()=>toast(L(`اتحدّث نماء لـ ${APP_VERSION} ✨`, `Namaa updated to ${APP_VERSION} ✨`), {label: L('إيه الجديد','What\'s new'), fn: openWhatsNew}), 2600);
+})();
 // asks the server for a newer sw.js (the browser does this past the cache); a new one installs itself, and the page reloads onto it
 document.getElementById('btn-update').addEventListener('click', async e=>{
   const b = e.currentTarget, label = b.textContent;
@@ -4542,7 +4688,7 @@ document.getElementById('btn-update').addEventListener('click', async e=>{
       setTimeout(()=>location.reload(), 8000);   // in case the switch-over event never comes
       return;
     }
-    toast(L(`انت على آخر إصدار (v${APP_VERSION}).`, `You're on the latest version (v${APP_VERSION}).`));
+    toast(L(`انت على آخر إصدار (${APP_VERSION}).`, `You're on the latest version (${APP_VERSION}).`));
   }catch(err){ toast(L('مقدرتش أدوّر دلوقتي. اتأكد من النت وجرّب تاني.', "Couldn't check right now. Check your connection and try again.")); }
   b.disabled = false; b.textContent = label;
 });
@@ -4899,16 +5045,17 @@ document.getElementById('goals-body').addEventListener('click', e=>{
 });
 
 // tap a transaction to fix its amount or move it to another category
-let recatId = null, recatCat = '';
+let recatId = null, recatCat = '', recatSp = '';
 function openRecat(id){
   const t = state.tx.find(x=>x.id===id); if(!t) return;
-  recatId = id; recatCat = t.cat; sheetSec = 'recat';
+  recatId = id; recatCat = t.cat; recatSp = t.sp || ''; sheetSec = 'recat';
   const curLbl = t.cur && t.cur!=='EGP' ? t.cur : L('ج.م','EGP');
   document.getElementById('sheet-title').textContent = t.type==='exp' ? L('تعديل المصروف','Edit expense') : L('تعديل الدخل','Edit income');
   sheetBody.innerHTML = `<div class="note"><b>${esc(t.note || catName(catById(t.cat)))}</b></div>
     ${fld(L(`المبلغ (${curLbl})`, `Amount (${curLbl})`), `<input id="re-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" value="${t.amount}">`)}
     <div class="two">${fld(L('التاريخ','Date'), `<input id="re-date" type="date" value="${esc(t.date)}">`)}${fld(L('ملاحظة','Note'), `<input id="re-note" type="text" value="${esc(t.note)}" placeholder="${L('اختياري','optional')}">`)}</div>
     <div class="field"><span>${L('الفئة','Category')}</span><div class="chips" id="re-cats">${cats(t.type).map(c=>`<button type="button" data-recat="${c.id}" aria-pressed="${c.id===t.cat}"><i style="background:${c.color}"></i>${esc(catName(c))}</button>`).join('')}</div></div>
+    ${spaceChips(t.sp, 'data-resp')}
     ${t.note && t.sig ? `<label class="note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="recat-learn" checked> ${L(`افتكر «${esc(t.note)}» على الفئة دي في رسايل البنك الجاية`, `Remember "${esc(t.note)}" under this category for future bank messages`)}</label>` : ''}
     ${t.acct ? `<div class="note">${L('لو غيّرت المبلغ، رصيد الحساب هيتظبط بالفرق.', 'Changing the amount adjusts the account balance by the difference.')}</div>` : ''}
     <button type="button" class="go-btn" data-resave>${L('حفظ','Save')}</button>`;
@@ -4918,6 +5065,8 @@ sheetBody.addEventListener('click', e=>{
   if(sheetSec!=='recat') return;
   const pick = e.target.closest('[data-recat]');
   if(pick){ recatCat = pick.dataset.recat; sheetBody.querySelectorAll('[data-recat]').forEach(b=>b.setAttribute('aria-pressed', b===pick)); return; }
+  const sp = e.target.closest('[data-resp]');
+  if(sp){ recatSp = sp.dataset.resp; sheetBody.querySelectorAll('[data-resp]').forEach(b=>b.setAttribute('aria-pressed', b===sp)); return; }
   if(!e.target.closest('[data-resave]')) return;
   const t = state.tx.find(x=>x.id===recatId); if(!t) return;
   const amount = num(document.getElementById('re-amt').value);
@@ -4928,7 +5077,7 @@ sheetBody.addEventListener('click', e=>{
   // take the old amount off the account, then put the new one on, keeping the exchange rate it was recorded at
   const perUnit = t.amount ? txEgp(t) / t.amount : 1;
   applyTxTo(state.cash, t, -1);
-  t.amount = amount; t.egp = Math.round(amount * perUnit * 100) / 100; t.cat = recatCat;
+  t.amount = amount; t.egp = Math.round(amount * perUnit * 100) / 100; t.cat = recatCat; t.sp = recatSp;
   applyTxTo(state.cash, t, 1);
   if(document.getElementById('recat-learn')?.checked) state.merchantCats[merchantKey(t.note)] = t.cat;
   save(); render(); sheet.close(); buzz();
@@ -4993,7 +5142,8 @@ function openTx(type){ sheetTx(type); if(!sheet.open) sheet.showModal(); buzz(6)
 function sheetTx(type){
   sheetSec = 'tx';
   const defAcct = acctById(state.lastAcct) ? state.lastAcct : (state.cash[0]?.id || '');
-  txDraft = {type, cat: txDraft?.type===type ? txDraft.cat : cats(type)[0].id, acct: txDraft?.acct ?? defAcct};
+  txDraft = {type, cat: txDraft?.type===type ? txDraft.cat : cats(type)[0].id, acct: txDraft?.acct ?? defAcct,
+             sp: txDraft?.sp ?? moneySpace ?? spaceById(state.lastSpace).id};   // the section shown, else the last one used
   renderTxSheet(true);
   setTimeout(()=>document.getElementById('t-amt')?.focus(), 60);
 }
@@ -5122,6 +5272,7 @@ function renderTxSheet(fresh){
     }).join('')}
       <button type="button" data-txnewcat>+ ${L('فئة جديدة','New category')}</button>
       ${state.hiddenCats.length ? `<button type="button" class="linkish" data-txrestore style="border:0;background:none">${L(`↺ رجّع الفئات الأساسية (${fmt(state.hiddenCats.length,0)})`, `↺ Bring back built-in categories (${state.hiddenCats.length})`)}</button>` : ''}</div></div>
+    ${spaceChips(d.sp, 'data-txsp')}
     ${fld(d.type==='exp' ? L('هتدفع منين؟','Paying from') : L('اتحط في','Paid into'), acctChips('acct', d.acct, true))}
     <div class="two">${fld(L('التاريخ','Date'), `<input id="t-date" type="date" value="${esc(date)}">`)}${fld(L('ملاحظة','Note'), `<input id="t-note" type="text" value="${esc(note)}" placeholder="${L('اختياري','optional')}">`)}</div>
     <label class="field" style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="t-rep" ${rep?'checked':''}> <span>${L('يتكرر كل شهر في نفس اليوم','Repeat every month on this day')}</span></label>
@@ -5133,12 +5284,12 @@ function txSave(){
   const date = document.getElementById('t-date').value || today(), note = document.getElementById('t-note').value;
   if(date > today()){ toast(L('التاريخ لسه ماجاش. اختار النهارده أو قبله.', 'That date is in the future. Pick today or earlier.')); return; }
   const acct = ensureWallet(document.getElementById('t-acct').value);
-  const tx = addTx({type:txDraft.type, amount, cat:txDraft.cat, acct, date, note});
+  const tx = addTx({type:txDraft.type, amount, cat:txDraft.cat, acct, date, note, sp: txDraft.sp || ''});
   if(document.getElementById('t-rep').checked){
-    const rec = {id:newId('r'), type:tx.type, amount, cat:tx.cat, note:tx.note, acct, day: +date.slice(8,10), start: date, lastMonth: monthOf(date)};
+    const rec = {id:newId('r'), type:tx.type, amount, cat:tx.cat, note:tx.note, acct, sp: tx.sp, day: +date.slice(8,10), start: date, lastMonth: monthOf(date)};
     tx.recId = rec.id; state.recurring.push(rec);
   }
-  state.lastAcct = acct; moneyMonth = monthOf(date);
+  state.lastAcct = acct; state.lastSpace = tx.sp; moneyMonth = monthOf(date);
   save(); render(); buzz(); sheet.close(); txDraft = null;
   toast(tx.type==='exp' ? L(`اتسجّل مصروف ${egp(tx.egp)}${acct ? ' واتخصم من الحساب' : ''}.`, `Expense of ${egp(tx.egp)} saved${acct ? ' and taken from the account' : ''}.`)
                         : L(`اتسجّل دخل ${egp(tx.egp)}${acct ? ' واتضاف للحساب' : ''}.`, `Income of ${egp(tx.egp)} saved${acct ? ' and added to the account' : ''}.`),
@@ -5199,9 +5350,10 @@ sheetBody.addEventListener('click', e=>{
   }
   else if(b.dataset.txsave!==undefined) txSave();
   else if(b.dataset.trsave!==undefined) trSave();
+  else if(b.dataset.txsp!==undefined){ txDraft.sp = b.dataset.txsp; buzz(6); renderTxSheet(); }
   else if(b.dataset.qpick){
     const t = state.tx.find(x=>x.id===b.dataset.qpick); if(!t) return;
-    txDraft.cat = t.cat; if(t.acct && acctById(t.acct)) txDraft.acct = t.acct;
+    txDraft.cat = t.cat; txDraft.sp = t.sp || ''; if(t.acct && acctById(t.acct)) txDraft.acct = t.acct;
     document.getElementById('t-amt').value = t.amount; document.getElementById('t-note').value = t.note || '';
     buzz(6); renderTxSheet();
     document.querySelector('[data-txsave]')?.focus();   // one more tap on Save and it's in
@@ -5385,7 +5537,7 @@ function foldPendingTwins(){
 function filePending(id, quiet){
   const i = state.pending.findIndex(p=>p.id===id); if(i < 0) return;
   const p = state.pending[i];
-  const tx = addTx({type:p.type, amount:p.amount, cat:p.cat, acct:p.acct, date:p.date, note:p.merchant || lbl(bankById(p.bank||'OTHER'))});
+  const tx = addTx({type:p.type, amount:p.amount, cat:p.cat, acct:p.acct, date:p.date, note:p.merchant || lbl(bankById(p.bank||'OTHER')), sp: p.sp ?? moneySpace ?? ''});
   tx.sig = p.raw.replace(/\s+/g,' ');
   if(p.merchant) state.merchantCats[merchantKey(p.merchant)] = p.cat;   // learn the shop for next time
   state.pending.splice(i, 1); state.deletedPending.push(p.id);
@@ -5415,6 +5567,7 @@ function pendingHtml(){
           <label class="field"><span>${L('الفئة','Category')}</span><select data-pcat="${p.id}">${cats(p.type).map(x=>`<option value="${x.id}" ${x.id===p.cat?'selected':''}>${esc(catName(x))}</option>`).join('')}</select></label>
           <label class="field"><span>${p.type==='exp'?L('اتدفع من','Paid from'):L('اتحط في','Paid into')}</span><select data-pacct="${p.id}"><option value="">${L('من غير خصم','Not linked')}</option>${state.cash.map(r=>`<option value="${r.id}" ${r.id===p.acct?'selected':''}>${esc(acctName(r))}</option>`).join('')}</select></label>
         </div>
+        ${hasSpaces() ? `<label class="field"><span>${L('القسم','Section')}</span><select data-psp="${p.id}">${spaces().map(s=>`<option value="${s.id}" ${s.id===(p.sp ?? moneySpace ?? '')?'selected':''}>${s.icon} ${esc(s.name)}</option>`).join('')}</select></label>` : ''}
         <details class="pend-raw"><summary>${L('نص الرسالة','Message text')}</summary><div>${esc(p.raw)}</div></details>
         <div class="row"><button type="button" class="go-btn sm" data-pok="${p.id}">✓ ${L('سجّل','File it')}</button><button type="button" class="x" data-pdrop="${p.id}">${L('تجاهل','Ignore')}</button></div>
       </div>`; }).join('')}
@@ -5422,9 +5575,9 @@ function pendingHtml(){
   </div>`;
 }
 document.getElementById('money-body').addEventListener('change', e=>{
-  const t = e.target, id = t.dataset.pcat || t.dataset.pacct; if(!id) return;
+  const t = e.target, id = t.dataset.pcat || t.dataset.pacct || t.dataset.psp; if(!id) return;
   const p = state.pending.find(x=>x.id===id); if(!p) return;
-  if(t.dataset.pcat) p.cat = t.value; else p.acct = t.value;
+  if(t.dataset.pcat) p.cat = t.value; else if(t.dataset.psp) p.sp = t.value; else p.acct = t.value;
   save();
 });
 document.getElementById('money-body').addEventListener('click', e=>{
