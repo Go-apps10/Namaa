@@ -364,6 +364,112 @@ tr.grp:first-child td{border-top:0}
     bottom:calc(84px + env(safe-area-inset-bottom,0px));width:42px;height:42px}
 }
 
+/* ===== the calm look, laid out as its design ===== */
+.ch-top,.ch-assets,.ch-today{display:none}
+:root[data-ui="calm"] .ch-top,:root[data-ui="calm"] .ch-assets{display:grid}
+:root[data-ui="calm"] .ch-today:not([hidden]){display:flex}
+/* its own header and hero replace the app header, price strip and net worth box */
+:root[data-ui="calm"] .wrap>header,:root[data-ui="calm"] .wrap>.tools,:root[data-ui="calm"] .wrap>.total,
+:root[data-ui="calm"] .wrap>.tday,:root[data-ui="calm"] #market-note{display:none!important}
+:root[data-ui="calm"] .wrap>.ch-top{order:-5}
+:root[data-ui="calm"] .wrap>.qacts{order:-4}
+:root[data-ui="calm"] .wrap>.ch-today{order:-3}
+:root[data-ui="calm"] .wrap>.ch-assets{order:-2}
+:root[data-ui="calm"] .wrap{padding-top:calc(18px + env(safe-area-inset-top,0px))}
+.ch-top{gap:18px}
+.ch-head{display:flex;align-items:center;justify-content:space-between}
+.ch-who{display:flex;align-items:center;gap:12px}
+.ch-who>div{display:flex;flex-direction:column;line-height:1.35}
+.ch-av{width:44px;height:44px;border-radius:22px!important;border:0;padding:0;background:var(--pill);color:var(--accent);font:600 1rem var(--display);display:grid;place-items:center;overflow:hidden}
+.ch-av img{width:100%;height:100%;object-fit:cover}
+.ch-greet{font-size:.82rem;color:var(--muted)}
+.ch-name{font:600 1.12rem var(--display)}
+.ch-btns{display:flex;gap:8px}
+.ch-ic{width:44px;height:44px;border-radius:22px!important;border:0;padding:0;background:var(--surface);color:var(--fg);display:grid;place-items:center;position:relative}
+.ch-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ch-dot{position:absolute;top:10px;inset-inline-end:11px;width:8px;height:8px;border-radius:4px;background:#C2410C}
+.ch-hero{background:var(--hero);color:#FFFFFF;border-radius:28px;padding:22px 22px 14px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.ch-l{font-size:.82rem;color:var(--hero-soft)}
+.ch-big{font:700 2.4rem/1.1 var(--display);letter-spacing:-.5px;display:flex;align-items:baseline;gap:8px}
+.ch-big small{font:500 .95rem var(--body);color:var(--hero-soft);letter-spacing:0}
+.ch-sub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem;color:var(--hero-soft)}
+.ch-pill{background:var(--gold-hi);color:#13201B;font-weight:600;padding:3px 10px;border-radius:999px}
+.ch-spark{width:100%;height:56px;margin-top:6px;display:block}
+.ch-spark .ln{fill:none;stroke:var(--gold-hi);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.ch-spark .fill{fill:#FFFFFF;fill-opacity:.08}
+.ch-today{background:var(--surface);border-radius:24px;padding:6px;flex-direction:column}
+.ch-today h2{margin:0;padding:10px 14px 4px;font:600 .88rem var(--display);color:var(--muted)}
+.ch-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:0;border-radius:16px!important;background:none;color:var(--fg);text-align:start;font-size:.9rem;width:100%}
+.ch-row.ch-hl{background:color-mix(in srgb,#F5B544 16%,var(--surface))}
+.ch-row.col{flex-direction:column;align-items:stretch;gap:8px}
+.ch-ri{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;flex:none}
+.ch-ri svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ch-ri.amber{background:color-mix(in srgb,#F5B544 32%,var(--surface));color:#8A5A00}
+.ch-ri.blue{background:color-mix(in srgb,#3B6FE0 14%,var(--surface));color:#1D4ED8}
+.ch-rt{flex:1;min-width:0}
+.ch-go{color:var(--muted)}
+.ch-sp{display:flex;justify-content:space-between}
+.mu{color:var(--muted)}
+.ch-bar{display:block;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.ch-bar span{display:block;height:100%;border-radius:4px;background:var(--hero)}
+.ch-bar span.over{background:var(--down)}
+.ch-assets{gap:10px}
+.ch-ah{display:flex;justify-content:space-between;align-items:baseline}
+.ch-ah h2{margin:0;font:600 1rem var(--display)}
+.ch-ah .linkish{border:0;background:none;color:var(--accent);font-size:.82rem;padding:4px}
+.ch-ac{display:flex;gap:10px}
+.ch-a{flex:1;min-width:0;background:var(--surface);border:0;border-radius:20px!important;padding:14px;display:flex;flex-direction:column;gap:4px;text-align:start;color:var(--fg);font-size:.76rem}
+.ch-a i{width:10px;height:10px;border-radius:5px}
+.ch-a b{font:600 .95rem var(--display)}
+.ch-more{display:flex;gap:8px}
+.ch-more button{flex:1;border:0;background:var(--surface);border-radius:14px;padding:12px;font-size:.84rem;color:var(--accent)}
+:root[data-ui="calm"] .qacts .qi{border-radius:18px}
+/* Spending: the summary card with the ring, and the category bars */
+.cs{display:flex;align-items:center;gap:18px;background:var(--bg);border-radius:24px;padding:16px}
+.cs-ring{width:112px;height:112px;flex:none}
+.cs-ring .trk{fill:none;stroke:var(--line);stroke-width:14}
+.cs-ring .val{fill:none;stroke:var(--hero);stroke-width:14;stroke-linecap:round}
+.cs-ring .val.over{stroke:var(--down)}
+.cs-ring .pc{font:700 22px var(--display);fill:var(--fg)}
+.cs-ring .lb{font-size:11px;fill:var(--muted)}
+.cs-n{display:flex;flex-direction:column;gap:10px;flex:1;min-width:0}
+.cs-n>div:first-child{display:flex;flex-direction:column}
+.cs-n b{font:700 1.45rem var(--display)}
+.cs-n b small{font:500 .8rem var(--body);color:var(--muted)}
+.cs-row{display:flex;gap:16px}
+.cs-row>div{display:flex;flex-direction:column}
+.cs-row b{font:600 .98rem var(--body)}
+.cs .mu{font-size:.76rem}
+.cc{display:grid;gap:12px;background:var(--bg);border-radius:24px;padding:16px}
+.cc h3{margin:0;font:600 .95rem var(--display)}
+.cc-r{display:grid;gap:6px}
+.cc-t{display:flex;justify-content:space-between;font-size:.9rem}
+.cc-b{display:block;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.cc-b span{display:block;height:100%;border-radius:4px}
+/* the spending card itself is the white sheet; inner blocks sit on the page tint, as in the design */
+:root[data-ui="calm"] #sec-money .mk{display:none}
+/* the daily-allowance and emergency cards come after the spending card, which leads as in the design */
+:root[data-ui="calm"] .wrap>#allow,:root[data-ui="calm"] .wrap>#efund{order:1}
+/* Reports: the net worth change is the green hero across the top, then saved and savings rate; spending bars in gold */
+:root[data-ui="calm"]{--ov-exp:var(--gold-hi)}
+:root[data-ui="calm"] .ov-k:first-child{grid-column:1/-1;background:var(--hero);color:#FFFFFF}
+:root[data-ui="calm"] .ov-k:first-child .l,:root[data-ui="calm"] .ov-k:first-child .s{color:var(--hero-soft)}
+:root[data-ui="calm"] .ov-k:first-child .v{color:#FFFFFF;font-size:1.6rem}
+:root[data-ui="calm"] .ov-k:nth-child(4){display:none}
+:root[data-ui="calm"] .ov-k{background:var(--bg);border-radius:22px}
+/* the bottom bar in the design's order: Home, Assets, (+), Spending, Reports; Zakat and alerts are on Home */
+@media (max-width:640px){
+  :root[data-ui="calm"] .bnav button[data-goto="zakat"],:root[data-ui="calm"] .bnav button[data-goto="alerts"]{display:none}
+  :root[data-ui="calm"] .bnav button[data-goto="home"]{order:1}
+  :root[data-ui="calm"] .bnav button[data-goto="assets"]{order:2;margin-inline-end:36px}
+  :root[data-ui="calm"] .bnav button[data-goto="money"]{order:4;margin-inline-start:36px}
+  :root[data-ui="calm"] .bnav button[data-goto="reports"]{order:5;margin-inline-end:0}
+  :root[data-ui="calm"] .bnav{justify-content:center}
+  :root[data-ui="calm"] .bnav button{font-size:.7rem;flex:0 0 66px}
+  :root[data-ui="calm"] .bnav{padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+  :root[data-ui="calm"] .fab{border-radius:22px;bottom:calc(36px + env(safe-area-inset-bottom,0px))}
+}
+
 /* four quick actions under the net worth (only in the trial looks) */
 .qacts{display:none}
 #styles-field.dim{opacity:.55}
@@ -377,7 +483,6 @@ tr.grp:first-child td{border-top:0}
   :root[data-ui="calm"] .bnav{border-top:0;border-radius:26px 26px 0 0;box-shadow:0 -6px 24px rgba(15,61,46,.08)}
   :root[data-ui="calm"] .bnav-ind{background:var(--pill);border-radius:999px}
   :root[data-ui="calm"] .bnav button[aria-current=page]{color:var(--accent)}
-  :root[data-ui="calm"] .bnav button[data-goto="reports"]{margin-inline-end:64px}
   /* the AI bubble sits low at the side, clear of the quick actions */
   :root[data-ui="calm"] .fab-ai{bottom:calc(84px + env(safe-area-inset-bottom,0px));width:42px;height:42px}
   :root[data-ui="calm"] .fab{inset-inline-end:auto;left:50%;translate:-50% 0;bottom:calc(30px + env(safe-area-inset-bottom,0px));
@@ -1260,6 +1365,11 @@ section.card.collapsed{gap:0}
     </div>
   </div>
 
+  <!-- the calm look's Home, drawn as in its design (renderCalmHome): greeting, net worth on green, today, your assets -->
+  <div class="ch-top" id="ch-top" data-tab="home"></div>
+  <section class="ch-today" id="ch-today" data-tab="home" hidden></section>
+  <section class="ch-assets" id="ch-assets" data-tab="home"></section>
+
   <!-- the new look only: four quick actions under the net worth -->
   <nav class="qacts" data-tab="home" aria-label="إجراءات سريعة" data-en-label="Quick actions">
     <button type="button" data-qact="exp"><span class="qi q-exp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></span><span data-en="Expense">مصروف</span></button>
@@ -1762,11 +1872,12 @@ const BROKERS = [
   {id:'OTHER',    label:'شركة تانية', en:'Other broker'},
 ];
 // the version people see is 1.<build>, like store apps; APP_BUILD goes up with CACHE in sw.js on every release
-const APP_BUILD = 34, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
+const APP_BUILD = 35, APP_VERSION = `1.${APP_BUILD}`, APP_DATE = '2026-10-30';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
   feat: [
+    ['🎨 الشكل «الهادي» بقى زي التصميم بالظبط: الرئيسية فيها تحيتك وصورتك، كارت أخضر بصافي ثروتك وخط آخر ٣٠ يوم، «النهارده»، و«أصولك» في ٣ كروت. البار تحت: الرئيسية، الأصول، +، المصاريف، التقارير. والمصاريف فيها دايرة الميزانية وأشرطة الفئات.', '🎨 The "Calm" look now matches its design: a greeting with your photo, net worth on green with a 30-day line, Today, and your assets in three cards. The bar: Home, Assets, +, Spending, Reports. Spending has the budget ring and category bars.'],
     ['✨ شكلين جداد تجرّبهم من الإعدادات ← المظهر ← شكل الواجهة: «هادية» (كروت ناعمة وصافي ثروتك في كارت أخضر) و«بسيطة» (أبيض وأسود، من غير كروت ولا ظلال). الاتنين فيهم ٤ أزرار سريعة وزرار + في نص البار، وترجع للأصلية بدوسة.', '✨ Two new looks to try in Settings → Appearance → Look: "Calm" (soft cards, net worth on green) and "Flat" (black and white, no cards or shadows). Both have four quick actions and + in the middle of the bar; the original is one tap away.'],
     ['📊 «نظرة عامة» في التقارير: صافي ثروتك اتغيّر قد إيه، وفّرت كام، نسبة التوفير، وأكبر بند صرف، لآخر ٣ أو ٦ شهور أو سنة.', '📊 Overview in Reports: how your net worth moved, what you saved, your savings rate and biggest spending, over 3, 6 or 12 months.'],
     ['📈 الدخل والمصاريف شهر بشهر في رسم واحد. دوس على أي شهر يفتحلك مصاريفه.', '📈 Income and spending month by month in one chart. Tap a month to open its spending.'],
@@ -2564,7 +2675,7 @@ const ROW_SECS = ['gold','silver','cash','stocks','other','debts','alerts'];
 function render(){
   if((state.avatar||'') !== shownAvatar) renderAvatar();   // a photo set on another device arrives with sync
   renderBell();
-  renderAllow(); renderEfund(); renderPeople(); renderCal(); renderBadges(); renderGoldAvg(); renderTodayCard();
+  renderAllow(); renderEfund(); renderPeople(); renderCal(); renderBadges(); renderGoldAvg(); renderTodayCard(); renderCalmHome();
   setTimeout(checkBadges, 0);   // after this render, so a new achievement's message doesn't land mid-render
   renderStamp();
   renderMarket();
@@ -3239,7 +3350,7 @@ function renderOverview(){
   ].join('');
   body.innerHTML = `<div class="ov-kpis">${kpis}</div>
     ${inc || exp ? `<div class="ov-sec"><h3>${L('الدخل والمصاريف شهر بشهر','Income and spending by month')}</h3>${flowChart(flow, short)}
-      <div class="ov-leg"><span><i style="background:var(--up)"></i>${L('الدخل','Income')}</span><span><i style="background:var(--down)"></i>${L('المصاريف','Spending')}</span><span class="note">${L('دوس على أي شهر تشوف مصاريفه','Tap a month to see its spending')}</span></div></div>` : ''}
+      <div class="ov-leg"><span><i style="background:var(--up)"></i>${L('الدخل','Income')}</span><span><i style="background:var(--ov-exp,var(--down))"></i>${L('المصاريف','Spending')}</span><span class="note">${L('دوس على أي شهر تشوف مصاريفه','Tap a month to see its spending')}</span></div></div>` : ''}
     ${top.length ? `<div class="ov-sec"><h3>${L('فئات مصاريفك رايحة على فين','Where your categories are heading')}</h3>${catTrends(top.slice(0,6), months)}</div>` : ''}
     ${allocHtml(hp)}`;
 }
@@ -3258,7 +3369,7 @@ function flowChart(flow, short){
     return `<g class="ov-m${f.mk===cur?' cur':''}" data-ovm="${f.mk}" tabindex="0" role="button" aria-label="${monthLabel(f.mk)}">
       <rect x="${cx - slot/2}" y="0" width="${slot}" height="${H}" fill="transparent"/>
       <rect x="${cx - bw - 1}" y="${m.t + ih - h(f.inc)}" width="${bw}" height="${Math.max(h(f.inc), f.inc ? 2 : 0)}" rx="3" style="fill:var(--up)"/>
-      <rect x="${cx + 1}" y="${m.t + ih - h(f.exp)}" width="${bw}" height="${Math.max(h(f.exp), f.exp ? 2 : 0)}" rx="3" style="fill:var(--down)"/>
+      <rect x="${cx + 1}" y="${m.t + ih - h(f.exp)}" width="${bw}" height="${Math.max(h(f.exp), f.exp ? 2 : 0)}" rx="3" style="fill:var(--ov-exp,var(--down))"/>
       ${slot >= 40 || (n - 1 - i) % 2===0 ? `<text class="axis" x="${cx}" y="${m.t + ih + 15}" text-anchor="middle">${short(f.mk)}</text>` : ''}
       ${(f.inc || f.exp) && slot >= 40 ? `<text x="${cx}" y="${m.t + ih + 31}" text-anchor="middle" class="m" style="font-size:11px;font-weight:600;fill:${net>=0?'var(--up)':'var(--down)'}">${net>=0?'+':'−'}${kShort(Math.abs(net))}</text>` : ''}</g>`;
   }).join('');
@@ -4210,8 +4321,9 @@ function renderMoney(){
   const recs = state.recurring.map(r=>{ const c = catById(r.cat);
     return `<div class="rec-row"><span>${esc(r.note || catName(c))} · ${L(`يوم ${fmt(r.day,0)} كل شهر`, `day ${r.day} monthly`)}</span>
       <span class="m ${r.type==='exp'?'down-t':'up-t'}"><bdi>${r.type==='exp'?'−':'+'}${fmt(r.amount)}</bdi> <button type="button" class="x" data-recdel="${r.id}" aria-label="${L('إيقاف','Stop')}">×</button></span></div>`; }).join('');
-  body.innerHTML = pendingHtml() + spacesBarHtml() + `
-    <div class="mk">
+  const calmUi = document.documentElement.dataset.ui==='calm';
+  body.innerHTML = pendingHtml() + spacesBarHtml() + (calmUi ? calmSummaryHtml(inc, exp, saved, moneySpace!==null ? num(spaceById(moneySpace).budget) : bTotal) : '') + `
+    <div class="mk"${calmUi ? ' hidden' : ''}>
       <div><span class="l">${L('الدخل','Income')}</span><span class="v m up-t">${egp(inc)}</span></div>
       <div><span class="l">${L('المصاريف','Spending')}</span><span class="v m down-t">${egp(exp)}</span></div>
       <div><span class="l">${L('المتبقي','Left over')}</span><span class="v m ${saved>=0?'up-t':'down-t'}"><bdi>${sg(saved)}${egp(Math.abs(saved))}</bdi></span>
@@ -4221,7 +4333,8 @@ function renderMoney(){
     <div class="row"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button><button type="button" data-rules>🏷️ ${L('قواعد التصنيف','Category rules')}</button></div>
     ${moneySpace===null ? spaceSplitHtml(txs) : ''}
     ${moneyMonth===monthKey(Date.now()) && moneySpace===null ? forecastHtml() : ''}
-    ${parts.length ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}${vsPrev(p.v, prevBy[p.id])}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
+    ${parts.length && calmUi ? calmCatsHtml(parts, exp) : ''}
+    ${parts.length && !calmUi ? `<div class="m-split">${donut(parts, exp)}<div class="cat-list">${parts.map(p=>`<div class="cat-row"><i style="background:${p.color}"></i><span>${catName(catById(p.id))}${vsPrev(p.v, prevBy[p.id])}</span><span class="m">${egp(p.v)}</span><span class="p">${fmt(p.v/exp*100,0)}${PCT()}</span></div>`).join('')}</div></div>` : ''}
     ${notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : ''}
     ${placesHtml(txs, monthTx(prevMk))}
     ${moneySpace!==null ? `<div class="m-sub"><h3>${L('الميزانية','Budget')}</h3><button type="button" data-spaces>${L('تعديل','Edit')}</button></div><div class="budgets">${spaceBudgetHtml(exp)}</div>` : `
@@ -4240,6 +4353,25 @@ function renderMoney(){
   renderGoals();
   // a re-render (a sync, a price refresh) mustn't throw the person out of the search box mid-word
   if(typing){ const el = document.getElementById(typing.id); if(el){ el.focus(); try{ el.setSelectionRange(typing.pos, typing.pos); }catch(e){} } }
+}
+/* the calm look's Spending, as in its design: a ring of the budget used beside what was spent, earned and left;
+   then each category as a bar against its own budget (green, amber from 80%, red past it), or its share when it has none */
+function calmSummaryHtml(inc, exp, saved, budget){
+  const base = budget > 0 ? budget : inc, p = base > 0 ? exp / base : 0, C = 2 * Math.PI * 50;
+  const ring = base > 0 ? `<svg class="cs-ring" viewBox="0 0 120 120" role="img" aria-label="${L(`صرفت ${fmt(p*100,0)}٪ ${budget > 0 ? 'من الميزانية' : 'من دخلك'}`, `Spent ${fmt(p*100,0)}% of ${budget > 0 ? 'the budget' : 'income'}`)}">
+      <circle cx="60" cy="60" r="50" class="trk"/><circle cx="60" cy="60" r="50" class="val${p>=1?' over':''}" stroke-dasharray="${(Math.min(1,p)*C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"/>
+      <text x="60" y="58" text-anchor="middle" class="pc">${fmt(p*100,0)}${PCT()}</text><text x="60" y="78" text-anchor="middle" class="lb">${budget > 0 ? L('من الميزانية','of budget') : L('من دخلك','of income')}</text></svg>` : '';
+  return `<div class="cs">${ring}<div class="cs-n">
+      <div><span class="mu">${L('صرفت','Spent')}</span><b class="m">${fmt(exp,0)} <small>${L('ج.م','EGP')}</small></b></div>
+      <div class="cs-row"><div><span class="mu">${L('الدخل','Income')}</span><b class="m up-t">${fmt(inc,0)}</b></div>
+        <div><span class="mu">${budget > 0 ? L('فاضل','Left') : L('المتبقي','Left over')}</span><b class="m ${(budget > 0 ? budget - exp : saved) < 0 ? 'down-t' : ''}">${fmt(budget > 0 ? budget - exp : saved, 0)}</b></div></div></div></div>`;
+}
+function calmCatsHtml(parts, exp){
+  return `<div class="cc"><h3>${L('حسب الفئة','By category')}</h3>${parts.slice(0, 8).map(p=>{
+    const b = moneySpace===null ? num(state.budgets[p.id]) : 0, r = b > 0 ? p.v / b : p.v / exp;
+    const color = b > 0 ? (r >= 1 ? 'var(--down)' : r >= .8 ? '#D97706' : 'var(--up)') : p.color;
+    return `<div class="cc-r"><div class="cc-t"><span>${esc(catName(catById(p.id)))}</span><span><b class="m">${fmt(p.v,0)}</b>${b > 0 ? ` <small class="mu m">/ ${fmt(b,0)}</small>` : ` <small class="mu">${fmt(r*100,0)}${PCT()}</small>`}</span></div>
+      <span class="cc-b"><span style="width:${Math.min(100, r*100)}%;background:${color}"></span></span></div>`; }).join('')}</div>`;
 }
 function refreshTxList(){ const el = document.getElementById('tx-list'); if(el) el.innerHTML = txListInner(monthTx(moneyMonth).filter(inSpace)); }
 document.getElementById('money-body').addEventListener('click', e=>{
@@ -4487,6 +4619,74 @@ document.getElementById('tday').addEventListener('click', e=>{
   const to = {pend:['money','.pend'], money:['money','#sec-money'], debts:['assets','#sec-debts'], stocks:['assets','#sec-stocks']}[go];
   setTab(to[0]);
   requestAnimationFrame(()=>document.querySelector(to[1])?.scrollIntoView({block:'start', behavior:'smooth'}));
+});
+/* ---------- the calm look's Home, as in its design ----------
+   Greeting with the photo (opens Settings), hide-amounts and bell; net worth on the green card with this month's
+   change, its weight in 21k gold and a 30-day line; today's to-dos; the three biggest assets with their month change */
+function renderCalmHome(){
+  const top = document.getElementById('ch-top'); if(!top) return;
+  if(document.documentElement.dataset.ui!=='calm'){ top.innerHTML = ''; document.getElementById('ch-assets').innerHTML = ''; document.getElementById('ch-today').hidden = true; return; }
+  const t = totals(), name = (state.userName||'').trim(), hour = new Date().getHours();
+  const greet = hour < 12 ? L('صباح الخير','Good morning') : L('مساء الخير','Good evening');
+  const av = state.avatar ? `<img src="${state.avatar}" alt="">` : esc((name || L('نماء','N')).slice(0,1));
+  const unread = state.notes.filter(n=>n.t > state.notesSeenAt).length;
+  // this month's change: the first recorded day of the month against now
+  const m0 = new Date(); m0.setDate(1); m0.setHours(0,0,0,0);
+  const first = history.find(p=>p.t >= m0.getTime()), chg = first ? t.net - netOf(first) : null, pct = first && netOf(first) ? chg / Math.abs(netOf(first)) * 100 : null;
+  const g21 = goldPrice('21');
+  // the 30-day line
+  const pts = history.filter(p=>p.t >= Date.now() - 30*DAY).map(netOf);
+  let spark = '';
+  if(pts.length >= 2){
+    const lo = Math.min(...pts), hi = Math.max(...pts), W = 340, H = 56, sx = i => (LANG==='en' ? i : pts.length - 1 - i) / (pts.length - 1) * W, sy = v => hi===lo ? H/2 : 6 + (1 - (v-lo)/(hi-lo)) * (H - 12);
+    const d = pts.map((v,i)=>`${i?'L':'M'}${sx(i).toFixed(1)} ${sy(v).toFixed(1)}`).join('');
+    spark = `<svg class="ch-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${L('صافي ثروتك آخر ٣٠ يوم','Net worth over the last 30 days')}"><path d="${d}L${sx(pts.length-1)} ${H}L${sx(0)} ${H}Z" class="fill"/><path d="${d}" class="ln"/></svg>`;
+  }
+  top.innerHTML = `<div class="ch-head">
+      <div class="ch-who"><button type="button" class="ch-av" data-ch="settings" aria-label="${L('الإعدادات','Settings')}">${av}</button>
+        <div><span class="ch-greet">${greet}</span><b class="ch-name">${esc(name || L('أهلًا بيك','Welcome'))}</b></div></div>
+      <div class="ch-btns"><button type="button" class="ch-ic" data-ch="private" data-private-btn aria-pressed="${isPrivate()}" aria-label="${isPrivate() ? L('إظهار المبالغ','Show amounts') : L('إخفاء المبالغ','Hide amounts')}">${isPrivate() ? EYE_OFF : EYE_ON}</button>
+        <button type="button" class="ch-ic" data-ch="bell" aria-label="${L('الإشعارات','Notifications')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20h4"/></svg>${unread ? '<i class="ch-dot"></i>' : ''}</button></div></div>
+    <div class="ch-hero">
+      <span class="ch-l">${L('صافي ثروتك','Your net worth')}</span>
+      <div class="ch-big m">${isFinite(t.net) ? fmt(t.net, 0) : '—'}<small>${L('ج.م','EGP')}</small></div>
+      <div class="ch-sub">${pct!==null ? `<span class="ch-pill m">${chg>=0?'▲':'▼'} ${fmt(Math.abs(pct),1)}${PCT()} ${L('الشهر دا','this month')}</span>` : ''}
+        ${g21 > 0 && t.net > 0 ? `<span class="m">≈ ${fmt(t.net/g21, 0)} ${L('جرام ذهب ٢١','g of 21k gold')}</span>` : ''}</div>
+      ${spark}</div>`;
+  // today: what needs you, then today's spending against the daily allowance
+  const rows = [];
+  if(state.pending.length) rows.push(`<button type="button" class="ch-row ch-hl" data-tday="pend"><span class="ch-ri amber"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="12" rx="2"/><path d="M4 8l8 5 8-5"/></svg></span><span class="ch-rt">${L(state.pending.length===1 ? 'رسالة بنك مستنية تصنيف' : state.pending.length===2 ? 'رسالتين بنك مستنيين تصنيف' : `${fmt(state.pending.length,0)} رسايل بنك مستنية تصنيف`, `${state.pending.length} bank message${state.pending.length>1?'s':''} to file`)}</span><span class="ch-go" aria-hidden="true">${L('‹','›')}</span></button>`);
+  for(const d of debtsDueSoon()) rows.push(`<button type="button" class="ch-row" data-tday="debts"><span class="ch-ri blue"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><span class="ch-rt">${esc(/^قسط/.test(d.name) || LANG==='en' ? d.name : 'قسط ' + d.name)} <b class="m">${fmt(d.inst,0)}</b> ${d.left===0?L('النهارده','today'):d.left===1?L('بكرة','tomorrow'):L(`بعد ${fmt(d.left,0)} أيام`,`in ${d.left} days`)}</span><span class="ch-go" aria-hidden="true">${L('‹','›')}</span></button>`);
+  const a = allowance(), spent = monthTx(today().slice(0,7)).filter(x=>x.type==='exp' && x.date===today()).reduce((s,x)=>s+txEgp(x),0);
+  if(a) rows.push(`<button type="button" class="ch-row col" data-tday="money"><span class="ch-sp"><span>${L('صرفت النهارده','Spent today')}</span><span><b class="m">${fmt(spent,0)}</b> <span class="mu m">${L('من','of')} ${fmt(a.perDay,0)}</span></span></span>
+    <span class="ch-bar"><span style="width:${Math.min(100, a.perDay > 0 ? spent/a.perDay*100 : 100)}%" class="${spent > a.perDay ? 'over' : ''}"></span></span></button>`);
+  else if(spent > 0) rows.push(`<button type="button" class="ch-row" data-tday="money"><span class="ch-rt">${L('صرفت النهارده','Spent today')} <b class="m">${egp(spent)}</b></span><span class="ch-go" aria-hidden="true">${L('‹','›')}</span></button>`);
+  const today2 = document.getElementById('ch-today');
+  today2.hidden = !rows.length;
+  today2.innerHTML = rows.length ? `<h2>${L('النهارده','Today')}</h2>${rows.join('')}` : '';
+  // your assets: the three biggest, each with how much it moved since about a month ago
+  const ago = history.find(p=>p.t >= Date.now() - 31*DAY);
+  const big = STACK.filter(s=>t[s] > 0).sort((x,y)=>t[y]-t[x]).slice(0,3);
+  const short = { gold: L('ذهب','Gold'), silver: L('فضة','Silver'), cash: L('كاش','Cash'), stocks: L('أسهم','Stocks'), other: L('أصول تانية','Other'), certs: L('شهادات','Certificates') };
+  document.getElementById('ch-assets').innerHTML = big.length ? `<div class="ch-ah"><h2>${L('أصولك','Your assets')}</h2><button type="button" class="linkish" data-ch="assets">${L('الكل','All')}</button></div>
+    <div class="ch-ac">${big.map(s=>{ const was = ago ? ago[s]||0 : 0, p = was > 0 ? (t[s]-was)/was*100 : null;
+      return `<button type="button" class="ch-a" data-ch="assets"><i style="background:${COLORS[s]}"></i><span class="mu">${short[s]}</span><b class="m">${compact(t[s])}</b>
+        <span class="${p===null || Math.abs(p) < .05 ? 'mu' : p > 0 ? 'up-t' : 'down-t'}">${p===null || Math.abs(p) < .05 ? L('ثابت','steady') : `${p>0?'▲':'▼'} ${fmt(Math.abs(p),1)}${PCT()}`}</span></button>`; }).join('')}</div>
+    <div class="ch-more"><button type="button" data-ch="zakat">${L('الزكاة','Zakat')}</button><button type="button" data-ch="alerts">${L('تنبيهات الأسعار','Price alerts')}</button></div>` : '';
+}
+document.querySelector('.wrap').addEventListener('click', e=>{
+  const b = e.target.closest('[data-ch]'); if(!b) return;
+  const a = b.dataset.ch; buzz(6);
+  if(a==='settings') openSettings();
+  else if(a==='private') document.getElementById('btn-private').click();
+  else if(a==='bell') document.getElementById('btn-bell').click();
+  else setTab(a);
+});
+document.getElementById('ch-today').addEventListener('click', e=>{
+  const go = e.target.closest('[data-tday]')?.dataset.tday; if(!go) return;
+  buzz(6);
+  const to = {pend:['money','.pend'], money:['money','#sec-money'], debts:['assets','#sec-debts']}[go];
+  setTab(to[0]); requestAnimationFrame(()=>document.querySelector(to[1])?.scrollIntoView({block:'start', behavior:'smooth'}));
 });
 function renderAllow(){
   const el = document.getElementById('allow'); if(!el) return;
@@ -6957,8 +7157,9 @@ function applyUi(ui){
   try{ localStorage.setItem('wealth-ui', ui); }catch(e){}
   if(TRIAL_LOOKS.includes(ui)){ root.dataset.ui = ui; delete root.dataset.style; }
   else{ delete root.dataset.ui; let st = 'namaa'; try{ st = localStorage.getItem('wealth-style') || 'namaa'; }catch(e){} if(st!=='namaa') root.dataset.style = st; }
-  renderUiPick(); paintThemeColor(); renderStyles();
+  placeTicker(); renderUiPick(); paintThemeColor(); renderStyles();
   try{ render(); }catch(e){}
+  setTab(tab, false);
   requestAnimationFrame(()=>{ document.getElementById('bnav').classList.remove('ready'); placeNavInd(); });
 }
 function renderUiPick(){
@@ -6976,7 +7177,9 @@ document.getElementById('ui-pick').addEventListener('click', e=>{
   applyUi(ui); buzz(8);
   toast(ui==='classic' ? L('رجع الشكل الأصلي.', 'The original look is back.') : L('✨ ده شكل تجريبي. ترجع للأصلي من نفس المكان.', '✨ A trial look. Go back from the same place.'));
 });
-renderUiPick();
+// the calm look's Home has no price strip (as in its design), so the strip moves to the top of Assets
+function placeTicker(){ document.getElementById('ticker').dataset.tab = trialLook()==='calm' ? 'assets' : 'home'; }
+placeTicker(); renderUiPick();
 // the four quick actions under the net worth (new look)
 document.querySelector('.qacts').addEventListener('click', e=>{
   const a = e.target.closest('[data-qact]')?.dataset.qact; if(!a) return;
