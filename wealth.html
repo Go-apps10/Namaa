@@ -613,6 +613,8 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .zk .l{font-size:.78rem;color:var(--muted)}
 .zk .v{font-weight:600}
 .zk-msg{font-size:.9rem}
+.zk-pay{display:block;width:100%;margin-top:12px;background:var(--fab);color:#FFFFFF;border:0;font-weight:600;padding:12px;border-radius:12px;font-size:.98rem;cursor:pointer}
+.zk-pay.soft{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
 .toasts{position:fixed;inset-inline:0;bottom:0;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:grid;gap:8px;justify-items:center;pointer-events:none;z-index:20}
 .toast{pointer-events:auto;background:var(--fg);color:var(--bg);border-radius:10px;padding:10px 16px;font-size:.9rem;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:520px;display:flex;gap:12px;align-items:center}
 .toast button{background:none;border:0;color:inherit;padding:0 4px;font-size:1.1rem}
@@ -1960,11 +1962,12 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 47, APP_VERSION = '2.3.6', APP_DATE = '2026-10-31';
+const APP_BUILD = 48, APP_VERSION = '2.4.0', APP_DATE = '2026-10-31';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
   feat: [
+    ['🕌 زرار «أدّيت الزكاة» في صفحة الزكاة: سجّل المبلغ اللي أخرجته والحساب اللي اتخصم منه، فالزكاة المستحقة تبقى صفر ويبدأ الحول الجاي لوحده. والمبلغ بيتسجّل في «صدقة وزكاة» من غير ما يأثر على ميزانيتك الشهرية.', '🕌 A "Zakat paid" button on the Zakat page: record what you paid and the account it came from, and zakat due goes to zero while the next zakat year starts on its own. It\'s recorded under "Charity & zakat" without touching your monthly budget.'],
     ['📲 إشعارات حتى والتطبيق مقفول: رسايل البنك الجديدة، وتنبيهات الأسعار، ومواعيد الأقساط. فعّلها من الإعدادات ← الإشعارات.', '📲 Notifications even with the app closed: new bank messages, price alerts and instalments. Turn them on in Settings → Notifications.'],
     ['🏠 ميزانيتين منفصلتين: ميزانية للبيت وميزانية ليك. البيت بيتحسب من فئة «مصاريف البيت» (وأي فئة تختارها)، والباقي على ميزانيتك. والمسموح بيه كل يوم من ميزانيتك بس. حطهم من المصاريف ← تعديل الميزانيات.', '🏠 Two separate budgets: one for home and one for you. Home counts the "Home & family" category (and any you choose); the rest is yours, and the daily allowance comes from yours alone. Set them in Spending → Edit budgets.'],
     ['🎨 ٧ ألوان للتطبيق تختار منهم: تيل، زمردي، أزرق، ملكي، مرجاني، صحراوي، وجرافيت. من الإعدادات ← المظهر ← لون التطبيق، وكل لون معمول للفاتح والداكن.', '🎨 Seven app colours to choose from: teal, emerald, ocean, royal, coral, desert and graphite. Settings → Appearance → App colour; each is made for light and dark.'],
@@ -2712,14 +2715,17 @@ function zakatBase(t){
 function renderZakat(t){
   const nisab = goldPrice('24')*85, base = zakatBase(t);
   const due = base * .025, reached = isFinite(nisab) && base >= nisab;
+  const end0 = state.zDate ? new Date(state.zDate).getTime() + HAWL_DAYS*DAY : 0;
+  // paid for the year that just closed: nothing is due until the year it opened completes
+  const paid = zakatPaidNow();
   const cells = [
     [L('وعاء الزكاة','Zakat base'), egp(base), true],
     [L('النصاب (85 جم ذهب عيار 24)','Nisab (85 g of 24k gold)'), egp(nisab), false],
-    [`${L('الزكاة','Zakat')} (${fmt(2.5,1)}${PCT()})`, reached ? egp(due) : '—', true],
+    [`${L('الزكاة','Zakat')} (${fmt(2.5,1)}${PCT()})`, paid ? `${egp(0)} ✓` : reached ? egp(due) : '—', true],
   ];
   let hawlDone = false;
   if(state.zDate){
-    const end = new Date(new Date(state.zDate).getTime() + HAWL_DAYS*DAY), left = Math.ceil((end - Date.now())/DAY);
+    const end = new Date(end0), left = Math.ceil((end - Date.now())/DAY);
     hawlDone = left <= 0;
     const hawl = hawlDone ? L('حلّ الحول','Year complete') : L(`باقي ${fmt(left,0)} يوم`, `${fmt(left,0)} days left`);
     cells.push([L('موعد الحول','Zakat year ends'), `${dateFmt(end)} · ${hawl}`, false]);
@@ -2739,6 +2745,8 @@ function renderZakat(t){
   document.getElementById('zakat-grid').innerHTML = cells.map(([l,v,priv])=>`<div><div class="l">${l}</div><div class="v ${priv?'m':''}">${v}</div></div>`).join('');
   let msg;
   if(!isFinite(nisab)) msg = '';
+  else if(paid) msg = `<span class="pill ok">${L('اتدفعت ✓','Paid ✓')}</span> ${L(`أدّيت زكاة <b class="m">${egp(state.zPaid.amount)}</b> يوم ${dateFmt(new Date(state.zPaid.on))}. الحول الجاي بيخلص يوم ${dateFmt(new Date(end0))}، ووقتها هنحسبلك الزكاة من جديد.`,
+      `You paid <b class="m">${egp(state.zPaid.amount)}</b> in zakat on ${dateFmt(new Date(state.zPaid.on))}. The next zakat year ends on ${dateFmt(new Date(end0))}, and it's worked out again then.`)}`;
   else if(!reached && state.zMode==='hanafi' && state.zDate && !hawlDone)
     msg = `<span class="pill warn">${L('تحت النصاب دلوقتي','Below nisab right now')}</span> ${L('على رأي الحنفية الحول مش بينقطع بنزول المال في نص السنة. العبرة بالوعاء يوم الموعد.', "In the Hanafi view a dip during the year doesn't break it. What counts is the base on the due date.")}`;
   else if(!reached) msg = `<span class="pill idle">${L('أقل من النصاب','Below nisab')}</span> ${L('مفيش زكاة واجبة على الوعاء الحالي.','No zakat is due on the current base.')}`
@@ -2746,11 +2754,47 @@ function renderZakat(t){
         ? L(`الحول خلص يوم ${dateFmt(new Date(state.zBrokenOn))} والوعاء تحت النصاب، فمفيش زكاة. هيبدأ حول جديد أول ما الوعاء يوصل للنصاب.`, `The zakat year ended on ${dateFmt(new Date(state.zBrokenOn))} with the base below the nisab, so no zakat was due. A new year starts once the base reaches the nisab.`)
         : L(`الحول انقطع يوم ${dateFmt(new Date(state.zBrokenOn))}، وهيبدأ حول جديد أول ما الوعاء يوصل للنصاب.`, `The zakat year broke on ${dateFmt(new Date(state.zBrokenOn))}; a new one starts once the base reaches the nisab.`)) : '');
   else if(!state.zDate) msg = `<span class="pill warn">${L('فوق النصاب','Above nisab')}</span> ${L('سجّل تاريخ بلوغ النصاب عشان نحسبلك موعد الحول.','Set the date your wealth reached the nisab to see when the zakat year ends.')}`;
-  else if(hawlDone) msg = `<span class="pill due">${L('حلّ الحول','Year complete')}</span> ${L('الزكاة المستحقة','Zakat due:')} <b class="m">${egp(due)}</b>. ${L('بعد إخراجها سجّل تاريخ جديد للحول.','After paying it, set a new start date.')}`;
+  else if(hawlDone) msg = `<span class="pill due">${L('حلّ الحول','Year complete')}</span> ${L('الزكاة المستحقة','Zakat due:')} <b class="m">${egp(due)}</b>. ${L('بعد ما تخرجها دوس «أدّيت الزكاة».','Once you pay it, tap "Zakat paid".')}`;
   else msg = `<span class="pill ok">${L('فوق النصاب','Above nisab')}</span> ${L('الزكاة لما الحول يحل حوالي','When the year ends, zakat will be about')} <b class="m">${egp(due)}</b> ${L('لو الثروة فضلت كده.','if your wealth stays the same.')}`;
+  // paying can come early (allowed by most scholars), so the button shows whenever zakat is owed on the base
+  if(reached && !paid) msg += `<button type="button" class="go-btn zk-pay${hawlDone ? '' : ' soft'}" id="zk-pay">✓ ${L('أدّيت الزكاة','Zakat paid')}</button>`;
   document.getElementById('zakat-msg').innerHTML = msg;
-  document.getElementById('zakat-sum').textContent = reached ? egp(due) : '';
+  document.getElementById('zakat-sum').textContent = paid ? `${egp(0)} ✓` : reached ? egp(due) : '';
 }
+const zakatPaidNow = () => !!(state.zPaid && state.zDate && state.zPaid.next===state.zDate
+  && Date.now() < new Date(state.zDate).getTime() + HAWL_DAYS*DAY);
+// "Zakat paid": the amount (what's due, editable), the account it came out of and the day
+function openZakatPay(){
+  const due = Math.round(zakatBase(totals()) * .025);
+  sheetSec = 'zakatpay'; ppId = homeAcct();
+  document.getElementById('sheet-title').textContent = L('أدّيت الزكاة','Zakat paid');
+  sheetBody.innerHTML = `${fld(L('المبلغ اللي أخرجته (ج.م)','Amount paid (EGP)'), `<input id="zk-amt" class="amt-in" type="number" min="0" step="any" inputmode="decimal" value="${due}">`)}
+    ${fld(L('اتخصمت من','Paid from'), acctChips('zk', ppId, true).replace(/data-acctpick=/g, 'data-zkpick='))}
+    ${fld(L('التاريخ','Date'), `<input id="zk-date" type="date" value="${today()}" max="${today()}">`)}
+    <div class="note">${L('لو اخترت حساب، المبلغ هيتخصم منه ويتسجّل مصروف في «صدقة وزكاة». الزكاة المستحقة هتبقى صفر، ويبدأ الحول الجاي من موعد الحول ده.',
+      'If you pick an account, the amount comes out of it and is recorded under "Charity & zakat". Zakat due goes to zero, and the next zakat year starts from this one\'s due date.')}</div>
+    <button type="button" class="go-btn" data-zk-save>${L('سجّل','Save')}</button>`;
+  if(!sheet.open) sheet.showModal();
+  buzz(6);
+}
+document.getElementById('sheet-body').addEventListener('click', e=>{
+  if(sheetSec!=='zakatpay') return;
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.zkpick!==undefined){ ppId = b.dataset.id; sheetBody.querySelectorAll('[data-zkpick]').forEach(x=>x.setAttribute('aria-pressed', x===b)); buzz(6); }
+  else if(b.dataset.zkSave!==undefined){
+    const amount = num(document.getElementById('zk-amt').value), on = document.getElementById('zk-date').value || today();
+    if(!(amount > 0)){ buzz([30,40,30]); toast(L('اكتب المبلغ.', 'Enter the amount.')); return; }
+    const snap = JSON.stringify(state);
+    if(ppId) addTx({type:'exp', amount, cat:'charity', acct: ensureWallet(ppId), date: on, note: L('زكاة المال','Zakat'), zk: 1});
+    // the next year starts where this one ends (or on the day paid, if no year was being tracked)
+    const next = state.zDate ? dayKey(new Date(state.zDate).getTime() + HAWL_DAYS*DAY) : on;
+    state.zPaid = {on, amount, next};
+    state.zDate = next; state.zNotified = ''; state.zBrokenOn = ''; state.zBrokenWhy = '';
+    save(); syncStatic(); render(); sheet.close(); buzz();
+    offerUndo(L('اتسجّلت الزكاة ✓ تقبّل الله.', 'Zakat recorded ✓ May it be accepted.'), snap);
+  }
+});
+document.getElementById('zakat-msg').addEventListener('click', e=>{ if(e.target.closest('#zk-pay')) openZakatPay(); });
 
 function renderSourceNote(){
   const global = state.goldSource==='global';
@@ -4124,7 +4168,9 @@ const EXP_CATS = [
 const homeCats = () => state.homeCats || ['family'];
 const isHomeCat = id => homeCats().includes(id);
 const homeSpent = mk => monthTx(mk).filter(t=>t.type==='exp' && isHomeCat(t.cat)).reduce((a,t)=>a+txEgp(t),0);
-const personalSpent = mk => monthTx(mk).filter(t=>t.type==='exp' && !isHomeCat(t.cat)).reduce((a,t)=>a+txEgp(t),0);
+// zakat (t.zk) is a yearly duty, not monthly spending: it stays in the records but out of the personal budget
+const isPersonal = t => !isHomeCat(t.cat) && !t.zk;
+const personalSpent = mk => monthTx(mk).filter(t=>t.type==='exp' && isPersonal(t)).reduce((a,t)=>a+txEgp(t),0);
 const INC_CATS = [
   {id:'salary', ar:'مرتب', en:'Salary', color:'#4fb08a'},
   {id:'business', ar:'شغل حر / بيزنس', en:'Business / freelance', color:'#7c9de0'},
@@ -4157,11 +4203,12 @@ function addTx(t){
   const row = t.acct && acctById(t.acct), cur = row ? row.c : 'EGP', r = rate(cur);
   const tx = {id: newId('t'), type:t.type, amount: num(t.amount), cur, egp: Math.round(num(t.amount) * (isFinite(r) ? r : 1) * 100) / 100,
               cat:t.cat, note:(t.note||'').trim(), date:t.date || today(), acct: row ? row.id : '', recId: t.recId || '', sp: t.sp || ''};
+  if(t.zk) tx.zk = 1;
   const spentBefore = tx.type==='exp' ? catSpent(tx.cat, monthOf(tx.date)) : 0;
   const home = tx.type==='exp' && isHomeCat(tx.cat);
   const totalBefore = tx.type==='exp' ? (home ? homeSpent : personalSpent)(monthOf(tx.date)) : 0;
   state.tx.push(tx); applyTx(tx, 1);
-  if(tx.type==='exp'){ budgetCheck(tx.cat, monthOf(tx.date), spentBefore); totalBudgetCheck(monthOf(tx.date), totalBefore, home); }
+  if(tx.type==='exp' && !tx.zk){ budgetCheck(tx.cat, monthOf(tx.date), spentBefore); totalBudgetCheck(monthOf(tx.date), totalBefore, home); }
   if(row && num(row.a) < 0) toast(L(`رصيد ${acctName(row)} بقى بالسالب.`, `${acctName(row)} balance is now negative.`));
   return tx;
 }
@@ -4514,7 +4561,7 @@ function renderMoney(){
   // budgets
   const budIds = Object.keys(state.budgets).filter(k=>num(state.budgets[k]) > 0);
   // the personal budget counts everything but the home categories, which have their own budget
-  const expH = txs.filter(t=>t.type==='exp' && isHomeCat(t.cat)).reduce((a,t)=>a+txEgp(t),0), expP = exp - expH;
+  const expH = txs.filter(t=>t.type==='exp' && isHomeCat(t.cat)).reduce((a,t)=>a+txEgp(t),0), expP = txs.filter(t=>t.type==='exp' && isPersonal(t)).reduce((a,t)=>a+txEgp(t),0);
   const bTotal = num(state.budgetTotal), bHome = num(state.homeBudget), bSplit = budIds.filter(k=>!isHomeCat(k)).reduce((a,k)=>a+num(state.budgets[k]),0);
   const totalBar = bTotal > 0 ? (()=>{ const p = expP/bTotal;
     return `<div class="bud total ${p>=1?'over':p>=.8?'warn':''}"><div class="top"><span>${L('👤 ميزانيتي الشخصية','👤 My budget')}</span><span class="m">${egp(expP)} / ${egp(bTotal)}</span></div>
@@ -4829,7 +4876,7 @@ function allowance(){
   const b = num(state.budgetTotal); if(!(b > 0)) return null;
   const t = today(), mk = t.slice(0,7), dim = new Date(+mk.slice(0,4), +mk.slice(5,7), 0).getDate();
   // the daily allowance is from the personal budget, so only personal spending counts against it
-  const exp = monthTx(mk).filter(x=>x.type==='exp' && !isHomeCat(x.cat)), spentMonth = exp.reduce((a,x)=>a+txEgp(x),0);
+  const exp = monthTx(mk).filter(x=>x.type==='exp' && isPersonal(x)), spentMonth = exp.reduce((a,x)=>a+txEgp(x),0);
   const spentToday = exp.filter(x=>x.date===t).reduce((a,x)=>a+txEgp(x),0);
   const daysLeft = dim - +t.slice(8) + 1, perDay = Math.max(0, (b - (spentMonth - spentToday)) / daysLeft);
   return {b, spentMonth, spentToday, perDay, leftToday: perDay - spentToday, daysLeft, leftMonth: b - spentMonth};
@@ -4865,7 +4912,7 @@ function renderTodayCard(){
   for(const d of debtsDueSoon()) rows.push({go:'debts', icon:'📅', warn: d.left <= 1,
     text: L(`${/^قسط/.test(d.name) ? d.name : 'قسط ' + d.name} <b class="m">${egp(d.inst)}</b> ${d.left===0?'النهارده':d.left===1?'بكرة':`بعد ${fmt(d.left,0)} أيام`}`,
             `${esc(d.name)} <b class="m">${egp(d.inst)}</b> due ${d.left===0?'today':d.left===1?'tomorrow':`in ${d.left} days`}`)});
-  const a = allowance(), spent = monthTx(today().slice(0,7)).filter(x=>x.type==='exp' && x.date===today() && !isHomeCat(x.cat)).reduce((s,x)=>s+txEgp(x),0);
+  const a = allowance(), spent = monthTx(today().slice(0,7)).filter(x=>x.type==='exp' && x.date===today() && isPersonal(x)).reduce((s,x)=>s+txEgp(x),0);
   if(a) rows.push({go:'money', icon: a.leftToday < 0 ? '🔴' : '💸', warn: a.leftToday < 0,
     text: L(`صرفت النهارده <b class="m">${egp(spent)}</b> من <b class="m">${egp(a.perDay)}</b> المسموحين`, `Spent <b class="m">${egp(spent)}</b> of <b class="m">${egp(a.perDay)}</b> allowed today`)});
   else if(spent > 0) rows.push({go:'money', icon:'💸', text: L(`صرفت النهارده <b class="m">${egp(spent)}</b>`, `Spent <b class="m">${egp(spent)}</b> today`)});
@@ -4920,7 +4967,7 @@ function renderCalmHome(){
   const rows = [];
   if(state.pending.length) rows.push(`<button type="button" class="ch-row ch-hl" data-tday="pend"><span class="ch-ri amber"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="12" rx="2"/><path d="M4 8l8 5 8-5"/></svg></span><span class="ch-rt">${L(state.pending.length===1 ? 'رسالة بنك مستنية تصنيف' : state.pending.length===2 ? 'رسالتين بنك مستنيين تصنيف' : `${fmt(state.pending.length,0)} رسايل بنك مستنية تصنيف`, `${state.pending.length} bank message${state.pending.length>1?'s':''} to file`)}</span><span class="ch-go" aria-hidden="true">${L('‹','›')}</span></button>`);
   for(const d of debtsDueSoon()) rows.push(`<button type="button" class="ch-row" data-tday="debts"><span class="ch-ri blue"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><span class="ch-rt">${esc(/^قسط/.test(d.name) || LANG==='en' ? d.name : 'قسط ' + d.name)} <b class="m">${fmt(d.inst,0)}</b> ${d.left===0?L('النهارده','today'):d.left===1?L('بكرة','tomorrow'):L(`بعد ${fmt(d.left,0)} أيام`,`in ${d.left} days`)}</span><span class="ch-go" aria-hidden="true">${L('‹','›')}</span></button>`);
-  const a = allowance(), spent = monthTx(today().slice(0,7)).filter(x=>x.type==='exp' && x.date===today() && !isHomeCat(x.cat)).reduce((s,x)=>s+txEgp(x),0);
+  const a = allowance(), spent = monthTx(today().slice(0,7)).filter(x=>x.type==='exp' && x.date===today() && isPersonal(x)).reduce((s,x)=>s+txEgp(x),0);
   if(a) rows.push(`<button type="button" class="ch-row col" data-tday="money"><span class="ch-sp"><span>${L('صرفت النهارده','Spent today')}</span><span><b class="m">${fmt(spent,0)}</b> <span class="mu m">${L('من','of')} ${fmt(a.perDay,0)}</span></span></span>
     <span class="ch-bar"><span style="width:${Math.min(100, a.perDay > 0 ? spent/a.perDay*100 : 100)}%" class="${spent > a.perDay ? 'over' : ''}"></span></span></button>`);
   else if(spent > 0) rows.push(`<button type="button" class="ch-row" data-tday="money"><span class="ch-rt">${L('صرفت النهارده','Spent today')} <b class="m">${egp(spent)}</b></span><span class="ch-go" aria-hidden="true">${L('‹','›')}</span></button>`);
