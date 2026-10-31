@@ -614,7 +614,8 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .ov-sec{display:grid;gap:10px}
 .ov-sec h3{margin:0;font:600 .95rem var(--display)}
 .ov-flow{width:100%;height:auto;display:block;direction:ltr;overflow:visible}
-.ov-flow .axis{font-size:11px}
+.ov-flow .axis{font-size:11px;fill:var(--muted);font-family:var(--body)}
+.ov-flow .grid{stroke:var(--line);stroke-width:1}
 .ov-m{cursor:pointer;outline:none}
 .ov-m:hover rect:first-child,.ov-m:focus-visible rect:first-child{fill:var(--bg)}
 .ov-m.cur .axis{font-weight:700;fill:var(--fg)}
@@ -1939,7 +1940,7 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 42, APP_VERSION = '2.3.1', APP_DATE = '2026-10-30';
+const APP_BUILD = 43, APP_VERSION = '2.3.2', APP_DATE = '2026-10-31';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
@@ -1952,6 +1953,7 @@ const WHATS_NEW = {
     ['💰 المصاريف بدايرة الميزانية وأشرطة الفئات، والتقارير بكارت أخضر لزيادة ثروتك.', '💰 Spending has the budget ring and category bars; Reports open with your net worth change on green.'],
   ],
   fix: [
+    ['🔍 فحص كامل للتطبيق: علامة البار اللي تحت مبقتش بتطير لفوق في الزكاة والتنبيهات، و«إخفاء المبالغ» بقى بيخفي فاضل البيت ونص رسالة البنك كمان، وأسامي الشهور في رسم التقارير بقت واضحة في الداكن، والأرقام الكبيرة من غير كسور.', '🔍 A full check-up: the bar highlight no longer floats up on Zakat and Alerts, "Hide amounts" now also hides what\'s left for home and the bank message text, month names on the Reports chart are readable in dark mode, and big amounts drop the piasters.'],
     ['💰 المصاريف بقت أوضح: كارت واحد لميزانيتك فيه صرفت كام، فاضلك كام في اليوم، وهتقفل الشهر على كام قدام الميزانية، وتحته ميزانية البيت والدخل والصافي. والحاجات المكررة اتشالت.', '💰 Spending is clearer: one card for your budget with what you spent, what\'s left a day and where the month will end against the budget, then the home budget, income and net. The repeats are gone.'],
     ['📈 رجع سطر «النهارده» على الكارت الأخضر: ثروتك زادت أو قلّت كام النهارده، وأغلب المكسب أو الخسارة من فين.', '📈 Today\'s line is back on the green card: how much your wealth moved today and where most of it came from.'],
     ['🧹 اتشالت أقسام المصاريف (مصاريفي / البيت): كل الصرف بقى في مكان واحد زي الأول.', '🧹 Spending sections (Me / Home) are gone: all spending is in one place again.'],
@@ -2064,6 +2066,8 @@ const PCT = () => arabDigits() ? '٪' : '%';
 
 const fmt = (n, d=2) => isFinite(n) ? n.toLocaleString(LOC(),{minimumFractionDigits:d, maximumFractionDigits:d}) : '—';
 const egp = n => isFinite(n) ? fmt(n) + L(' ج.م', ' EGP') : '—';
+// whole pounds, for big headline amounts where piasters only add noise
+const egp0 = n => isFinite(n) ? fmt(Math.round(n), 0) + L(' ج.م', ' EGP') : '—';
 const chg = c => c==null || !isFinite(c) ? '' : `<span class="chg ${c>=0?'up':'down'}">${c>=0?'▲':'▼'} ${Math.abs(c).toFixed(2)}%</span>`;
 const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const dateFmt = d => d.toLocaleDateString(LOC(),{day:'numeric', month:'short', year:'numeric'});
@@ -2619,7 +2623,7 @@ function renderChanges(t){
     todayEl.hidden = false;
     // the 2.0 look shows the same line on its green card
     const chg = document.getElementById('ch-change');
-    if(chg){ chg.innerHTML = `<b>${d>=0?'▲':'▼'} <bdi>${sgn(d)}${egp(Math.abs(d))}</bdi></b> ${when}`
+    if(chg){ chg.innerHTML = `<b>${d>=0?'▲':'▼'} <bdi>${sgn(d)}${egp0(Math.abs(d))}</bdi></b> ${when}`
       + (main && Math.abs(d) >= 1 ? ` · ${L(d>=0 ? 'أغلب المكسب من' : 'أغلب الخسارة من', d>=0 ? 'mostly from' : 'mostly from')} <b>${NAMES[main.k]}</b>` : ''); chg.hidden = false; }
   }
   // a week back: the last record at least 7 days old; contributions are in percentage points of that week's net worth
@@ -3503,9 +3507,9 @@ function renderOverview(){
   }
   const kpi = (l, v, s, c='') => `<div class="ov-k"><span class="l">${l}</span><span class="v m ${c}">${v}</span>${s ? `<span class="s m">${s}</span>` : ''}</div>`;
   const kpis = [
-    nw ? kpi(L('صافي ثروتك اتغيّر','Net worth change'), `<bdi>${sgn(nw.b-nw.a)}${egp(Math.abs(nw.b-nw.a))}</bdi>`,
+    nw ? kpi(L('صافي ثروتك اتغيّر','Net worth change'), `<bdi>${sgn(nw.b-nw.a)}${egp0(Math.abs(nw.b-nw.a))}</bdi>`,
       nw.a ? `<bdi>${sgn(nw.b-nw.a)}${fmt(Math.abs((nw.b-nw.a)/nw.a*100),1)}${PCT()}</bdi> ${L('من','since')} ${new Date(nw.since).toLocaleDateString(LOC(),{day:'numeric', month:'short'})}` : '', cls(nw.b-nw.a)) : '',
-    inc || exp ? kpi(saved>=0 ? L('وفّرت','You saved') : L('صرفت زيادة عن دخلك','Spent beyond income'), egp(Math.abs(saved)), L(`متوسط ${egp(Math.abs(saved)/ovMonths)} في الشهر`, `${egp(Math.abs(saved)/ovMonths)} a month on average`), cls(saved)) : '',
+    inc || exp ? kpi(saved>=0 ? L('وفّرت','You saved') : L('صرفت زيادة عن دخلك','Spent beyond income'), egp0(Math.abs(saved)), L(`متوسط ${egp0(Math.abs(saved)/ovMonths)} في الشهر`, `${egp0(Math.abs(saved)/ovMonths)} a month on average`), cls(saved)) : '',
     inc ? kpi(L('نسبة التوفير','Savings rate'), `${fmt(saved/inc*100,0)}${PCT()}`, saved/inc >= .2 ? L('ممتاز، فوق ٢٠٪ 👏','Great, over 20% 👏') : saved >= 0 ? L('حاول توصل لـ ٢٠٪','Aim for 20%') : L('المصاريف أكتر من الدخل','Spending exceeds income'), saved/inc >= .2 ? 'up-t' : saved < 0 ? 'down-t' : '') : '',
     top[0] ? kpi(L('أكبر بند صرف','Biggest spending'), esc(catName(catById(top[0][0]))), L(`${egp(top[0][1])} · ${fmt(top[0][1]/exp*100,0)}٪ من مصاريفك`, `${egp(top[0][1])} · ${fmt(top[0][1]/exp*100,0)}% of spending`)) : '',
   ].join('');
@@ -3973,7 +3977,10 @@ function setTab(t, scroll=true){
 // the sliding pill: on phones a pill behind the icon, on wider screens the whole button
 function placeNavInd(){
   const nav = document.getElementById('bnav'), ind = document.getElementById('bnav-ind');
-  const b = nav.querySelector('[aria-current=page]'); if(!b) return;
+  // the current tab may have no button in this bar (Zakat and alerts in the 2.0 look): no pill then
+  const b = nav.querySelector('[aria-current=page]');
+  ind.style.opacity = b && b.offsetWidth ? '' : '0';
+  if(!b || !b.offsetWidth) return;
   const n = nav.getBoundingClientRect(), r = b.getBoundingClientRect(), phone = matchMedia('(max-width:640px)').matches;
   const w = phone ? Math.min(60, r.width - 8) : r.width, h = phone ? 30 : r.height;
   const x = r.left - n.left + (r.width - w) / 2, y = r.top - n.top + (phone ? 2 : 0);
@@ -4571,7 +4578,7 @@ function calmBudgetCard({inc, exp, expP, expH, bTotal, bHome}){
   const ph = bHome > 0 ? expH / bHome : 0;
   const home = bHome > 0 || expH > 0 ? `<div class="cb-home ${ph>=1?'over':ph>=.8?'warn':''}"><div class="cb-ht"><span>${L('🏠 البيت','🏠 Home')}</span><span class="m"><b>${fmt(expH,0)}</b>${bHome > 0 ? ` <span class="mu">${L(`من ${fmt(bHome,0)}`, `of ${fmt(bHome,0)}`)}</span>` : ''}</span></div>
       ${bHome > 0 ? `<span class="cc-b"><span style="width:${Math.min(100, ph*100)}%;background:${ph>=1?'var(--down)':ph>=.8?'#D97706':'var(--fill)'}"></span></span>
-      <span class="mu cb-hs">${ph>=1 ? L(`عدّيت ميزانية البيت بـ ${fmt(expH-bHome,0)}`, `${fmt(expH-bHome,0)} over the home budget`) : L(`فاضل ${fmt(bHome-expH,0)} للبيت`, `${fmt(bHome-expH,0)} left for home`)}</span>` : ''}</div>` : '';
+      <span class="mu cb-hs m">${ph>=1 ? L(`عدّيت ميزانية البيت بـ ${fmt(expH-bHome,0)}`, `${fmt(expH-bHome,0)} over the home budget`) : L(`فاضل ${fmt(bHome-expH,0)} للبيت`, `${fmt(bHome-expH,0)} left for home`)}</span>` : ''}</div>` : '';
   // the month's money in and the net, all spending included
   const net = inc - exp;
   const flow = `<div class="cb-flow"><span>${L('الدخل','Income')} <b class="m up-t">${fmt(inc,0)}</b></span><span>${L('كل المصاريف','All spending')} <b class="m">${fmt(exp,0)}</b></span>
@@ -6358,7 +6365,7 @@ function pendingHtml(){
           <label class="field"><span>${p.type==='exp'?L('اتدفع من','Paid from'):L('اتحط في','Paid into')}</span><select data-pacct="${p.id}"><option value="">${L('من غير خصم','Not linked')}</option>${state.cash.map(r=>`<option value="${r.id}" ${r.id===p.acct?'selected':''}>${esc(acctName(r))}</option>`).join('')}</select></label>
         </div>
         ${hasSpaces() ? `<label class="field"><span>${L('القسم','Section')}</span><select data-psp="${p.id}">${spaces().map(s=>`<option value="${s.id}" ${s.id===(p.sp ?? moneySpace ?? '')?'selected':''}>${s.icon} ${esc(s.name)}</option>`).join('')}</select></label>` : ''}
-        <details class="pend-raw"><summary>${L('نص الرسالة','Message text')}</summary><div>${esc(p.raw)}</div></details>
+        <details class="pend-raw"><summary>${L('نص الرسالة','Message text')}</summary><div class="m">${esc(p.raw)}</div></details>
         <div class="row"><button type="button" class="go-btn sm" data-pok="${p.id}">✓ ${L('سجّل','File it')}</button><button type="button" class="x" data-pdrop="${p.id}">${L('تجاهل','Ignore')}</button></div>
       </div>`; }).join('')}
     <label class="note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-set="autoKnown" id="autoKnown" ${state.autoKnown?'checked':''}> ${L('سجّل لوحده لو المحل صنّفته قبل كدا','File automatically when the shop is already known')}</label>
