@@ -428,6 +428,10 @@ tr.grp:first-child td{border-top:0}
 .ch-pill{background:var(--gold-hi);color:#13201B;font-weight:600;padding:3px 10px;border-radius:999px}
 .ch-chg{font-size:.84rem;color:var(--hero-soft);margin-top:2px}
 .ch-chg b{color:#FFFFFF;font-weight:600}
+/* today's move as a chip: green when up, red when down, readable on every card colour */
+.ch-chg b.ch-up,.ch-chg b.ch-dn{display:inline-block;padding:1px 9px;border-radius:999px;font-weight:700}
+.ch-chg b.ch-up{background:#DCFCE7;color:#15803D}
+.ch-chg b.ch-dn{background:#FEE2E2;color:#B91C1C}
 .ch-spark{width:100%;height:56px;margin-top:6px;display:block}
 .ch-spark .ln{fill:none;stroke:var(--gold-hi);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 .ch-spark .fill{fill:#FFFFFF;fill-opacity:.08}
@@ -1940,7 +1944,7 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 43, APP_VERSION = '2.3.2', APP_DATE = '2026-10-31';
+const APP_BUILD = 44, APP_VERSION = '2.3.3', APP_DATE = '2026-10-31';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
@@ -1953,6 +1957,7 @@ const WHATS_NEW = {
     ['💰 المصاريف بدايرة الميزانية وأشرطة الفئات، والتقارير بكارت أخضر لزيادة ثروتك.', '💰 Spending has the budget ring and category bars; Reports open with your net worth change on green.'],
   ],
   fix: [
+    ['🟢🔴 مكسب أو خسارة النهارده على الكارت الأخضر بقى بلون واضح: أخضر لو كسبان وأحمر لو خسران.', '🟢🔴 Today\'s gain or loss on the green card is now clearly coloured: green when up, red when down.'],
     ['🔍 فحص كامل للتطبيق: علامة البار اللي تحت مبقتش بتطير لفوق في الزكاة والتنبيهات، و«إخفاء المبالغ» بقى بيخفي فاضل البيت ونص رسالة البنك كمان، وأسامي الشهور في رسم التقارير بقت واضحة في الداكن، والأرقام الكبيرة من غير كسور.', '🔍 A full check-up: the bar highlight no longer floats up on Zakat and Alerts, "Hide amounts" now also hides what\'s left for home and the bank message text, month names on the Reports chart are readable in dark mode, and big amounts drop the piasters.'],
     ['💰 المصاريف بقت أوضح: كارت واحد لميزانيتك فيه صرفت كام، فاضلك كام في اليوم، وهتقفل الشهر على كام قدام الميزانية، وتحته ميزانية البيت والدخل والصافي. والحاجات المكررة اتشالت.', '💰 Spending is clearer: one card for your budget with what you spent, what\'s left a day and where the month will end against the budget, then the home budget, income and net. The repeats are gone.'],
     ['📈 رجع سطر «النهارده» على الكارت الأخضر: ثروتك زادت أو قلّت كام النهارده، وأغلب المكسب أو الخسارة من فين.', '📈 Today\'s line is back on the green card: how much your wealth moved today and where most of it came from.'],
@@ -2623,7 +2628,7 @@ function renderChanges(t){
     todayEl.hidden = false;
     // the 2.0 look shows the same line on its green card
     const chg = document.getElementById('ch-change');
-    if(chg){ chg.innerHTML = `<b>${d>=0?'▲':'▼'} <bdi>${sgn(d)}${egp0(Math.abs(d))}</bdi></b> ${when}`
+    if(chg){ chg.innerHTML = `<b class="${d>=0?'ch-up':'ch-dn'}">${d>=0?'▲':'▼'} <bdi>${sgn(d)}${egp0(Math.abs(d))}</bdi></b> ${when}`
       + (main && Math.abs(d) >= 1 ? ` · ${L(d>=0 ? 'أغلب المكسب من' : 'أغلب الخسارة من', d>=0 ? 'mostly from' : 'mostly from')} <b>${NAMES[main.k]}</b>` : ''); chg.hidden = false; }
   }
   // a week back: the last record at least 7 days old; contributions are in percentage points of that week's net worth
