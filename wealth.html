@@ -1852,7 +1852,7 @@ section.card.collapsed{gap:0}
   <button type="button" data-goto="assets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18l2.5-6h9L19 18zM9 9h6M10 6h4"/></svg><span data-en="Assets">الأصول</span></button>
   <button type="button" data-goto="reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M7 16v-4M12 16V8M17 16v-7"/></svg><span data-en="Reports">التقارير</span></button>
   <button type="button" data-goto="money"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 15h2"/></svg><span data-en="Spending">المصاريف</span></button>
-  <button type="button" data-goto="zakat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M6 8h12M6 8l-3 6h6zM18 8l-3 6h6z"/></svg><span data-en="Zakat">الزكاة</span></button>
+  <button type="button" data-goto="zakat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/></svg><span data-en="Zakat">الزكاة</span></button>
   <button type="button" data-goto="alerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20h4"/></svg><span data-en="Alerts">التنبيهات</span></button>
 </nav>
 
@@ -1962,7 +1962,7 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 48, APP_VERSION = '2.4.0', APP_DATE = '2026-10-31';
+const APP_BUILD = 49, APP_VERSION = '2.4.1', APP_DATE = '2026-10-31';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
@@ -1976,6 +1976,7 @@ const WHATS_NEW = {
     ['💰 المصاريف بدايرة الميزانية وأشرطة الفئات، والتقارير بكارت أخضر لزيادة ثروتك.', '💰 Spending has the budget ring and category bars; Reports open with your net worth change on green.'],
   ],
   fix: [
+    ['🤲 أيقونة الزكاة بقت إيد بتدّي فلوس، أوضح في معناها.', '🤲 The Zakat icon is now a hand giving coins, clearer in meaning.'],
     ['📱 كروت «أصولك» والزكاة والتنبيهات مبقتش بتخرج برة الشاشة لما خط الموبايل كبير، والأيقونات بقت أوضح.', '📱 The "Your assets", Zakat and Alerts cards no longer spill off screen with a large phone font, and their icons are clearer.'],
     ['🔔 تنبيهات الأسعار بقت أسهل تلاقيها: زرار واضح في آخر الرئيسية جنب الزكاة بيقولك كام تنبيه شغال، وزرار تاني فوق في صفحة الأصول.', '🔔 Price alerts are easier to find: a clear button at the end of Home next to Zakat showing how many are active, and another at the top of Assets.'],
     ['🟢🔴 مكسب أو خسارة النهارده على الكارت الأخضر بقى بلون واضح: أخضر لو كسبان وأحمر لو خسران.', '🟢🔴 Today\'s gain or loss on the green card is now clearly coloured: green when up, red when down.'],
@@ -4992,7 +4993,7 @@ function renderCalmHome(){
   const al = document.getElementById('alerts-link-sub'); if(al) al.textContent = alertsSub;
 }
 const BELL_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20h4"/></svg>';
-const ZAKAT_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z"/><path d="M9 12l2 2 4-4"/></svg>';
+const ZAKAT_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/></svg>';
 document.querySelector('.wrap').addEventListener('click', e=>{
   const b = e.target.closest('[data-ch]'); if(!b) return;
   const a = b.dataset.ch; buzz(6);
