@@ -459,8 +459,18 @@ tr.grp:first-child td{border-top:0}
 .ch-a{flex:1;min-width:0;background:var(--surface);border:0;border-radius:20px!important;padding:14px;display:flex;flex-direction:column;gap:4px;text-align:start;color:var(--fg);font-size:.76rem}
 .ch-a i{width:10px;height:10px;border-radius:5px}
 .ch-a b{font:600 .95rem var(--display)}
-.ch-more{display:flex;gap:8px}
-.ch-more button{flex:1;border:0;background:var(--surface);border-radius:14px;padding:12px;font-size:.84rem;color:var(--accent)}
+.ch-more{display:flex;gap:10px;margin-top:10px}
+.ch-more button{flex:1;min-width:0;border:0;background:var(--surface);border-radius:18px;padding:12px;display:flex;align-items:center;gap:10px;text-align:start;color:var(--fg);cursor:pointer}
+.ch-more .ic{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--fill);color:var(--accent)}
+.ch-more .ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ch-more b{display:block;font-size:.86rem;font-weight:600}
+.ch-more small{display:block;font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alerts-link{display:flex;align-items:center;gap:10px;width:100%;border:0;background:var(--surface);border-radius:18px;padding:12px 14px;margin-bottom:12px;color:var(--fg);text-align:start;cursor:pointer}
+.alerts-link .ic{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--fill);color:var(--accent)}
+.alerts-link .ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.alerts-link span{flex:1}
+.alerts-link small{display:block;font-size:.74rem;color:var(--muted)}
+[dir="ltr"] .alerts-link .chev{transform:scaleX(-1)}
 :root[data-ui="calm"] .qacts .qi{border-radius:18px}
 /* Spending: the summary card with the ring, and the category bars */
 .cs{display:flex;align-items:center;gap:18px;background:var(--bg);border-radius:24px;padding:16px}
@@ -1566,6 +1576,7 @@ section.card.collapsed{gap:0}
     <div class="note" data-en="The zakat year (hawl) is one lunar year (354 days) from the day your wealth reaches the nisab. Majority view: if the zakat base drops below the nisab at any point, the year breaks and a new one starts the day it reaches the nisab again. Hanafi view: dips during the year don't matter; zakat is due if the base is at or above the nisab at the year's end, and if it's below, no zakat is due and a new year starts once it reaches the nisab. In both, the page starts the year by itself. Property, cars and other assets for personal use are not included. This is an estimate; for special cases, ask a scholar.">الحول = سنة هجرية (354 يوم) من يوم ما المال يبلغ النصاب. رأي الجمهور: لو الوعاء نزل تحت النصاب في أي وقت الحول بينقطع، وبيبدأ حول جديد يوم ما يرجع للنصاب. رأي الحنفية: نزول المال في نص السنة مش بيأثر، والعبرة بآخر الحول: لو الوعاء فوق النصاب الزكاة واجبة، ولو تحته مفيش زكاة وبيبدأ حول جديد لما يرجع للنصاب. في الحالتين الصفحة بتبدأ الحول لوحدها. العقارات والسيارات والأصول الأخرى للاستخدام مش داخلة في الحساب. الحساب تقريبي، وفي الحالات الخاصة ارجع لأهل العلم.</div>
   </section>
 
+  <button type="button" class="alerts-link" data-tab="assets" data-ch="alerts"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20h4"/></svg></span><span><b data-en="Price alerts">تنبيهات الأسعار</b><small id="alerts-link-sub"></small></span><span aria-hidden="true" class="mu chev">‹</span></button>
   <section class="card" id="sec-gold" data-tab="assets">
     <div class="sec-head"><h2><span class="dot" style="background:var(--gold)"></span><span data-en="Gold">الذهب</span></h2><span class="sec-sum m" id="sum-gold"></span></div>
     <div class="settings">
@@ -1944,7 +1955,7 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 45, APP_VERSION = '2.3.4', APP_DATE = '2026-10-31';
+const APP_BUILD = 46, APP_VERSION = '2.3.5', APP_DATE = '2026-10-31';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
@@ -1957,6 +1968,7 @@ const WHATS_NEW = {
     ['💰 المصاريف بدايرة الميزانية وأشرطة الفئات، والتقارير بكارت أخضر لزيادة ثروتك.', '💰 Spending has the budget ring and category bars; Reports open with your net worth change on green.'],
   ],
   fix: [
+    ['🔔 تنبيهات الأسعار بقت أسهل تلاقيها: زرار واضح في آخر الرئيسية جنب الزكاة بيقولك كام تنبيه شغال، وزرار تاني فوق في صفحة الأصول.', '🔔 Price alerts are easier to find: a clear button at the end of Home next to Zakat showing how many are active, and another at the top of Assets.'],
     ['🟢🔴 مكسب أو خسارة النهارده على الكارت الأخضر بقى بلون واضح: أخضر لو كسبان وأحمر لو خسران.', '🟢🔴 Today\'s gain or loss on the green card is now clearly coloured: green when up, red when down.'],
     ['🔍 فحص كامل للتطبيق: علامة البار اللي تحت مبقتش بتطير لفوق في الزكاة والتنبيهات، و«إخفاء المبالغ» بقى بيخفي فاضل البيت ونص رسالة البنك كمان، وأسامي الشهور في رسم التقارير بقت واضحة في الداكن، والأرقام الكبيرة من غير كسور.', '🔍 A full check-up: the bar highlight no longer floats up on Zakat and Alerts, "Hide amounts" now also hides what\'s left for home and the bank message text, month names on the Reports chart are readable in dark mode, and big amounts drop the piasters.'],
     ['💰 المصاريف بقت أوضح: كارت واحد لميزانيتك فيه صرفت كام، فاضلك كام في اليوم، وهتقفل الشهر على كام قدام الميزانية، وتحته ميزانية البيت والدخل والصافي. والحاجات المكررة اتشالت.', '💰 Spending is clearer: one card for your budget with what you spent, what\'s left a day and where the month will end against the budget, then the home budget, income and net. The repeats are gone.'],
@@ -4917,8 +4929,17 @@ function renderCalmHome(){
     <div class="ch-ac">${big.map(s=>{ const was = ago ? ago[s]||0 : 0, p = was > 0 ? (t[s]-was)/was*100 : null;
       return `<button type="button" class="ch-a" data-ch="assets"><i style="background:${COLORS[s]}"></i><span class="mu">${short[s]}</span><b class="m">${compact(t[s])}</b>
         <span class="${p===null || Math.abs(p) < .05 ? 'mu' : p > 0 ? 'up-t' : 'down-t'}">${p===null || Math.abs(p) < .05 ? L('ثابت','steady') : `${p>0?'▲':'▼'} ${fmt(Math.abs(p),1)}${PCT()}`}</span></button>`; }).join('')}</div>
-    <div class="ch-more"><button type="button" data-ch="zakat">${L('الزكاة','Zakat')}</button><button type="button" data-ch="alerts">${L('تنبيهات الأسعار','Price alerts')}</button></div>` : '';
+` : '';
+  // zakat and price alerts live here since the 2.0 bar has no room for them; shown even before any asset is added
+  const on = (state.alerts||[]).filter(a=>!a.done).length;
+  const alertsSub = on ? L(`${fmt(on,0)} شغالين`, `${fmt(on,0)} active`) : L('نبّهني لما سعر يوصل لرقم', 'Get told when a price hits a number');
+  document.getElementById('ch-assets').innerHTML += `<div class="ch-more">
+    <button type="button" data-ch="alerts"><span class="ic">${BELL_IC}</span><span style="min-width:0"><b>${L('تنبيهات الأسعار','Price alerts')}</b><small>${alertsSub}</small></span></button>
+    <button type="button" data-ch="zakat"><span class="ic">${ZAKAT_IC}</span><span style="min-width:0"><b>${L('الزكاة','Zakat')}</b><small>${L('احسب زكاة أموالك','Work out your zakat')}</small></span></button></div>`;
+  const al = document.getElementById('alerts-link-sub'); if(al) al.textContent = alertsSub;
 }
+const BELL_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20h4"/></svg>';
+const ZAKAT_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z"/><path d="M9 12l2 2 4-4"/></svg>';
 document.querySelector('.wrap').addEventListener('click', e=>{
   const b = e.target.closest('[data-ch]'); if(!b) return;
   const a = b.dataset.ch; buzz(6);
