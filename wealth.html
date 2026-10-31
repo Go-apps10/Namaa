@@ -428,10 +428,10 @@ tr.grp:first-child td{border-top:0}
 .ch-pill{background:var(--gold-hi);color:#13201B;font-weight:600;padding:3px 10px;border-radius:999px}
 .ch-chg{font-size:.84rem;color:var(--hero-soft);margin-top:2px}
 .ch-chg b{color:#FFFFFF;font-weight:600}
-/* today's move as a chip: green when up, red when down, readable on every card colour */
-.ch-chg b.ch-up,.ch-chg b.ch-dn{display:inline-block;padding:1px 9px;border-radius:999px;font-weight:700}
-.ch-chg b.ch-up{background:#DCFCE7;color:#15803D}
-.ch-chg b.ch-dn{background:#FEE2E2;color:#B91C1C}
+/* today's move: bright green when up, bright red when down, light enough to read on every card colour */
+.ch-chg b.ch-up,.ch-chg b.ch-dn{font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.ch-chg b.ch-up{color:#7CFFB2}
+.ch-chg b.ch-dn{color:#FFB4B4}
 .ch-spark{width:100%;height:56px;margin-top:6px;display:block}
 .ch-spark .ln{fill:none;stroke:var(--gold-hi);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 .ch-spark .fill{fill:#FFFFFF;fill-opacity:.08}
@@ -1944,7 +1944,7 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 44, APP_VERSION = '2.3.3', APP_DATE = '2026-10-31';
+const APP_BUILD = 45, APP_VERSION = '2.3.4', APP_DATE = '2026-10-31';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
