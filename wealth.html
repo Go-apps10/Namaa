@@ -4812,7 +4812,7 @@ function calmBudgetCard({inc, exp, expP, expH, bTotal, bHome}){
         <div><span class="mu">${L('👤 مصاريفك','👤 Your spending')}</span><b class="m">${fmt(expP,0)} <small>${L(`من ${fmt(bTotal,0)}`, `of ${fmt(bTotal,0)}`)}</small></b></div>
         ${perDay ? `<span class="cb-left">${perDay}</span>` : ''}</div></div>${pace}`
     : `<div class="cs-n"><div><span class="mu">${L('👤 مصاريفك الشهر دا','👤 Your spending this month')}</span><b class="m">${fmt(expP,0)} <small>${L('ج.م','EGP')}</small></b></div>
-        <span class="note">${L('حط ميزانية لنفسك من «تعديل الميزانيات» تحت، وهنقولك فاضلك كام في اليوم.', 'Set yourself a budget in "Edit budgets" below and you\'ll see what\'s left a day.')}</span></div>`;
+        <span class="note">${L('حط ميزانية لنفسك من تبويب «الميزانيات»، وهنقولك فاضلك كام في اليوم.', 'Set yourself a budget in "Edit budgets" below and you\'ll see what\'s left a day.')}</span></div>`;
   // the home: its own bar against its own budget
   const ph = bHome > 0 ? expH / bHome : 0;
   const home = bHome > 0 || expH > 0 ? `<div class="cb-home ${ph>=1?'over':ph>=.8?'warn':''}"><div class="cb-ht"><span>${L('🏠 البيت','🏠 Home')}</span><span class="m"><b>${fmt(expH,0)}</b>${bHome > 0 ? ` <span class="mu">${L(`من ${fmt(bHome,0)}`, `of ${fmt(bHome,0)}`)}</span>` : ''}</span></div>
