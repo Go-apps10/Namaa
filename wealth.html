@@ -539,6 +539,36 @@ tr.grp:first-child td{border-top:0}
   :root[data-ui="calm"] .fab{inset-inline-end:auto;left:50%;translate:-50% 0;bottom:calc(30px + env(safe-area-inset-bottom,0px));
     width:58px;height:58px;border-radius:20px;background:var(--fab);color:#FFFFFF;box-shadow:0 8px 20px rgba(12,78,75,.32)}
 }
+/* Spending in the 2.0 look: the month on top, bank messages if any, then four tabs so each job has its own short page */
+:root[data-ui="calm"] #sec-money>.sec-head{justify-content:center}
+:root[data-ui="calm"] #sec-money>.sec-head h2{display:none}
+:root[data-ui="calm"] #money-nav{font-size:1.05rem;gap:14px}
+:root[data-ui="calm"] #money-nav .x{width:40px;height:40px;padding:0;border-radius:50%;background:var(--bg)}
+:root[data-ui="calm"][data-tab="money"] [data-fold-all]{display:none}
+:root[data-ui="calm"]:not([data-mseg="more"]) #efund,:root[data-ui="calm"]:not([data-mseg="more"]) #sec-goals,:root[data-ui="calm"]:not([data-mseg="more"]) #sec-cal{display:none!important}
+.ms-seg{position:sticky;top:8px;z-index:6;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;padding:4px;border-radius:16px;background:var(--bg);box-shadow:0 4px 14px rgba(0,0,0,.14)}
+.ms-seg button{border:0;background:none;color:var(--muted);border-radius:12px;padding:10px 2px;font-size:.8rem;font-weight:600;white-space:nowrap}
+.ms-seg button[aria-selected=true]{background:var(--fab);color:#FFFFFF}
+.ms-panel{display:grid;gap:14px;min-width:0}
+:root[data-ui="calm"] #tx-list .tx-fold .dn{display:none}
+:root[data-ui="calm"] #tx-list .tx-fold>summary{flex-wrap:nowrap}
+.ms-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ms-acts button{padding:12px;border-radius:14px;font-weight:600}
+/* each bank message: what, where and when on top, then its category and account as small pickers beside File */
+.pend-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:0;background:none;padding:2px;color:var(--fg);font-weight:600;font-size:.92rem;text-align:start}
+.pend-bar .chv{transition:transform .2s;color:var(--muted)}
+.pend-bar[aria-expanded=true] .chv{transform:rotate(180deg)}
+:root[data-ui="calm"] .pend{padding:10px 12px}
+.pend-c{display:grid;gap:8px;background:var(--surface);border-radius:14px;padding:12px}
+.pend-l{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.pend-l .amt{font-weight:700;font-size:1.02rem;white-space:nowrap}
+.pend-l .who{min-width:0;font-weight:600;font-size:.88rem;overflow-wrap:anywhere}
+.pend-sub{color:var(--muted);font-size:.76rem}
+.pend-pick{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}
+.pend-pick select{width:100%;min-width:0;padding:8px 6px;font-size:.8rem;border-radius:10px}
+.pend-go{display:grid;grid-template-columns:1fr auto;gap:6px}
+.pend-go .go-btn{padding:10px;border-radius:10px;background:var(--fab);color:#FFFFFF;border:0;font-weight:600}
+.pend-go .x{padding:0 14px;font-size:.82rem}
 /* the bar as a wheel (phones): the sections ride a curve you spin sideways; the one that stops in the middle opens.
    The bar's own buttons stay in the page for the order, badges and wider screens. */
 .dial{display:none}
@@ -1958,11 +1988,12 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 52, APP_VERSION = '2.7.0', APP_DATE = '2026-11-02';
+const APP_BUILD = 53, APP_VERSION = '2.8.0', APP_DATE = '2026-11-06';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
   feat: [
+    ['💳 المصاريف بقت أسهل: ٤ تبويبات فوق (الملخص، العمليات، الميزانيات، المزيد) بدل صفحة طويلة. رسايل البنك بقت سطر واحد بيتفتح لما تدوس عليه، ودوسة على أي فئة بتوريك عملياتها في الشهر دا.', '💳 Spending is easier: four tabs (Summary, Activity, Budgets, More) instead of one long page. Bank messages are one line that opens when tapped, and tapping a category shows its transactions for the month.'],
     ['🎡 البار اللي تحت بقى عجلة بتلف: اسحبها يمين أو شمال والقسم اللي يقف في النص يتفتح، أو دوس على أي قسم يلف لحد النص. والأقسام كلها فيها: الرئيسية، الأصول، الزكاة، المصاريف، التقارير، التنبيهات. وزرار + بقى على جنب للإضافة على طول.', '🎡 The bottom bar is now a wheel: spin it sideways and the section that stops in the middle opens, or tap any section to spin it there. It holds every section: Home, Assets, Zakat, Spending, Reports, Alerts. The + sits at the side and adds straight away.'],
     ['📅 استثناء من المصروف اليومي: الإيجار والأقساط والجمعية مبقوش بيتحسبوا في «صرفت النهارده»، بيتخصموا من ميزانية الشهر بس. تقدر تختار أي فئة من «تعديل الميزانيات»، أو تستثني مصروف واحد وانت بتسجّله.', '📅 Left out of daily spending: rent, instalments and savings circles no longer count in "spent today"; they only come out of the month\'s budget. Pick any category in Edit budgets, or leave out a single expense as you record it.'],
     ['🧭 الزكاة والتنبيهات بقوا في البار اللي تحت: الرئيسية، الأصول، الزكاة، +، المصاريف، التقارير، التنبيهات.', '🧭 Zakat and Alerts are now in the bottom bar: Home, Assets, Zakat, +, Spending, Reports, Alerts.'],
@@ -3248,6 +3279,7 @@ function goTo(go){
   if(go==='whatsnew'){ openWhatsNew(); return; }
   const [tab, sec] = NOTE_GO[go] || [go, null];
   setTab(tab);
+  if(sec==='sec-goals' || sec==='sec-cal') setMSeg('more');
   if(sec){ const s = document.getElementById(sec); if(s){ if(s.classList.contains('collapsed')) setCollapsed(s, false); s.scrollIntoView({block:'start'}); } }
 }
 function notesClick(e){
@@ -4487,7 +4519,7 @@ function txFoldsHtml(list, openAll){
   const tdy = today(), yr = tdy.slice(0,4);
   return Object.entries(days).map(([d, ts])=>{
     const dOut = ts.filter(t=>t.type==='exp').reduce((a,t)=>a+txEgp(t),0), dIn = ts.filter(t=>t.type==='inc').reduce((a,t)=>a+txEgp(t),0);
-    const open = openAll || (d in openDays ? openDays[d] : d===tdy);
+    const open = openAll || (d in openDays ? openDays[d] : d===tdy || document.documentElement.dataset.ui==='calm');   // the 2.0 look's list has its own tab, so days start open
     return `<details class="tx-fold" data-day="${d}"${open?' open':''}><summary>
       <span class="dl">${d===tdy ? L('النهارده','Today') + ' · ' : ''}${new Date(d+'T12:00').toLocaleDateString(LOC(),{weekday:'long', day:'numeric', month:'long', ...(d.slice(0,4)!==yr ? {year:'numeric'} : {})})}</span>
       <span class="dn">${L(`${fmt(ts.length,0)} عملية`, `${fmt(ts.length,0)} item${ts.length>1?'s':''}`)}</span>
@@ -4499,13 +4531,14 @@ function txFoldsHtml(list, openAll){
         <button type="button" class="x" data-txdel="${t.id}" aria-label="${L('حذف','Delete')}">×</button></div>`; }).join('') + `</div></details>`; }).join('');
 }
 // search and filters: while any is set, they look through every month, not just the one shown
-const txF = {q:'', cat:'', min:''};
+const txF = {q:'', cat:'', min:'', mk:''};   // mk: tapping a category keeps its list to the month shown
 const txFiltering = () => !!(txF.q.trim() || txF.cat || num(txF.min) > 0);
 const latinDigits = s => s.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
 function txFiltered(){
   const q = latinDigits(txF.q.trim().toLowerCase()), min = num(latinDigits(String(txF.min)));
   return state.tx.filter(t=>{
     if(!inSpace(t)) return false;
+    if(txF.mk && monthOf(t.date)!==txF.mk) return false;
     if(txF.cat && t.cat!==txF.cat) return false;
     if(min > 0 && txEgp(t) < min) return false;
     if(!q) return true;
@@ -4518,7 +4551,7 @@ function txListInner(monthList){
   const found = txFiltered();
   if(!found.length) return `<div class="rep-empty">${L('مفيش عمليات بالشكل دا.','No matching transactions.')}</div>`;
   const out = found.filter(t=>t.type==='exp').reduce((a,t)=>a+txEgp(t),0), inn = found.filter(t=>t.type==='inc').reduce((a,t)=>a+txEgp(t),0);
-  return `<div class="tx-found">${L(`${fmt(found.length,0)} عملية في كل الشهور`, `${found.length} transaction(s) across all months`)}${out ? ` · <bdi class="down-t m">−${egp(out)}</bdi>` : ''}${inn ? ` · <bdi class="up-t m">+${egp(inn)}</bdi>` : ''}
+  return `<div class="tx-found">${txF.mk ? L(`${fmt(found.length,0)} عملية في ${monthLabel(txF.mk)}`, `${found.length} transaction(s) in ${monthLabel(txF.mk)}`) : L(`${fmt(found.length,0)} عملية في كل الشهور`, `${found.length} transaction(s) across all months`)}${out ? ` · <bdi class="down-t m">−${egp(out)}</bdi>` : ''}${inn ? ` · <bdi class="up-t m">+${egp(inn)}</bdi>` : ''}
       <button type="button" class="linkish" data-txclear style="border:0;background:none">${L('مسح البحث','Clear search')}</button></div>` + txFoldsHtml(found, true);
 }
 // what both downloads cover: the search results while searching, otherwise the month shown
@@ -4668,7 +4701,8 @@ function renderMoney(){
     return `<div class="rec-row"><span>${esc(r.note || catName(c))} · ${L(`يوم ${fmt(r.day,0)} كل شهر`, `day ${r.day} monthly`)}</span>
       <span class="m ${r.type==='exp'?'down-t':'up-t'}"><bdi>${r.type==='exp'?'−':'+'}${fmt(r.amount)}</bdi> <button type="button" class="x" data-recdel="${r.id}" aria-label="${L('إيقاف','Stop')}">×</button></span></div>`; }).join('');
   const calmUi = document.documentElement.dataset.ui==='calm';
-  body.innerHTML = pendingHtml() + spacesBarHtml() + (calmUi ? calmBudgetCard({inc, exp, expP, expH, bTotal, bHome}) : '') + `
+  if(txF.mk) txF.mk = moneyMonth;   // a category's list follows the month arrows
+  body.innerHTML = calmUi ? calmMoneyHtml({txs, inc, exp, expP, expH, bTotal, bHome, parts, notes, prevMk, budIds, totalBar, homeBar, buds, recs}) : pendingHtml() + spacesBarHtml() + `
     <div class="mk"${calmUi ? ' hidden' : ''}>
       <div><span class="l">${L('الدخل','Income')}</span><span class="v m up-t">${egp(inc)}</span></div>
       <div><span class="l">${L('المصاريف','Spending')}</span><span class="v m down-t">${egp(exp)}</span></div>
@@ -4705,6 +4739,51 @@ function renderMoney(){
 /* the 2.0 look's Spending opens with one budget card, each figure once:
    your budget as a ring (spent of budget), what's left and how much that is a day for the rest of the month,
    where the month is heading at this pace against the budget, the home budget's bar, and the month's income and net */
+let mSeg = 'sum';
+function setMSeg(seg){
+  mSeg = seg; document.documentElement.dataset.mseg = seg;
+  renderMoney();
+  document.getElementById('sec-money').scrollIntoView({block:'start'});
+}
+document.documentElement.dataset.mseg = mSeg;
+// the 2.0 look's Spending: Summary (how the month is going), Transactions, Budgets, and More for everything else
+function calmMoneyHtml({txs, inc, exp, expP, expH, bTotal, bHome, parts, notes, prevMk, budIds, totalBar, homeBar, buds, recs}){
+  const tabBtn = (k, ar, en) => `<button type="button" role="tab" data-mseg="${k}" aria-selected="${mSeg===k}">${L(ar, en)}</button>`;
+  const addBtns = `<div class="ms-acts"><button type="button" data-txadd="exp" style="color:var(--down)">− ${L('مصروف','Expense')}</button><button type="button" data-txadd="inc" style="color:var(--up)">+ ${L('دخل','Income')}</button></div>`;
+  const empty = txs.length ? '' : `<div class="rep-empty">${L('مفيش عمليات في الشهر دا.', 'No transactions this month.')}</div>${addBtns}`;
+  const panel = {
+    sum: ()=> calmBudgetCard({inc, exp, expP, expH, bTotal, bHome}) + empty
+      + (parts.length ? calmCatsHtml(parts, exp) : '')
+      + (notes.length > 1 ? `<div class="insights">${notes.slice(1, 3).map(n=>`<div>${n}</div>`).join('')}</div>` : ''),
+    tx: ()=> state.tx.length ? `<div class="tx-filter">
+        <input id="tx-q" type="search" autocomplete="off" placeholder="🔍 ${L('ابحث باسم المحل أو الملاحظة أو المبلغ','Search shop, note or amount')}" value="${esc(txF.q)}">
+        <select id="tx-cf" aria-label="${L('الفئة','Category')}"><option value="">${L('كل الفئات','All categories')}</option>${[...cats('exp'), ...cats('inc')].map(c=>`<option value="${c.id}" ${c.id===txF.cat?'selected':''}>${esc(catName(c))}</option>`).join('')}</select>
+        <input id="tx-min" type="number" min="0" step="any" inputmode="decimal" placeholder="${L('أكبر من مبلغ','Over amount')}" value="${esc(txF.min)}">
+      </div>
+      <div id="tx-list">${txListInner(txs)}</div>${txs.length || txFiltering() ? '' : `<div class="rep-empty">${L('مفيش عمليات في الشهر دا.', 'No transactions this month.')}</div>`}
+      <div class="row" style="gap:6px"><button type="button" data-txexport>⬇ Excel</button><button type="button" data-txpdf>⬇ PDF</button></div>` : empty,
+    bud: ()=> (moneySpace!==null ? `<div class="budgets">${spaceBudgetHtml(exp)}</div>` : `
+      <button type="button" class="go-btn zk-pay" data-budedit>${budIds.length || bTotal || bHome ? L('تعديل الميزانيات','Edit budgets') : L('حدّد ميزانية','Set budgets')}</button>
+      ${totalBar || homeBar || buds ? `<div class="budgets">${totalBar}${homeBar}${buds}</div>` : `<div class="note">${L('حدّد مبلغ للشهر، والتطبيق ينبهك لما تقرّب منه.', "Set an amount for the month and you'll be warned as you get close.")}</div>`}`)
+      + subsHtml()
+      + `<div><div class="m-sub"><h3>${L('المتكرر كل شهر','Monthly repeats')}</h3></div>
+        ${recs || `<div class="note">${L('الإيجار والمرتب والأقساط: سجّلهم مرة واحدة وعلّم على "يتكرر كل شهر"، وهيتسجّلوا لوحدهم في يومهم.', 'Rent, salary, instalments: add them once with "repeat every month" and they record themselves on their day.')}</div>`}</div>`,
+    more: ()=> (notes.length ? `<div class="insights">${notes.map(n=>`<div>${n}</div>`).join('')}</div>` : '')
+      + placesHtml(txs, monthTx(prevMk))
+      + `<div class="ms-acts"><button type="button" data-paste>📋 ${L('لصق رسالة بنك','Paste bank message')}</button><button type="button" data-rules>🏷️ ${L('قواعد التصنيف','Category rules')}</button></div>
+      <label class="note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-set="autoKnown" id="autoKnown" ${state.autoKnown?'checked':''}> ${L('سجّل رسايل البنك لوحدها لو المحل صنّفته قبل كدا','File bank messages automatically when the shop is already known')}</label>`,
+  }[mSeg]();
+  return pendingHtml() + spacesBarHtml()
+    + `<div class="ms-seg" role="tablist">${tabBtn('sum','الملخص','Summary')}${tabBtn('tx','العمليات','Activity')}${tabBtn('bud','الميزانيات','Budgets')}${tabBtn('more','المزيد','More')}</div>
+    <div class="ms-panel">${panel}</div>`;
+}
+document.getElementById('money-body').addEventListener('click', e=>{
+  const seg = e.target.closest('button[data-mseg]')?.dataset.mseg; if(seg){ buzz(6); setMSeg(seg); return; }
+  const cat = e.target.closest('[data-ccat]')?.dataset.ccat;   // a category opens its own transactions for this month
+  if(cat){ txF.q = ''; txF.min = ''; txF.cat = cat; txF.mk = moneyMonth; buzz(6); setMSeg('tx'); return; }
+  if(e.target.closest('[data-pmore]')){ pendAll = true; buzz(6); renderMoney(); }
+  if(e.target.closest('[data-ptoggle]')){ pendOpen = !pendOpen; buzz(6); renderMoney(); }
+});
 function calmBudgetCard({inc, exp, expP, expH, bTotal, bHome}){
   const cur = moneyMonth===monthKey(Date.now()), C = 2 * Math.PI * 50;
   const p = bTotal > 0 ? expP / bTotal : 0, left = bTotal - expP;
@@ -4768,7 +4847,7 @@ function calmCatsHtml(parts, exp){
   return `<div class="cc"><h3>${L('حسب الفئة','By category')}</h3>${parts.slice(0, 8).map(p=>{
     const b = moneySpace===null ? num(state.budgets[p.id]) : 0, r = b > 0 ? p.v / b : p.v / exp;
     const color = b > 0 ? (r >= 1 ? 'var(--down)' : r >= .8 ? '#D97706' : 'var(--up)') : p.color;
-    return `<div class="cc-r"><div class="cc-t"><span>${esc(catName(catById(p.id)))}</span><span><b class="m">${fmt(p.v,0)}</b>${b > 0 ? ` <small class="mu m">/ ${fmt(b,0)}</small>` : ` <small class="mu">${fmt(r*100,0)}${PCT()}</small>`}</span></div>
+    return `<div class="cc-r" role="button" tabindex="0" data-ccat="${p.id}" style="cursor:pointer"><div class="cc-t"><span>${esc(catName(catById(p.id)))}</span><span><b class="m">${fmt(p.v,0)}</b>${b > 0 ? ` <small class="mu m">/ ${fmt(b,0)}</small>` : ` <small class="mu">${fmt(r*100,0)}${PCT()}</small>`}</span></div>
       <span class="cc-b"><span style="width:${Math.min(100, r*100)}%;background:${color}"></span></span></div>`; }).join('')}</div>`;
 }
 function refreshTxList(){ const el = document.getElementById('tx-list'); if(el) el.innerHTML = txListInner(monthTx(moneyMonth).filter(inSpace)); }
@@ -4781,7 +4860,7 @@ document.getElementById('money-body').addEventListener('input', e=>{
   if(id==='tx-q') txF.q = e.target.value; else if(id==='tx-min') txF.min = e.target.value; else return;
   refreshTxList();
 });
-document.getElementById('money-body').addEventListener('change', e=>{ if(e.target.id==='tx-cf'){ txF.cat = e.target.value; refreshTxList(); } });
+document.getElementById('money-body').addEventListener('change', e=>{ if(e.target.id==='tx-cf'){ txF.cat = e.target.value; txF.mk = ''; refreshTxList(); } });
 /* ---------- AI: "Ask Namaa AI" and receipt photos, through the app's own Cloudflare Worker (cloudflare-worker.js) ----------
    Off until the person turns it on. Questions send a summary of figures (totals by category, assets, goals) — never shop
    names or individual transactions; receipts send the photo. Each user has a daily allowance, kept by the worker. */
@@ -5017,6 +5096,7 @@ document.getElementById('tday').addEventListener('click', e=>{
   const go = e.target.closest('[data-tday]')?.dataset.tday; if(!go) return;
   buzz(6);
   const to = {pend:['money','.pend'], money:['money','#sec-money'], debts:['assets','#sec-debts'], stocks:['assets','#sec-stocks']}[go];
+  if(go==='pend'){ pendOpen = true; renderMoney(); }
   setTab(to[0]);
   requestAnimationFrame(()=>document.querySelector(to[1])?.scrollIntoView({block:'start', behavior:'smooth'}));
 });
@@ -5087,6 +5167,7 @@ document.getElementById('ch-today').addEventListener('click', e=>{
   const go = e.target.closest('[data-tday]')?.dataset.tday; if(!go) return;
   buzz(6);
   const to = {pend:['money','.pend'], money:['money','#sec-money'], debts:['assets','#sec-debts']}[go];
+  if(go==='pend'){ pendOpen = true; renderMoney(); }
   setTab(to[0]); requestAnimationFrame(()=>document.querySelector(to[1])?.scrollIntoView({block:'start', behavior:'smooth'}));
 });
 function renderAllow(){
@@ -5661,7 +5742,7 @@ function placesHtml(list, prevList){
 }
 document.getElementById('money-body').addEventListener('click', e=>{
   const b = e.target.closest('[data-place]'); if(!b) return;
-  txF.q = merchantKey(b.dataset.place).split(' ')[0]; txF.cat = ''; txF.min = '';
+  txF.q = merchantKey(b.dataset.place).split(' ')[0]; txF.cat = ''; txF.min = ''; txF.mk = ''; mSeg = 'tx'; document.documentElement.dataset.mseg = 'tx';
   renderMoney(); document.getElementById('tx-q')?.scrollIntoView({block:'center'}); buzz(6);
 });
 
@@ -6079,7 +6160,7 @@ document.getElementById('money-body').addEventListener('click', e=>{
   else if(b.dataset.txexport!==undefined) exportTx();
   else if(b.dataset.txpdf!==undefined) exportPdf();
   else if(b.dataset.rules!==undefined) openRules();
-  else if(b.dataset.subIgnore){ state.subIgnore.push(b.dataset.subIgnore); save(); renderMoney(); toast(L('اتشال من الاشتراكات.', 'Removed from subscriptions.')); }  else if(b.dataset.txclear!==undefined){ txF.q = ''; txF.cat = ''; txF.min = ''; renderMoney(); }
+  else if(b.dataset.subIgnore){ state.subIgnore.push(b.dataset.subIgnore); save(); renderMoney(); toast(L('اتشال من الاشتراكات.', 'Removed from subscriptions.')); }  else if(b.dataset.txclear!==undefined){ txF.q = ''; txF.cat = ''; txF.min = ''; txF.mk = ''; renderMoney(); }
   else if(b.dataset.txadd) openTx(b.dataset.txadd);
   else if(b.dataset.budedit!==undefined) openBudgets();
   else if(b.dataset.recdel){ const snap = JSON.stringify(state); state.recurring = state.recurring.filter(r=>r.id!==b.dataset.recdel); state.deletedRec.push(b.dataset.recdel); save(); render(); offerUndo(L('اتوقف التكرار. العمليات اللي اتسجّلت قبل كدا فضلت زي ما هي.', 'Repeat stopped. Past transactions stay.'), snap); }
@@ -6248,7 +6329,7 @@ function txSave(){
   save(); render(); buzz(); sheet.close(); txDraft = null;
   toast(tx.type==='exp' ? L(`اتسجّل مصروف ${egp(tx.egp)}${acct ? ' واتخصم من الحساب' : ''}.`, `Expense of ${egp(tx.egp)} saved${acct ? ' and taken from the account' : ''}.`)
                         : L(`اتسجّل دخل ${egp(tx.egp)}${acct ? ' واتضاف للحساب' : ''}.`, `Income of ${egp(tx.egp)} saved${acct ? ' and added to the account' : ''}.`),
-        {label: L('عرض','View'), fn: ()=>{ setTab('money'); document.getElementById('sec-money').scrollIntoView({block:'start'}); }});
+        {label: L('عرض','View'), fn: ()=>{ setTab('money'); if(document.documentElement.dataset.ui==='calm') setMSeg('tx'); document.getElementById('sec-money').scrollIntoView({block:'start'}); }});
 }
 function openBudgets(){
   sheetSec = 'bud';
@@ -6520,8 +6601,26 @@ function fileAllPending(){
   save(); render(); buzz([10,40,10]);
   offerUndo(L(`اتسجّلت ${fmt(n,0)} عملية.`, `${n} transactions filed.`), snap);
 }
+let pendAll = false, pendOpen = false;   // bank messages wait as one line; when opened, more than two stay folded until asked for
 function pendingHtml(){
-  if(!state.pending.length) return '';
+  if(!state.pending.length){ pendOpen = false; pendAll = false; return ''; }
+  if(document.documentElement.dataset.ui==='calm'){
+    const n = state.pending.length, show = pendAll ? state.pending : state.pending.slice(0, 2);
+    return `<div class="pend">
+      <button type="button" class="pend-bar" data-ptoggle aria-expanded="${pendOpen}"><span>✉️ ${L(n===1 ? 'رسالة بنك مستنية' : n===2 ? 'رسالتين بنك مستنيين' : `${fmt(n,0)} رسايل بنك مستنية`, `${n} bank message${n===1?'':'s'} to file`)}</span><span class="chv" aria-hidden="true">⌄</span></button>
+      ${pendOpen ? `<div class="m-sub" style="justify-content:flex-end">
+        ${n > 1 ? `<button type="button" class="go-btn sm" data-pall>✓ ${L('سجّل الكل','File all')}</button>` : ''}</div>
+      ${show.map(p=>`<div class="pend-c">
+        <div class="pend-l"><span class="who">${esc(p.merchant || L('من غير اسم محل','No shop name'))}</span><span class="amt m ${p.type==='exp'?'down-t':'up-t'}"><bdi>${p.type==='exp'?'−':'+'}${fmt(p.amount)} ${p.cur==='EGP'?L('ج.م','EGP'):p.cur}</bdi></span></div>
+        <div class="pend-sub">${[pendWhen(p), p.bank ? esc(lbl(bankById(p.bank))) : '', p.last4 ? '••' + p.last4 : ''].filter(Boolean).join(' · ')}</div>
+        <div class="pend-pick"><select data-pcat="${p.id}" aria-label="${L('الفئة','Category')}">${cats(p.type).map(x=>`<option value="${x.id}" ${x.id===p.cat?'selected':''}>${esc(catName(x))}</option>`).join('')}</select>
+          <select data-pacct="${p.id}" aria-label="${p.type==='exp'?L('اتدفع من','Paid from'):L('اتحط في','Paid into')}"><option value="">${L('من غير خصم','Not linked')}</option>${state.cash.map(r=>`<option value="${r.id}" ${r.id===p.acct?'selected':''}>${esc(acctName(r))}</option>`).join('')}</select></div>
+        <details class="pend-raw"><summary>${L('نص الرسالة','Message text')}</summary><div class="m">${esc(p.raw)}</div></details>
+        <div class="pend-go"><button type="button" class="go-btn" data-pok="${p.id}">✓ ${L('سجّل','File it')}</button><button type="button" class="x" data-pdrop="${p.id}">${L('تجاهل','Ignore')}</button></div>
+      </div>`).join('')}
+      ${n > show.length ? `<button type="button" class="linkish" data-pmore style="border:0;background:none">${L(`عرض الباقي (${fmt(n - show.length,0)})`, `Show the rest (${n - show.length})`)}</button>` : ''}` : ''}
+    </div>`;
+  }
   return `<div class="pend">
     <div class="m-sub"><h3>${L('رسايل البنك — مستنية تصنيف','Bank messages to file')} <span class="pill warn">${fmt(state.pending.length,0)}</span></h3>
       ${state.pending.length > 1 ? `<button type="button" class="go-btn sm" data-pall>✓ ${L(`سجّل الكل (${fmt(state.pending.length,0)})`, `File all (${state.pending.length})`)}</button>` : ''}</div>
@@ -7655,6 +7754,7 @@ const CHEVRON = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="tr
 let collapsed = {};
 try{ collapsed = JSON.parse(localStorage.getItem('wealth-collapsed')) || {}; }catch(e){}
 function setCollapsed(sec, on){
+  if(sec.id==='sec-money' && document.documentElement.dataset.ui==='calm') on = false;   // its own tabs replace folding in the 2.0 look
   sec.classList.toggle('collapsed', on);
   sec.querySelector('.fold').setAttribute('aria-expanded', !on);
   collapsed[sec.id] = on;
