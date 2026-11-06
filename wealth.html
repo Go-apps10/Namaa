@@ -249,6 +249,28 @@ table.cash-tbl{min-width:680px}
 table.gold-tbl{min-width:760px}
 table.stocks-tbl{min-width:900px}
 .brc select{min-width:140px}
+/* wider screens: everything fits with no sideways scrolling, so profit / loss is never cut. The ticker and broker columns
+   give up spare width, and each percentage sits under its number */
+@media (min-width:641px){
+  table.stocks-tbl{min-width:0}
+  .stocks-tbl th{white-space:normal;vertical-align:bottom;padding-inline:5px}
+  .stocks-tbl td{padding-inline:5px}
+  .stocks-tbl .sname{max-width:132px}
+  .stocks-tbl .brc select{min-width:0;width:98px}
+  .stocks-tbl td input[type=number]{min-width:72px}
+  .stocks-tbl td .chg,.stocks-tbl .pl small{display:block}
+  .stocks-tbl td.num,.stocks-tbl td.plc{white-space:nowrap}
+}
+/* tablets and narrow windows: the logo goes first, then the broker column (each portfolio's heading still names the firm) */
+@media (min-width:641px) and (max-width:860px){
+  .stocks-tbl .logo{display:none}
+  .stocks-tbl .brc select{width:78px}
+  .stocks-tbl td input[type=number]{min-width:62px}
+  .stocks-tbl .sname{max-width:96px}
+}
+@media (min-width:641px) and (max-width:720px){
+  .stocks-tbl th:nth-child(2),.stocks-tbl td.brc{display:none}
+}
 /* a brokerage portfolio's heading row: firm, number of stocks, its total and profit / loss, and + to add a stock to it */
 tr.grp td{padding:10px;border-top:2px solid var(--line);background:color-mix(in srgb,var(--stocks) 7%,transparent)}
 tr.grp:first-child td{border-top:0}
@@ -256,7 +278,7 @@ tr.grp:first-child td{border-top:0}
 .grp-n{color:var(--muted);font-size:.8rem}
 .grp-sum{margin-inline-start:auto;font-weight:600;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .grp-add{font-size:1.1rem;line-height:1;padding:3px 10px}
-.grp-today{font-size:.78rem;color:var(--muted);flex-basis:100%;text-align:end}
+.grp-today{font-size:.78rem;color:var(--muted);flex-basis:100%;text-align:end;order:5}
 .st-today{margin:-4px 0 4px}
 /* today at a glance on Home: one tappable line per thing that needs you */
 .tday{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;display:grid;gap:2px}
@@ -1988,7 +2010,7 @@ const BROKERS = [
 /* APP_BUILD counts every release and goes up with CACHE in sw.js (wealth-shell-v<build>); it's what update checks compare.
    APP_VERSION is what people see, major.minor[.patch]: a new feature raises the minor (2.1), a fix only the patch (2.0.1),
    a whole new look the major (2.0) */
-const APP_BUILD = 53, APP_VERSION = '2.8.0', APP_DATE = '2026-11-06';
+const APP_BUILD = 54, APP_VERSION = '2.8.1', APP_DATE = '2026-11-06';
 // what this release brought: new features and fixes, each [Arabic, English]. Shown as a popup on the first opening
 // after the update, kept in the bell, and from Settings → What's new
 const WHATS_NEW = {
@@ -2006,6 +2028,7 @@ const WHATS_NEW = {
     ['💰 المصاريف بدايرة الميزانية وأشرطة الفئات، والتقارير بكارت أخضر لزيادة ثروتك.', '💰 Spending has the budget ring and category bars; Reports open with your net worth change on green.'],
   ],
   fix: [
+    ['📊 جدول الأسهم بقى كله ظاهر على الكمبيوتر والتابلت من غير سحب بالعرض: الربح والخسارة بنسبتها، وعدد الأسهم كامل، وزرار الحذف.', '📊 The stocks table now fits on computers and tablets with no sideways scrolling: profit / loss with its percentage, full share counts and the delete button.'],
     ['🤲 أيقونة الزكاة بقت إيد بتدّي فلوس، أوضح في معناها.', '🤲 The Zakat icon is now a hand giving coins, clearer in meaning.'],
     ['📱 كروت «أصولك» والزكاة والتنبيهات مبقتش بتخرج برة الشاشة لما خط الموبايل كبير، والأيقونات بقت أوضح.', '📱 The "Your assets", Zakat and Alerts cards no longer spill off screen with a large phone font, and their icons are clearer.'],
     ['🔔 تنبيهات الأسعار بقت أسهل تلاقيها: زرار واضح في آخر الرئيسية جنب الزكاة بيقولك كام تنبيه شغال، وزرار تاني فوق في صفحة الأصول.', '🔔 Price alerts are easier to find: a clear button at the end of Home next to Zakat showing how many are active, and another at the top of Assets.'],
